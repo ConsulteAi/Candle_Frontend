@@ -1,4 +1,7 @@
+"use client";
+
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Search, Mail, Phone } from "lucide-react";
 
 const Footer = () => {
@@ -14,14 +17,14 @@ const Footer = () => {
         <div className="grid md:grid-cols-3 gap-12 mb-12">
           {/* Brand */}
           <div>
-            <a href="/" className="flex items-center gap-2 mb-4">
+            <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
                 <Search className="h-5 w-5 text-primary-foreground" />
               </div>
               <span className="text-xl font-bold">
                 Consulte<span className="text-primary">AI</span>
               </span>
-            </a>
+            </Link>
             <p className="text-muted-foreground text-sm leading-relaxed">
               Plataforma líder em consultas de CPF no Brasil. Informações
               seguras, rápidas e confiáveis com Inteligência Artificial.
