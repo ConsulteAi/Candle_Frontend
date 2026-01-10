@@ -12,7 +12,22 @@ export default function CreditoPage() {
   const [busca, setBusca] = useState("");
 
   const consultasFiltradas = consultasCredito.filter((consulta) => {
-    const matchTipo = filtro === "todos" || consulta.tipo === filtro;
+    // Lógica de filtro por tipo:
+    // - "todos": mostra todas as consultas
+    // - "cpf": mostra consultas de CPF + consultas que aceitam ambos
+    // - "cnpj": mostra consultas de CNPJ + consultas que aceitam ambos
+    // - "ambos": mostra SOMENTE consultas que aceitam ambos os tipos
+    let matchTipo = false;
+    if (filtro === "todos") {
+      matchTipo = true;
+    } else if (filtro === "cpf") {
+      matchTipo = consulta.tipo === "cpf" || consulta.tipo === "ambos";
+    } else if (filtro === "cnpj") {
+      matchTipo = consulta.tipo === "cnpj" || consulta.tipo === "ambos";
+    } else if (filtro === "ambos") {
+      matchTipo = consulta.tipo === "ambos";
+    }
+
     const matchBusca =
       busca === "" ||
       consulta.nome.toLowerCase().includes(busca.toLowerCase()) ||

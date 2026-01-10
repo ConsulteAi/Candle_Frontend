@@ -1,32 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
 import { Consulta } from "@/lib/consultas";
 import ConsultaCard from "./ConsultaCard";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut" as const,
-    },
-  },
-};
 
 interface ConsultasListProps {
   consultas: Consulta[];
@@ -38,6 +15,7 @@ export default function ConsultasList({ consultas }: ConsultasListProps) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         className="text-center py-16"
       >
         <Search className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
@@ -49,17 +27,25 @@ export default function ConsultasList({ consultas }: ConsultasListProps) {
   }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-    >
-      {consultas.map((consulta) => (
-        <motion.div key={consulta.id} variants={itemVariants}>
-          <ConsultaCard consulta={consulta} />
-        </motion.div>
-      ))}
-    </motion.div>
+    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <AnimatePresence mode="popLayout">
+        {consultas.map((consulta, index) => (
+          <motion.div
+            key={consulta.id}
+            layout
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{
+              duration: 0.3,
+              delay: index * 0.05,
+              layout: { duration: 0.3 },
+            }}
+          >
+            <ConsultaCard consulta={consulta} />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
   );
 }
