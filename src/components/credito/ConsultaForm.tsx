@@ -1,24 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Search, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState, useTransition, startTransition } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TipoDocumento } from "@/lib/consultas";
+import { CreditReportResponse } from "@/types/credit";
+import type { AssessmentState } from "@/actions";
 
-interface ConsultaFormProps {
+interface ConsultaFormServerProps {
   tipo: TipoDocumento;
-  onSubmit?: (documento: string, tipoDoc: "cpf" | "cnpj") => void;
+  slug: string;
+  onResult?: (result: CreditReportResponse) => void;
+  serverAction?: (prevState: AssessmentState, formData: FormData) => Promise<AssessmentState>;
 }
 
-export default function ConsultaForm({ tipo, onSubmit }: ConsultaFormProps) {
+export default function ConsultaFormServer({ tipo, slug, onResult, serverAction }: ConsultaFormServerProps) {
   const [documento, setDocumento] = useState("");
   const [tipoSelecionado, setTipoSelecionado] = useState<"cpf" | "cnpj">("cpf");
   const [isValid, setIsValid] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  // State for assessment result
+  const [assessmentState, setAssessmentState] = useState<AssessmentState>({
+    status: "idle",
+  });
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, "");
@@ -93,8 +102,9 @@ export default function ConsultaForm({ tipo, onSubmit }: ConsultaFormProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const tipoAtual = tipo === "ambos" ? tipoSelecionado : tipo;
     const isValidDoc =
       tipoAtual === "cpf" ? validateCPF(documento) : validateCNPJ(documento);
@@ -104,17 +114,47 @@ export default function ConsultaForm({ tipo, onSubmit }: ConsultaFormProps) {
       return;
     }
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      onSubmit?.(documento, tipoAtual as "cpf" | "cnpj");
-    }, 2000);
+    // Only CPF assessment is implemented
+    if (slug === "avalie-credito-cpf" && tipoAtual === "cpf" && serverAction) {
+      const formData = new FormData(e.currentTarget);
+
+      startTransition(async () => {
+        setAssessmentState({ status: "loading" });
+
+        const result = await serverAction(
+          { status: "idle" },
+          formData
+        );
+
+        setAssessmentState(result);
+
+        // Call onResult callback if success
+        if (result.status === "success" && result.data && onResult) {
+          onResult(result.data);
+        }
+      });
+    } else {
+      // For other consultations not yet implemented
+      setAssessmentState({
+        status: "error",
+        error: serverAction
+          ? "Esta consulta ainda não está disponível. Em breve!"
+          : "Consulta não configurada. Configure o serverAction.",
+      });
+    }
   };
 
   const handleTipoChange = (value: string) => {
     setTipoSelecionado(value as "cpf" | "cnpj");
     setDocumento("");
     setIsValid(null);
+    setAssessmentState({ status: "idle" });
+  };
+
+  const handleReset = () => {
+    setDocumento("");
+    setIsValid(null);
+    setAssessmentState({ status: "idle" });
   };
 
   const renderFormFields = (tipoDoc: "cpf" | "cnpj") => (
@@ -124,6 +164,7 @@ export default function ConsultaForm({ tipo, onSubmit }: ConsultaFormProps) {
         <div className="relative">
           <Input
             id="documento"
+            name="cpf"
             type="text"
             placeholder={
               tipoDoc === "cpf" ? "000.000.000-00" : "00.000.000/0000-00"
@@ -131,6 +172,7 @@ export default function ConsultaForm({ tipo, onSubmit }: ConsultaFormProps) {
             value={documento}
             onChange={handleChange}
             maxLength={tipoDoc === "cpf" ? 14 : 18}
+            disabled={isPending || assessmentState.status === "success"}
             className={`h-14 text-lg pr-12 transition-all duration-300 ${
               isValid === true
                 ? "border-green-500 focus-visible:ring-green-500"
@@ -166,44 +208,90 @@ export default function ConsultaForm({ tipo, onSubmit }: ConsultaFormProps) {
         </motion.p>
       </div>
 
-      <Button
-        type="submit"
-        size="lg"
-        disabled={!isValid || isLoading}
-        className="w-full h-14 text-base font-semibold gradient-primary button-shadow"
-      >
-        {isLoading ? (
+      {/* Error Display */}
+      <AnimatePresence>
+        {assessmentState.status === "error" && (
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="h-5 w-5 border-2 border-primary-foreground border-t-transparent rounded-full"
-          />
-        ) : (
-          <>
-            <Search className="mr-2 h-5 w-5" />
-            Realizar Consulta
-          </>
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg"
+          >
+            <p className="text-sm text-red-700 dark:text-red-300">
+              {assessmentState.error}
+            </p>
+          </motion.div>
         )}
-      </Button>
+      </AnimatePresence>
+
+      <div className="flex gap-3">
+        <Button
+          type="submit"
+          size="lg"
+          disabled={!isValid || isPending || assessmentState.status === "success"}
+          className="flex-1 h-14 text-base font-semibold gradient-primary button-shadow"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Consultando...
+            </>
+          ) : (
+            <>
+              <Search className="mr-2 h-5 w-5" />
+              Realizar Consulta
+            </>
+          )}
+        </Button>
+
+        {assessmentState.status === "success" && (
+          <Button
+            type="button"
+            size="lg"
+            variant="outline"
+            onClick={handleReset}
+            className="h-14"
+          >
+            Nova Consulta
+          </Button>
+        )}
+      </div>
     </form>
   );
 
   if (tipo === "ambos") {
     return (
-      <Tabs
-        defaultValue="cpf"
-        onValueChange={handleTipoChange}
-        className="w-full"
-      >
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="cpf">Pessoa Física (CPF)</TabsTrigger>
-          <TabsTrigger value="cnpj">Pessoa Jurídica (CNPJ)</TabsTrigger>
-        </TabsList>
-        <TabsContent value="cpf">{renderFormFields("cpf")}</TabsContent>
-        <TabsContent value="cnpj">{renderFormFields("cnpj")}</TabsContent>
-      </Tabs>
+      <div className="space-y-6">
+        <Tabs
+          defaultValue="cpf"
+          value={tipoSelecionado}
+          onValueChange={handleTipoChange}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="cpf">Pessoa Física (CPF)</TabsTrigger>
+            <TabsTrigger value="cnpj">Pessoa Jurídica (CNPJ)</TabsTrigger>
+          </TabsList>
+          <TabsContent value="cpf">{renderFormFields("cpf")}</TabsContent>
+          <TabsContent value="cnpj">{renderFormFields("cnpj")}</TabsContent>
+        </Tabs>
+
+        {/* Expose assessment state for parent to render result */}
+        {assessmentState.status === "success" && assessmentState.data && (
+          <div className="hidden" data-result={JSON.stringify(assessmentState.data)} />
+        )}
+      </div>
     );
   }
 
-  return renderFormFields(tipo as "cpf" | "cnpj");
+  return (
+    <div className="space-y-6">
+      {renderFormFields(tipo as "cpf" | "cnpj")}
+
+      {/* Expose assessment state for parent to render result */}
+      {assessmentState.status === "success" && assessmentState.data && (
+        <div className="hidden" data-result={JSON.stringify(assessmentState.data)} />
+      )}
+    </div>
+  );
 }
