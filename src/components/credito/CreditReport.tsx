@@ -351,6 +351,12 @@ function StatCard({
 // ============================================================================
 
 function PersonalInfoCard({ person }: { person: CreditReportResponse["person"] }) {
+  // Determine if document is CNPJ (14 digits) or CPF (11 digits)
+  const cleanDoc = person.document.replace(/\D/g, "");
+  const isCnpj = cleanDoc.length === 14;
+  const documentLabel = isCnpj ? "CNPJ" : "CPF";
+  const formattedDocument = isCnpj ? formatCnpj(person.document) : formatCpf(person.document);
+
   return (
     <motion.div
       initial={{ opacity: 0, x: -20 }}
@@ -367,11 +373,11 @@ function PersonalInfoCard({ person }: { person: CreditReportResponse["person"] }
 
         <div className="space-y-4">
           <InfoItem icon={User} label="Nome" value={person.name} />
-          <InfoItem icon={FileText} label="CPF" value={formatCpf(person.document)} />
+          <InfoItem icon={FileText} label={documentLabel} value={formattedDocument} />
           <InfoItem icon={Calendar} label="Nascimento" value={formatDate(person.birthDate)} />
           <InfoItem icon={User} label="Nome da Mãe" value={person.motherName} />
-          <InfoItem icon={Mail} label="E-mail" value={person.email || "Não informado"} />
-          <InfoItem icon={Building2} label="Atividade" value={person.mainEconomicActivity || "Não informado"} />
+          <InfoItem icon={Mail} label="E-mail" value={person.email} />
+          <InfoItem icon={Building2} label="Atividade" value={person.mainEconomicActivity} />
           <InfoItem icon={TrendingUp} label="Status" value={person.revenueStatus} />
         </div>
       </Card>
@@ -380,12 +386,18 @@ function PersonalInfoCard({ person }: { person: CreditReportResponse["person"] }
 }
 
 function InfoItem({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
+  // Display "Não informado" for empty or whitespace-only values
+  const displayValue = value && value.trim() !== "" ? value : "Não informado";
+  const isNotInformed = displayValue === "Não informado";
+
   return (
     <div className="flex items-start gap-3 group">
       <Icon className="w-5 h-5 text-muted-foreground mt-0.5 group-hover:text-primary transition-colors" />
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
-        <p className="text-sm font-medium text-foreground break-words">{value}</p>
+        <p className={`text-sm font-medium break-words ${isNotInformed ? "text-muted-foreground italic" : "text-foreground"}`}>
+          {displayValue}
+        </p>
       </div>
     </div>
   );
@@ -796,10 +808,19 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
 // ============================================================================
 
 function formatCpf(cpf: string): string {
+  if (!cpf || cpf.trim() === "") return "";
   return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }
 
+function formatCnpj(cnpj: string): string {
+  if (!cnpj || cnpj.trim() === "") return "";
+  const cleaned = cnpj.replace(/\D/g, "");
+  return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+}
+
 function formatDate(dateString: string): string {
+  if (!dateString || dateString.trim() === "") return "";
+
   try {
     // Check if date is in Brazilian format dd/MM/yyyy
     if (dateString.includes("/")) {
