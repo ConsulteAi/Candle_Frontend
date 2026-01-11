@@ -15,7 +15,7 @@ import {
 } from "@/components/credito";
 import { Button } from "@/components/ui/button";
 import { CreditReportResponse, PremiumCreditReportResponse } from "@/types/credit";
-import { assessCreditAction, assessPremiumCreditAction } from "@/actions";
+import { ConsultaStrategyFactory } from "@/lib/consultas/factories/ConsultaStrategyFactory";
 
 interface ConsultaPageContentProps {
   slug: string;
@@ -23,9 +23,10 @@ interface ConsultaPageContentProps {
 
 export default function ConsultaPageContent({ slug }: ConsultaPageContentProps) {
   const consulta = getConsultaBySlug(slug);
+  const strategy = ConsultaStrategyFactory.create(slug);
   const [result, setResult] = useState<CreditReportResponse | PremiumCreditReportResponse | null>(null);
 
-  if (!consulta) {
+  if (!consulta || !strategy) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
@@ -83,11 +84,8 @@ export default function ConsultaPageContent({ slug }: ConsultaPageContentProps) 
                         Dados para Consulta
                       </h2>
                       <ConsultaForm
-                        tipo={consulta.tipo}
-                        slug={slug}
+                        strategy={strategy}
                         onResult={handleResult}
-                        serverAction={slug === "consulta-completa-premium" ? undefined : assessCreditAction}
-                        premiumServerAction={slug === "consulta-completa-premium" ? assessPremiumCreditAction : undefined}
                       />
                     </div>
 

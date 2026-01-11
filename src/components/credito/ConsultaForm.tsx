@@ -1,40 +1,45 @@
 "use client";
 
-import { useState, useTransition, startTransition } from "react";
+/**
+ * ConsultaForm - Refactored with Strategy Pattern
+ *
+ * SOLID Principles Applied:
+ * - Single Responsibility: Only handles form UI and user interaction
+ * - Open/Closed: Open for extension (new strategies), closed for modification
+ * - Dependency Inversion: Depends on ConsultaStrategy interface, not concrete implementations
+ *
+ * The form delegates all consultation-specific logic to the injected strategy.
+ */
+
+import { useState, useTransition, FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TipoDocumento } from "@/lib/consultas";
+import type { ConsultaStrategy } from "@/lib/consultas/strategies/ConsultaStrategy";
+import { ValidationService } from "@/lib/consultas/services/ValidationService";
 import { CreditReportResponse, PremiumCreditReportResponse } from "@/types/credit";
 import type { AssessmentState, PremiumAssessmentState } from "@/actions";
 
-interface ConsultaFormServerProps {
-  tipo: TipoDocumento;
-  slug: string;
+interface ConsultaFormProps {
+  strategy: ConsultaStrategy;
   onResult?: (result: CreditReportResponse | PremiumCreditReportResponse) => void;
-  serverAction?: (prevState: AssessmentState, formData: FormData) => Promise<AssessmentState>;
-  premiumServerAction?: (prevState: PremiumAssessmentState, formData: FormData) => Promise<PremiumAssessmentState>;
 }
 
-export default function ConsultaFormServer({ tipo, slug, onResult, serverAction, premiumServerAction }: ConsultaFormServerProps) {
+export default function ConsultaForm({ strategy, onResult }: ConsultaFormProps) {
   const [documento, setDocumento] = useState("");
   const [tipoSelecionado, setTipoSelecionado] = useState<"cpf" | "cnpj">("cpf");
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // State for assessment result
-  const [assessmentState, setAssessmentState] = useState<AssessmentState>({
+  // Single state that works for both standard and premium
+  const [state, setState] = useState<AssessmentState | PremiumAssessmentState>({
     status: "idle",
   });
 
-  // State for premium assessment result
-  const [premiumAssessmentState, setPremiumAssessmentState] = useState<PremiumAssessmentState>({
-    status: "idle",
-  });
-
+  // Document formatting functions
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, "");
     return numbers
@@ -54,46 +59,16 @@ export default function ConsultaFormServer({ tipo, slug, onResult, serverAction,
       .replace(/(-\d{2})\d+?$/, "$1");
   };
 
-  const validateCPF = (cpfValue: string) => {
-    const numbers = cpfValue.replace(/\D/g, "");
-    if (numbers.length !== 11) return false;
-    if (/^(\d)\1{10}$/.test(numbers)) return false;
-
-    let sum = 0;
-    for (let i = 0; i < 9; i++) {
-      sum += parseInt(numbers[i]) * (10 - i);
-    }
-    let remainder = (sum * 10) % 11;
-    if (remainder === 10 || remainder === 11) remainder = 0;
-    if (remainder !== parseInt(numbers[9])) return false;
-
-    sum = 0;
-    for (let i = 0; i < 10; i++) {
-      sum += parseInt(numbers[i]) * (11 - i);
-    }
-    remainder = (sum * 10) % 11;
-    if (remainder === 10 || remainder === 11) remainder = 0;
-    if (remainder !== parseInt(numbers[10])) return false;
-
-    return true;
-  };
-
-  const validateCNPJ = (cnpjValue: string) => {
-    const numbers = cnpjValue.replace(/\D/g, "");
-    if (numbers.length !== 14) return false;
-    if (/^(\d)\1{13}$/.test(numbers)) return false;
-    return true;
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const tipoAtual = tipo === "ambos" ? tipoSelecionado : tipo;
+    const tipoAtual = strategy.documentTypes === "ambos" ? tipoSelecionado :
+                      strategy.documentTypes === "cpf" ? "cpf" : "cnpj";
 
     if (tipoAtual === "cpf") {
       const formatted = formatCPF(value);
       setDocumento(formatted);
       if (formatted.replace(/\D/g, "").length === 11) {
-        setIsValid(validateCPF(formatted));
+        setIsValid(ValidationService.validateCPF(formatted));
       } else {
         setIsValid(null);
       }
@@ -101,150 +76,112 @@ export default function ConsultaFormServer({ tipo, slug, onResult, serverAction,
       const formatted = formatCNPJ(value);
       setDocumento(formatted);
       if (formatted.replace(/\D/g, "").length === 14) {
-        setIsValid(validateCNPJ(formatted));
+        setIsValid(ValidationService.validateCNPJ(formatted));
       } else {
         setIsValid(null);
       }
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const tipoAtual = tipo === "ambos" ? tipoSelecionado : tipo;
-    const isValidDoc =
-      tipoAtual === "cpf" ? validateCPF(documento) : validateCNPJ(documento);
+    const tipoAtual = strategy.documentTypes === "ambos" ? tipoSelecionado :
+                      strategy.documentTypes === "cpf" ? "cpf" : "cnpj";
 
-    if (!isValidDoc) {
+    // Validate using strategy
+    const validation = strategy.validate(documento, tipoAtual);
+
+    if (!validation.isValid) {
       setIsValid(false);
       return;
     }
 
-    // Premium consultation (accepts both CPF and CNPJ)
-    if (slug === "consulta-completa-premium" && premiumServerAction) {
-      const formData = new FormData(e.currentTarget);
+    // Execute using strategy
+    const formData = new FormData(e.currentTarget);
 
-      startTransition(async () => {
-        setPremiumAssessmentState({ status: "loading" });
+    startTransition(async () => {
+      setState({ status: "loading" });
 
-        const result = await premiumServerAction(
-          { status: "idle" },
-          formData
-        );
-
-        setPremiumAssessmentState(result);
+      try {
+        const result = await strategy.execute(formData, { status: "idle" });
+        setState(result);
 
         // Call onResult callback if success
         if (result.status === "success" && result.data && onResult) {
           onResult(result.data);
         }
-      });
-    }
-    // Standard CPF assessment
-    else if (slug === "avalie-credito-cpf" && tipoAtual === "cpf" && serverAction) {
-      const formData = new FormData(e.currentTarget);
-
-      startTransition(async () => {
-        setAssessmentState({ status: "loading" });
-
-        const result = await serverAction(
-          { status: "idle" },
-          formData
-        );
-
-        setAssessmentState(result);
-
-        // Call onResult callback if success
-        if (result.status === "success" && result.data && onResult) {
-          onResult(result.data);
-        }
-      });
-    } else {
-      // For other consultations not yet implemented
-      const errorState = {
-        status: "error" as const,
-        error: serverAction || premiumServerAction
-          ? "Esta consulta ainda não está disponível. Em breve!"
-          : "Consulta não configurada. Configure o serverAction.",
-      };
-
-      // Set error in the appropriate state
-      if (slug === "consulta-completa-premium") {
-        setPremiumAssessmentState(errorState);
-      } else {
-        setAssessmentState(errorState);
+      } catch (error) {
+        setState({
+          status: "error",
+          error: "Erro ao processar consulta. Tente novamente.",
+        });
       }
-    }
+    });
   };
 
   const handleTipoChange = (value: string) => {
     setTipoSelecionado(value as "cpf" | "cnpj");
     setDocumento("");
     setIsValid(null);
-    setAssessmentState({ status: "idle" });
-    setPremiumAssessmentState({ status: "idle" });
+    setState({ status: "idle" });
   };
 
   const handleReset = () => {
     setDocumento("");
     setIsValid(null);
-    setAssessmentState({ status: "idle" });
-    setPremiumAssessmentState({ status: "idle" });
+    setState({ status: "idle" });
   };
 
-  // Get current assessment state (premium or standard)
-  const currentState = slug === "consulta-completa-premium" ? premiumAssessmentState : assessmentState;
-
-  const renderFormFields = (tipoDoc: "cpf" | "cnpj") => {
-    // Use "document" field name for premium, "cpf" for standard
-    const fieldName = slug === "consulta-completa-premium" ? "document" : "cpf";
-
-    return (
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="documento">{tipoDoc === "cpf" ? "CPF" : "CNPJ"}</Label>
-          <div className="relative">
-            <Input
-              id="documento"
-              name={fieldName}
-              type="text"
-              placeholder={
-                tipoDoc === "cpf" ? "000.000.000-00" : "00.000.000/0000-00"
-              }
-              value={documento}
-              onChange={handleChange}
-              maxLength={tipoDoc === "cpf" ? 14 : 18}
-              disabled={isPending || currentState.status === "success"}
-              className={`h-14 text-lg pr-12 transition-all duration-300 ${
-                isValid === true
-                  ? "border-green-500 focus-visible:ring-green-500"
-                  : isValid === false
-                  ? "border-destructive focus-visible:ring-destructive"
-                  : ""
-              }`}
-            />
+  const renderFormFields = (tipoDoc: "cpf" | "cnpj") => (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="documento">{tipoDoc === "cpf" ? "CPF" : "CNPJ"}</Label>
+        <div className="relative">
+          <Input
+            id="documento"
+            name={strategy.fieldName}
+            type="text"
+            placeholder={
+              tipoDoc === "cpf" ? "000.000.000-00" : "00.000.000/0000-00"
+            }
+            value={documento}
+            onChange={handleChange}
+            maxLength={tipoDoc === "cpf" ? 14 : 18}
+            disabled={isPending || state.status === "success"}
+            className={`h-14 text-lg pr-12 transition-all duration-300 ${
+              isValid === true
+                ? "border-green-500 focus-visible:ring-green-500"
+                : isValid === false
+                ? "border-destructive focus-visible:ring-destructive"
+                : ""
+            }`}
+          />
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{
               opacity: isValid !== null ? 1 : 0,
               scale: isValid !== null ? 1 : 0,
             }}
+            transition={{ duration: 0.2 }}
             className="absolute right-4 top-1/2 -translate-y-1/2"
           >
             {isValid === true ? (
-              <CheckCircle2 className="h-6 w-6 text-green-500" />
+              <CheckCircle2 className="h-6 w-6 text-green-600" />
             ) : isValid === false ? (
               <AlertCircle className="h-6 w-6 text-destructive" />
             ) : null}
           </motion.div>
         </div>
+
         <motion.p
           initial={{ opacity: 0, height: 0 }}
           animate={{
             opacity: isValid === false ? 1 : 0,
             height: isValid === false ? "auto" : 0,
           }}
-          className="text-sm text-destructive"
+          transition={{ duration: 0.2 }}
+          className="text-sm text-destructive overflow-hidden"
         >
           Por favor, insira um {tipoDoc.toUpperCase()} válido
         </motion.p>
@@ -252,7 +189,7 @@ export default function ConsultaFormServer({ tipo, slug, onResult, serverAction,
 
       {/* Error Display */}
       <AnimatePresence>
-        {currentState.status === "error" && (
+        {state.status === "error" && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -260,7 +197,7 @@ export default function ConsultaFormServer({ tipo, slug, onResult, serverAction,
             className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg"
           >
             <p className="text-sm text-red-700 dark:text-red-300">
-              {currentState.error}
+              {state.error}
             </p>
           </motion.div>
         )}
@@ -270,7 +207,7 @@ export default function ConsultaFormServer({ tipo, slug, onResult, serverAction,
         <Button
           type="submit"
           size="lg"
-          disabled={!isValid || isPending || currentState.status === "success"}
+          disabled={!isValid || isPending || state.status === "success"}
           className="flex-1 h-14 text-base font-semibold gradient-primary button-shadow"
         >
           {isPending ? (
@@ -286,7 +223,7 @@ export default function ConsultaFormServer({ tipo, slug, onResult, serverAction,
           )}
         </Button>
 
-        {currentState.status === "success" && (
+        {state.status === "success" && (
           <Button
             type="button"
             size="lg"
@@ -299,19 +236,14 @@ export default function ConsultaFormServer({ tipo, slug, onResult, serverAction,
         )}
       </div>
     </form>
-    );
-  };
+  );
 
-  if (tipo === "ambos") {
+  // Render tabs for "ambos" or single form for specific type
+  if (strategy.documentTypes === "ambos") {
     return (
       <div className="space-y-6">
-        <Tabs
-          defaultValue="cpf"
-          value={tipoSelecionado}
-          onValueChange={handleTipoChange}
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+        <Tabs value={tipoSelecionado} onValueChange={handleTipoChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 h-12">
             <TabsTrigger value="cpf">Pessoa Física (CPF)</TabsTrigger>
             <TabsTrigger value="cnpj">Pessoa Jurídica (CNPJ)</TabsTrigger>
           </TabsList>
@@ -319,21 +251,23 @@ export default function ConsultaFormServer({ tipo, slug, onResult, serverAction,
           <TabsContent value="cnpj">{renderFormFields("cnpj")}</TabsContent>
         </Tabs>
 
-        {/* Expose assessment state for parent to render result */}
-        {currentState.status === "success" && currentState.data && (
-          <div className="hidden" data-result={JSON.stringify(currentState.data)} />
+        {/* Expose state for parent to render result */}
+        {state.status === "success" && state.data && (
+          <div className="hidden" data-result={JSON.stringify(state.data)} />
         )}
       </div>
     );
   }
 
+  const docType = strategy.documentTypes === "cpf" ? "cpf" : "cnpj";
+
   return (
     <div className="space-y-6">
-      {renderFormFields(tipo as "cpf" | "cnpj")}
+      {renderFormFields(docType)}
 
-      {/* Expose assessment state for parent to render result */}
-      {currentState.status === "success" && currentState.data && (
-        <div className="hidden" data-result={JSON.stringify(currentState.data)} />
+      {/* Expose state for parent to render result */}
+      {state.status === "success" && state.data && (
+        <div className="hidden" data-result={JSON.stringify(state.data)} />
       )}
     </div>
   );
