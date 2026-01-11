@@ -45,7 +45,7 @@ export default function CreditReport({ report }: CreditReportProps) {
       <StatusHero status={report.status} protocol={report.protocol} />
 
       {/* Quick Stats Bar */}
-      <QuickStats summary={report.financialSummary} />
+      <QuickStats summary={report.financialSummary} isPremium={isPremium} />
 
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-6">
@@ -215,14 +215,38 @@ function StatusHero({ status, protocol }: { status: "RESTRICTED" | "CLEAR"; prot
 // QUICK STATS BAR
 // ============================================================================
 
-function QuickStats({ summary }: { summary: { totalDebts: number; totalProtests: number; totalQueries: number } }) {
+function QuickStats({ summary, isPremium = false }: { summary: FinancialSummary; isPremium?: boolean }) {
+  const gridCols = isPremium ? "md:grid-cols-5" : "md:grid-cols-3";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.6 }}
-      className="grid grid-cols-1 md:grid-cols-3 gap-4"
+      className={`grid grid-cols-1 ${gridCols} gap-4`}
     >
+      {/* CADIN Card - Premium Only */}
+      {isPremium && (
+        <StatCard
+          icon={Landmark}
+          label="CADIN"
+          value={summary.totalCadin ?? 0}
+          color={(summary.totalCadin ?? 0) > 0 ? "purple" : "emerald"}
+          delay={0.35}
+        />
+      )}
+
+      {/* CCF Card - Premium Only */}
+      {isPremium && (
+        <StatCard
+          icon={FileX}
+          label="CCF"
+          value={summary.totalCcf ?? 0}
+          color={(summary.totalCcf ?? 0) > 0 ? "amber" : "emerald"}
+          delay={0.375}
+        />
+      )}
+
       <StatCard
         icon={AlertTriangle}
         label="Dívidas"
@@ -258,7 +282,7 @@ function StatCard({
   icon: React.ElementType;
   label: string;
   value: number;
-  color: "red" | "emerald" | "blue";
+  color: "red" | "emerald" | "blue" | "purple" | "amber";
   delay: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -282,6 +306,18 @@ function StatCard({
       border: "border-blue-200 dark:border-blue-800",
       icon: "text-blue-600 dark:text-blue-400",
       text: "text-blue-900 dark:text-blue-100",
+    },
+    purple: {
+      bg: "from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30",
+      border: "border-purple-200 dark:border-purple-800",
+      icon: "text-purple-600 dark:text-purple-400",
+      text: "text-purple-900 dark:text-purple-100",
+    },
+    amber: {
+      bg: "from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30",
+      border: "border-amber-200 dark:border-amber-800",
+      icon: "text-amber-600 dark:text-amber-400",
+      text: "text-amber-900 dark:text-amber-100",
     },
   };
 

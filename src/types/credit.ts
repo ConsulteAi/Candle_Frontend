@@ -31,6 +31,8 @@ export interface FinancialSummary {
   totalDebts: number;
   totalProtests: number;
   totalQueries: number;
+  totalCadin?: number;
+  totalCcf?: number;
 }
 
 /**
