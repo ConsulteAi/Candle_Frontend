@@ -164,7 +164,7 @@ export default function ConsultaForm({ strategy, onResult }: ConsultaFormProps) 
               scale: isValid !== null ? 1 : 0,
             }}
             transition={{ duration: 0.2 }}
-            className="absolute right-4 top-1/2 -translate-y-1/2"
+            className="absolute right-4 inset-y-0 flex items-center justify-center"
           >
             {isValid === true ? (
               <CheckCircle2 className="h-6 w-6 text-green-600" />
