@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import {
   CheckCircle2,
@@ -20,24 +20,40 @@ import {
   MapPin,
   Landmark,
   FileX,
+  ShieldAlert,
 } from "lucide-react";
-import { CreditReportResponse, PremiumCreditReportResponse } from "@/types/credit";
+import {
+  CreditReportResponse,
+  PremiumCreditReportResponse,
+  CorporateCreditReportResponse,
+  FinancialSummary
+} from "@/types/credit";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
 interface CreditReportProps {
-  report: CreditReportResponse | PremiumCreditReportResponse;
+  report: CreditReportResponse | PremiumCreditReportResponse | CorporateCreditReportResponse;
 }
 
 // Type guard to check if report is premium
-function isPremiumReport(report: CreditReportResponse | PremiumCreditReportResponse): report is PremiumCreditReportResponse {
-  return "cadin" in report && "ccf" in report;
+function isPremiumReport(
+  report: CreditReportResponse | PremiumCreditReportResponse | CorporateCreditReportResponse
+): report is PremiumCreditReportResponse {
+  return "cadin" in report && "ccf" in report && !("contumacia" in report);
+}
+
+// Type guard to check if report is corporate
+function isCorporateReport(
+  report: CreditReportResponse | PremiumCreditReportResponse | CorporateCreditReportResponse
+): report is CorporateCreditReportResponse {
+  return "contumacia" in report;
 }
 
 export default function CreditReport({ report }: CreditReportProps) {
   const isRestricted = report.status === "RESTRICTED";
   const isPremium = isPremiumReport(report);
+  const isCorporate = isCorporateReport(report);
 
   return (
     <div className="space-y-8 pb-12">
@@ -45,7 +61,7 @@ export default function CreditReport({ report }: CreditReportProps) {
       <StatusHero status={report.status} protocol={report.protocol} />
 
       {/* Quick Stats Bar */}
-      <QuickStats summary={report.financialSummary} isPremium={isPremium} />
+      <QuickStats summary={report.financialSummary} isPremium={isPremium} isCorporate={isCorporate} />
 
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-6">
@@ -56,13 +72,18 @@ export default function CreditReport({ report }: CreditReportProps) {
 
         {/* Right Column - Financial Details */}
         <div className="lg:col-span-2 space-y-6">
-          {/* CADIN Section - Premium Only */}
-          {isPremium && report.cadin.length > 0 && (
+          {/* Contumacia Section - Corporate Only (Most Severe) */}
+          {isCorporate && report.contumacia.length > 0 && (
+            <ContumaciaTimeline contumacia={report.contumacia} />
+          )}
+
+          {/* CADIN Section - Premium & Corporate */}
+          {(isPremium || isCorporate) && report.cadin.length > 0 && (
             <CadinTimeline cadin={report.cadin} />
           )}
 
-          {/* CCF Section - Premium Only */}
-          {isPremium && report.ccf.length > 0 && (
+          {/* CCF Section - Premium & Corporate */}
+          {(isPremium || isCorporate) && report.ccf.length > 0 && (
             <CcfTimeline ccf={report.ccf} />
           )}
 
@@ -215,8 +236,20 @@ function StatusHero({ status, protocol }: { status: "RESTRICTED" | "CLEAR"; prot
 // QUICK STATS BAR
 // ============================================================================
 
-function QuickStats({ summary, isPremium = false }: { summary: FinancialSummary; isPremium?: boolean }) {
-  const gridCols = isPremium ? "md:grid-cols-5" : "md:grid-cols-3";
+function QuickStats({
+  summary,
+  isPremium = false,
+  isCorporate = false
+}: {
+  summary: FinancialSummary;
+  isPremium?: boolean;
+  isCorporate?: boolean;
+}) {
+  // Calculate grid columns based on report type
+  // Corporate: 6 cards (Contumacia + CADIN + CCF + Debts + Protests + Queries)
+  // Premium: 5 cards (CADIN + CCF + Debts + Protests + Queries)
+  // Standard: 3 cards (Debts + Protests + Queries)
+  const gridCols = isCorporate ? "md:grid-cols-6" : isPremium ? "md:grid-cols-5" : "md:grid-cols-3";
 
   return (
     <motion.div
@@ -225,8 +258,19 @@ function QuickStats({ summary, isPremium = false }: { summary: FinancialSummary;
       transition={{ delay: 0.3, duration: 0.6 }}
       className={`grid grid-cols-1 ${gridCols} gap-4`}
     >
-      {/* CADIN Card - Premium Only */}
-      {isPremium && (
+      {/* Contumacia Card - Corporate Only (Most Severe) */}
+      {isCorporate && (
+        <StatCard
+          icon={ShieldAlert}
+          label="Contumácia"
+          value={summary.totalContumacia ?? 0}
+          color={(summary.totalContumacia ?? 0) > 0 ? "rose" : "emerald"}
+          delay={0.32}
+        />
+      )}
+
+      {/* CADIN Card - Premium & Corporate */}
+      {(isPremium || isCorporate) && (
         <StatCard
           icon={Landmark}
           label="CADIN"
@@ -236,8 +280,8 @@ function QuickStats({ summary, isPremium = false }: { summary: FinancialSummary;
         />
       )}
 
-      {/* CCF Card - Premium Only */}
-      {isPremium && (
+      {/* CCF Card - Premium & Corporate */}
+      {(isPremium || isCorporate) && (
         <StatCard
           icon={FileX}
           label="CCF"
@@ -282,7 +326,7 @@ function StatCard({
   icon: React.ElementType;
   label: string;
   value: number;
-  color: "red" | "emerald" | "blue" | "purple" | "amber";
+  color: "red" | "emerald" | "blue" | "purple" | "amber" | "rose";
   delay: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -318,6 +362,12 @@ function StatCard({
       border: "border-amber-200 dark:border-amber-800",
       icon: "text-amber-600 dark:text-amber-400",
       text: "text-amber-900 dark:text-amber-100",
+    },
+    rose: {
+      bg: "from-rose-50 to-red-50 dark:from-rose-950/30 dark:to-red-950/30",
+      border: "border-rose-200 dark:border-rose-800",
+      icon: "text-rose-600 dark:text-rose-400",
+      text: "text-rose-900 dark:text-rose-100",
     },
   };
 
@@ -719,12 +769,125 @@ function CcfItem({ item, index }: { item: PremiumCreditReportResponse["ccf"][0];
 }
 
 // ============================================================================
+// CONTUMACIA TIMELINE (Habitual Bad Payer Indicators)
+// ============================================================================
+
+function ContumaciaTimeline({ contumacia }: { contumacia: CorporateCreditReportResponse["contumacia"] }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4, duration: 0.6 }}
+    >
+      <Card className="rounded-2xl border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50/50 to-red-50/50 dark:from-rose-950/20 dark:to-red-950/20 p-6 card-shadow">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 rounded-xl bg-rose-600 text-white">
+            <ShieldAlert className="w-6 h-6" strokeWidth={2.5} />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-rose-900 dark:text-rose-100">Contumácia</h2>
+            <p className="text-sm text-rose-700 dark:text-rose-300">
+              {contumacia.length} indicador{contumacia.length === 1 ? "" : "es"} de mau pagador habitual
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {contumacia.map((item, index) => (
+            <ContumaciaItem key={index} item={item} index={index} />
+          ))}
+        </div>
+      </Card>
+    </motion.div>
+  );
+}
+
+function ContumaciaItem({ item, index }: { item: CorporateCreditReportResponse["contumacia"][0]; index: number }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.5 + index * 0.1, duration: 0.4 }}
+      className="relative pl-8 pb-6 border-l-2 border-rose-300 dark:border-rose-700 last:border-transparent last:pb-0"
+    >
+      {/* Timeline dot with pulse effect for severity */}
+      <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-rose-600 ring-4 ring-rose-50 dark:ring-rose-950/50 animate-pulse" />
+
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full text-left group"
+      >
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <div className="flex-1">
+            <h4 className="font-bold text-rose-900 dark:text-rose-100 group-hover:text-rose-700 dark:group-hover:text-rose-300 transition-colors">
+              {item.reason}
+            </h4>
+            <p className="text-sm text-rose-700 dark:text-rose-400 mt-1 flex items-center gap-2">
+              <Building2 className="w-3.5 h-3.5" />
+              {item.agency}
+            </p>
+          </div>
+          <Badge
+            variant="destructive"
+            className="bg-rose-600 hover:bg-rose-700 text-white font-semibold px-3 py-1"
+          >
+            ALERTA
+          </Badge>
+        </div>
+
+        <motion.div
+          initial={false}
+          animate={{ rotate: isExpanded ? 180 : 0 }}
+          className="inline-flex items-center gap-1 text-sm text-rose-600 dark:text-rose-400 font-medium"
+        >
+          <ChevronDown className="w-4 h-4" />
+          {isExpanded ? "Ocultar" : "Ver"} detalhes
+        </motion.div>
+      </button>
+
+      <motion.div
+        initial={false}
+        animate={{
+          height: isExpanded ? "auto" : 0,
+          opacity: isExpanded ? 1 : 0,
+        }}
+        transition={{ duration: 0.3 }}
+        className="overflow-hidden"
+      >
+        <div className="mt-4 p-4 rounded-xl bg-white/50 dark:bg-black/20 space-y-3 border border-rose-200/50 dark:border-rose-800/50">
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+            <span className="text-rose-900 dark:text-rose-100">
+              <strong>Data de Registro:</strong> {formatDate(item.date)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <Building2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+            <span className="text-rose-900 dark:text-rose-100">
+              <strong>Órgão Registrador:</strong> {item.agency}
+            </span>
+          </div>
+          <div className="mt-3 p-3 rounded-lg bg-rose-100/50 dark:bg-rose-900/20 border-l-4 border-rose-600">
+            <p className="text-xs text-rose-800 dark:text-rose-200 font-medium">
+              ⚠️ Indicador de comportamento de inadimplência habitual
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ============================================================================
 // QUERIES HISTORY
 // ============================================================================
 
 function QueriesHistory({ queries }: { queries: CreditReportResponse["queries"] }) {
   const [showAll, setShowAll] = useState(false);
-  const displayedQueries = showAll ? queries : queries.slice(0, 5);
+  const visibleQueries = queries.slice(0, 5);
+  const hiddenQueries = queries.slice(5);
 
   return (
     <motion.div
@@ -744,7 +907,8 @@ function QueriesHistory({ queries }: { queries: CreditReportResponse["queries"] 
         </div>
 
         <div className="space-y-3">
-          {displayedQueries.map((query, index) => (
+          {/* Primeiros 5 itens sempre visíveis */}
+          {visibleQueries.map((query, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, x: -10 }}
@@ -759,15 +923,48 @@ function QueriesHistory({ queries }: { queries: CreditReportResponse["queries"] 
               <span className="text-sm text-muted-foreground">{formatDate(query.date)}</span>
             </motion.div>
           ))}
+
+          {/* Itens ocultos - usando max-height para animação suave */}
+          {hiddenQueries.length > 0 && (
+            <motion.div
+              initial={false}
+              animate={{
+                maxHeight: showAll ? hiddenQueries.length * 100 : 0,
+                opacity: showAll ? 1 : 0,
+              }}
+              transition={{
+                duration: 0.5,
+                ease: [0.4, 0, 0.2, 1],
+              }}
+              style={{ overflow: "hidden" }}
+            >
+              <div className="space-y-3 pt-3">
+                {hiddenQueries.map((query, index) => (
+                  <div
+                    key={index + 5}
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Search className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">{query.entity}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">{formatDate(query.date)}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
 
         {queries.length > 5 && (
-          <button
+          <motion.button
             onClick={() => setShowAll(!showAll)}
             className="mt-4 w-full py-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
           >
             {showAll ? "Ver menos" : `Ver todas (${queries.length})`}
-          </button>
+          </motion.button>
         )}
       </Card>
     </motion.div>
