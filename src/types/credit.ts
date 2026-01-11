@@ -33,6 +33,7 @@ export interface FinancialSummary {
   totalQueries: number;
   totalCadin?: number;
   totalCcf?: number;
+  totalContumacia?: number;
 }
 
 /**
@@ -130,4 +131,41 @@ export interface PremiumCreditReportResponse extends CreditReportResponse {
    * Will be empty array [] if no records found
    */
   ccf: CcfEntry[];
+}
+
+/**
+ * Contumacia Entry (Habitual Bad Payer Indicators)
+ */
+export interface ContumaciaEntry {
+  /** Reason/Description of contumacia */
+  reason: string;
+  /** Registration Date */
+  date: string;
+  /** Registering Agency */
+  agency: string;
+}
+
+/**
+ * Corporate Credit Report Response
+ * Extends standard response with CADIN, CCF, and Contumacia data
+ * Returned by the assess-corporate endpoint (CNPJ only)
+ */
+export interface CorporateCreditReportResponse extends CreditReportResponse {
+  /**
+   * CADIN: Federal Debt Registry
+   * Will be empty array [] if no records found
+   */
+  cadin: CadinEntry[];
+
+  /**
+   * CCF: Bad Checks (Cheques sem Fundo)
+   * Will be empty array [] if no records found
+   */
+  ccf: CcfEntry[];
+
+  /**
+   * Contumacia: Habitual Bad Payer Indicators
+   * Will be empty array [] if no records found
+   */
+  contumacia: ContumaciaEntry[];
 }

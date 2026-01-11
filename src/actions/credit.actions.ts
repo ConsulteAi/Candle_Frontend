@@ -6,7 +6,11 @@
  */
 
 import { creditService } from "@/services/credit.service";
-import { CreditReportResponse, PremiumCreditReportResponse } from "@/types/credit";
+import {
+  CreditReportResponse,
+  PremiumCreditReportResponse,
+  CorporateCreditReportResponse
+} from "@/types/credit";
 import { isApiError, getErrorMessage } from "@/lib/api/errors";
 
 export interface AssessmentState {
@@ -18,6 +22,12 @@ export interface AssessmentState {
 export interface PremiumAssessmentState {
   status: "idle" | "loading" | "success" | "error";
   data?: PremiumCreditReportResponse;
+  error?: string;
+}
+
+export interface CorporateAssessmentState {
+  status: "idle" | "loading" | "success" | "error";
+  data?: CorporateCreditReportResponse;
   error?: string;
 }
 
@@ -94,6 +104,45 @@ export async function assessPremiumCreditAction(
       error: isApiError(error)
         ? getErrorMessage(error)
         : "Erro ao consultar documento. Tente novamente.",
+    };
+  }
+}
+
+/**
+ * Server Action to assess Corporate credit for CNPJ
+ * Executes on the server, keeping API endpoints and sensitive logic secure
+ * Returns corporate report with CADIN, CCF, and Contumacia data
+ */
+export async function assessCorporateAction(
+  prevState: CorporateAssessmentState,
+  formData: FormData
+): Promise<CorporateAssessmentState> {
+  try {
+    const cnpj = formData.get("cnpj") as string;
+
+    if (!cnpj) {
+      return {
+        status: "error",
+        error: "CNPJ é obrigatório",
+      };
+    }
+
+    // Call service on server-side
+    // This keeps the API endpoint URL hidden from the client
+    const result = await creditService.assessCorporate(cnpj);
+
+    return {
+      status: "success",
+      data: result,
+    };
+  } catch (error) {
+    console.error("Error in assessCorporateAction:", error);
+
+    return {
+      status: "error",
+      error: isApiError(error)
+        ? getErrorMessage(error)
+        : "Erro ao consultar CNPJ. Tente novamente.",
     };
   }
 }

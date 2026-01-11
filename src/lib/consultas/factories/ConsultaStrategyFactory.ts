@@ -11,6 +11,7 @@
 import { ConsultaStrategy } from "../strategies/ConsultaStrategy";
 import { CpfCreditStrategy } from "../strategies/CpfCreditStrategy";
 import { PremiumCreditStrategy } from "../strategies/PremiumCreditStrategy";
+import { CorporateCreditStrategy } from "../strategies/CorporateCreditStrategy";
 
 /**
  * Factory for creating consultation strategies
@@ -29,9 +30,9 @@ export class ConsultaStrategyFactory {
     // Register all available strategies
     this.register(new CpfCreditStrategy());
     this.register(new PremiumCreditStrategy());
+    this.register(new CorporateCreditStrategy());
 
     // TODO: Add more strategies as they are implemented
-    // this.register(new CnpjCreditStrategy());
     // this.register(new VehicleConsultationStrategy());
     // etc.
 

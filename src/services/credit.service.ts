@@ -6,7 +6,11 @@
 
 import { IHttpClient, httpClient } from "@/lib/api/client";
 import { ValidationError } from "@/lib/api/errors";
-import { CreditReportResponse, PremiumCreditReportResponse } from "@/types/credit";
+import {
+  CreditReportResponse,
+  PremiumCreditReportResponse,
+  CorporateCreditReportResponse
+} from "@/types/credit";
 
 /**
  * Credit Service Class
@@ -75,6 +79,31 @@ export class CreditService {
     // Make API request to premium endpoint
     return this.client.get<PremiumCreditReportResponse>(
       `/credit/assess-premium/${cleanDocument}`
+    );
+  }
+
+  /**
+   * Assess corporate credit for a CNPJ
+   * @param cnpj - CNPJ number (can be formatted or not)
+   * @returns Promise with corporate credit report data (includes CADIN, CCF, and Contumacia)
+   * @throws ValidationError if CNPJ is invalid
+   */
+  async assessCorporate(cnpj: string): Promise<CorporateCreditReportResponse> {
+    // Clean document (remove all non-numeric characters)
+    const cleanCnpj = this.cleanDocument(cnpj);
+
+    // Validate CNPJ (only accepts 14 digits)
+    if (!this.isValidCnpjFormat(cleanCnpj)) {
+      throw new ValidationError("CNPJ inválido. Deve conter 14 dígitos.");
+    }
+
+    if (!this.isValidCnpj(cleanCnpj)) {
+      throw new ValidationError("CNPJ inválido. Verifique os dígitos.");
+    }
+
+    // Make API request to corporate endpoint
+    return this.client.get<CorporateCreditReportResponse>(
+      `/credit/assess-corporate/${cleanCnpj}`
     );
   }
 

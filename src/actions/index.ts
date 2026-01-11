@@ -6,6 +6,8 @@
 export {
   assessCreditAction,
   assessPremiumCreditAction,
+  assessCorporateAction,
   type AssessmentState,
-  type PremiumAssessmentState
+  type PremiumAssessmentState,
+  type CorporateAssessmentState
 } from "./credit.actions";
