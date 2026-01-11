@@ -95,3 +95,5 @@ sketch
 .gemini
 
 .env
+
+*.md

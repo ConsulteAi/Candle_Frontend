@@ -14,8 +14,8 @@ import {
   CreditReport,
 } from "@/components/credito";
 import { Button } from "@/components/ui/button";
-import { CreditReportResponse } from "@/types/credit";
-import { assessCreditAction } from "@/actions";
+import { CreditReportResponse, PremiumCreditReportResponse } from "@/types/credit";
+import { assessCreditAction, assessPremiumCreditAction } from "@/actions";
 
 interface ConsultaPageContentProps {
   slug: string;
@@ -23,7 +23,7 @@ interface ConsultaPageContentProps {
 
 export default function ConsultaPageContent({ slug }: ConsultaPageContentProps) {
   const consulta = getConsultaBySlug(slug);
-  const [result, setResult] = useState<CreditReportResponse | null>(null);
+  const [result, setResult] = useState<CreditReportResponse | PremiumCreditReportResponse | null>(null);
 
   if (!consulta) {
     return (
@@ -42,7 +42,7 @@ export default function ConsultaPageContent({ slug }: ConsultaPageContentProps) 
     );
   }
 
-  const handleResult = (data: CreditReportResponse) => {
+  const handleResult = (data: CreditReportResponse | PremiumCreditReportResponse) => {
     setResult(data);
     // Scroll to results
     setTimeout(() => {
@@ -86,7 +86,8 @@ export default function ConsultaPageContent({ slug }: ConsultaPageContentProps) 
                         tipo={consulta.tipo}
                         slug={slug}
                         onResult={handleResult}
-                        serverAction={assessCreditAction}
+                        serverAction={slug === "consulta-completa-premium" ? undefined : assessCreditAction}
+                        premiumServerAction={slug === "consulta-completa-premium" ? assessPremiumCreditAction : undefined}
                       />
                     </div>
 

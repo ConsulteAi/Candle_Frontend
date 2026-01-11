@@ -6,7 +6,7 @@
 
 import { IHttpClient, httpClient } from "@/lib/api/client";
 import { ValidationError } from "@/lib/api/errors";
-import { CreditReportResponse } from "@/types/credit";
+import { CreditReportResponse, PremiumCreditReportResponse } from "@/types/credit";
 
 /**
  * Credit Service Class
@@ -40,6 +40,45 @@ export class CreditService {
   }
 
   /**
+   * Assess premium credit for a CPF or CNPJ
+   * @param document - CPF (11 digits) or CNPJ (14 digits) number (can be formatted or not)
+   * @returns Promise with premium credit report data (includes CADIN and CCF)
+   * @throws ValidationError if document is invalid
+   */
+  async assessPremium(document: string): Promise<PremiumCreditReportResponse> {
+    // Clean document (remove all non-numeric characters)
+    const cleanDocument = this.cleanDocument(document);
+
+    // Validate based on length
+    if (cleanDocument.length === 11) {
+      // CPF validation
+      if (!this.isValidCpfFormat(cleanDocument)) {
+        throw new ValidationError("CPF inválido. Deve conter 11 dígitos.");
+      }
+      if (!this.isValidCpf(cleanDocument)) {
+        throw new ValidationError("CPF inválido. Verifique os dígitos.");
+      }
+    } else if (cleanDocument.length === 14) {
+      // CNPJ validation
+      if (!this.isValidCnpjFormat(cleanDocument)) {
+        throw new ValidationError("CNPJ inválido. Deve conter 14 dígitos.");
+      }
+      if (!this.isValidCnpj(cleanDocument)) {
+        throw new ValidationError("CNPJ inválido. Verifique os dígitos.");
+      }
+    } else {
+      throw new ValidationError(
+        "Documento inválido. Deve ser um CPF (11 dígitos) ou CNPJ (14 dígitos)."
+      );
+    }
+
+    // Make API request to premium endpoint
+    return this.client.get<PremiumCreditReportResponse>(
+      `/credit/assess-premium/${cleanDocument}`
+    );
+  }
+
+  /**
    * Remove all non-numeric characters from CPF
    */
   private cleanCpf(cpf: string): string {
@@ -47,10 +86,24 @@ export class CreditService {
   }
 
   /**
+   * Remove all non-numeric characters from any document (CPF or CNPJ)
+   */
+  private cleanDocument(document: string): string {
+    return document.replace(/\D/g, "");
+  }
+
+  /**
    * Check if CPF has valid format (11 digits)
    */
   private isValidCpfFormat(cpf: string): boolean {
     return /^\d{11}$/.test(cpf);
+  }
+
+  /**
+   * Check if CNPJ has valid format (14 digits)
+   */
+  private isValidCnpjFormat(cnpj: string): boolean {
+    return /^\d{14}$/.test(cnpj);
   }
 
   /**
@@ -82,6 +135,43 @@ export class CreditService {
     checkDigit = 11 - (sum % 11);
     if (checkDigit >= 10) checkDigit = 0;
     if (checkDigit !== parseInt(cpf.charAt(10))) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Validate CNPJ using check digits algorithm
+   * Based on official CNPJ validation rules
+   */
+  private isValidCnpj(cnpj: string): boolean {
+    // Check if all digits are the same (invalid CNPJs like 11.111.111/1111-11)
+    if (/^(\d)\1{13}$/.test(cnpj)) {
+      return false;
+    }
+
+    // Validate first check digit
+    let sum = 0;
+    let weight = 2;
+    for (let i = 11; i >= 0; i--) {
+      sum += parseInt(cnpj.charAt(i)) * weight;
+      weight = weight === 9 ? 2 : weight + 1;
+    }
+    let checkDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    if (checkDigit !== parseInt(cnpj.charAt(12))) {
+      return false;
+    }
+
+    // Validate second check digit
+    sum = 0;
+    weight = 2;
+    for (let i = 12; i >= 0; i--) {
+      sum += parseInt(cnpj.charAt(i)) * weight;
+      weight = weight === 9 ? 2 : weight + 1;
+    }
+    checkDigit = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    if (checkDigit !== parseInt(cnpj.charAt(13))) {
       return false;
     }
 

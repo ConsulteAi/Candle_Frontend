@@ -86,3 +86,46 @@ export interface CreditReportResponse {
   /** History of Queries (Who checked this CPF) */
   queries: Query[];
 }
+
+/**
+ * CADIN Entry (Federal Debt Registry)
+ */
+export interface CadinEntry {
+  /** Entity Name or Description */
+  literal: string;
+  /** Debt Value */
+  value: string;
+  /** Registration Date */
+  date: string;
+}
+
+/**
+ * CCF Entry (Bad Checks - Cheques sem Fundo)
+ */
+export interface CcfEntry {
+  /** Number of bad checks */
+  quantity: number;
+  /** Origin: 'BACEN' or 'VAREJO' */
+  origin: string;
+  /** Date of last occurrence (or empty string) */
+  date: string;
+}
+
+/**
+ * Premium Credit Report Response
+ * Extends standard response with CADIN and CCF data
+ * Returned by the assess-premium endpoint
+ */
+export interface PremiumCreditReportResponse extends CreditReportResponse {
+  /**
+   * CADIN: Federal Debt Registry
+   * Will be empty array [] if no records found
+   */
+  cadin: CadinEntry[];
+
+  /**
+   * CCF: Bad Checks (Cheques sem Fundo)
+   * Will be empty array [] if no records found
+   */
+  ccf: CcfEntry[];
+}
