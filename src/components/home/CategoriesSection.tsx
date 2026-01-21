@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { getOrderedCategories } from "@/constants/query-categories";
 import { CategoryCard } from "@/components/query";
-import { useQueryTypes } from "@/hooks/useQueryTypes";
+import { useCategoryCountsSWR } from "@/hooks/useCategoryCountsSWR";
 import { Loader2 } from "lucide-react";
 
 const containerVariants = {
@@ -31,18 +30,7 @@ const itemVariants = {
 };
 
 export default function CategoriesSection() {
-  const { getCountsByCategory, isLoading } = useQueryTypes();
-  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    const loadCategoryCounts = async () => {
-      const counts = await getCountsByCategory();
-      setCategoryCounts(counts || {});
-    };
-
-    loadCategoryCounts();
-  }, []);
-
+  const { counts, isLoading } = useCategoryCountsSWR();
   const categories = getOrderedCategories();
 
   return (
@@ -63,28 +51,23 @@ export default function CategoriesSection() {
           </p>
         </motion.div>
 
-        {isLoading && categoryCounts && Object.keys(categoryCounts).length === 0 ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          </div>
-        ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto"
-          >
-            {categories.map((category) => (
-              <motion.div key={category.slug} variants={itemVariants}>
-                <CategoryCard
-                  category={category}
-                  queryCount={categoryCounts[category.category] || 0}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto"
+        >
+          {categories.map((category) => (
+            <motion.div key={category.slug} variants={itemVariants}>
+              <CategoryCard
+                category={category}
+                queryCount={counts[category.category] || 0}
+                isLoading={isLoading}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

@@ -24,7 +24,7 @@ export interface QueryType {
   code: string; // ex: "CPF_BASICO", "CNPJ_COMPLETO"
   name: string; // ex: "Consulta CPF Básica"
   description: string | null;
-  category: QueryCategory;
+  category: QueryCategory[]; // Array de categorias
   price: number; // Preço normal
   cachedPrice: number; // Preço quando vem do cache
   cacheTtlMinutes: number;
@@ -71,7 +71,7 @@ export interface QueryHistoryEntry {
   queryType: {
     code: string;
     name: string;
-    category: QueryCategory;
+    category: QueryCategory[];
     description: string | null;
   };
 }

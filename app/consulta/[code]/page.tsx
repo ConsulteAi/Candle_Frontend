@@ -71,8 +71,11 @@ export default function QueryExecutionPage() {
     );
   }
 
-  const categoryConfig = getCategoryConfig(queryType.category);
-  const IconComponent = (Icons[categoryConfig.icon as keyof typeof Icons] || Icons.FileText) as any;
+  const mainCategory = queryType.category && queryType.category.length > 0 ? queryType.category[0] : null;
+  const categoryConfig = mainCategory ? getCategoryConfig(mainCategory) : null;
+  const IconComponent = (categoryConfig?.icon && Icons[categoryConfig.icon as keyof typeof Icons] ? Icons[categoryConfig.icon as keyof typeof Icons] : Icons.FileText) as React.ElementType;
+
+  if (!categoryConfig) return null;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-50 to-white">

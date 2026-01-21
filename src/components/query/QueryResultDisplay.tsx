@@ -17,7 +17,7 @@ export function QueryResultDisplay({ query, className }: QueryResultDisplayProps
   const [copied, setCopied] = useState(false);
 
   // For CREDIT category, use existing CreditReportDisplay
-  if (query.queryType.category === QueryCategory.CREDIT) {
+  if (query.queryType.category.includes(QueryCategory.CREDIT)) {
     return (
       <div className={className}>
         <CreditReportDisplay report={query.result} />

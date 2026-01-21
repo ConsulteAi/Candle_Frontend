@@ -156,18 +156,25 @@ export function getCategoriaBySlug(slug: string): CategoriaConsulta | undefined 
 }
 
 // Adapter to convert legacy Consulta to QueryType
+// Adapter to convert legacy Consulta to QueryType
 export const queriesMock: QueryType[] = consultasCredito.map((c) => {
-  let category = QueryCategory.CREDIT;
-  if (c.tipo === "cpf") category = QueryCategory.PERSON;
-  if (c.tipo === "cnpj") category = QueryCategory.COMPANY;
-  if (c.tipo === "ambos") category = QueryCategory.CREDIT; // Fallback or CREDIT
+  let categories: QueryCategory[] = [QueryCategory.CREDIT];
+  
+  if (c.tipo === "cpf") {
+    categories.push(QueryCategory.PERSON);
+  } else if (c.tipo === "cnpj") {
+    categories.push(QueryCategory.COMPANY);
+  } else if (c.tipo === "ambos") {
+    categories.push(QueryCategory.PERSON);
+    categories.push(QueryCategory.COMPANY);
+  }
 
   return {
     id: c.id,
     code: c.slug, // Mapping slug to code
     name: c.nome,
     description: c.descricao,
-    category,
+    category: categories,
     price: 19.90, // Mock price
     cachedPrice: 9.90, // Mock cached price
     cacheTtlMinutes: 30,

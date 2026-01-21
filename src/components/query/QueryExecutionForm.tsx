@@ -9,6 +9,7 @@ import type { QueryType, ExecuteQueryResponse } from '@/types/query';
 import { ValidationService } from '@/lib/consultas/services/ValidationService';
 import { useQueryExecution } from '@/hooks/useQueryExecution';
 import { useBalance } from '@/hooks/useBalance';
+import { QueryCategory } from '@/types/query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -56,7 +57,7 @@ export function QueryExecutionForm({
   // Validate input based on category
   const validateInput = (input: string): { isValid: boolean; error?: string } => {
     // For CREDIT category, validate CPF/CNPJ
-    if (queryType.category === 'CREDIT') {
+    if (queryType.category.includes(QueryCategory.CREDIT)) {
       const cleaned = ValidationService.cleanDocument(input);
       const docType = ValidationService.getDocumentType(cleaned);
 
@@ -113,13 +114,13 @@ export function QueryExecutionForm({
       {/* Input field */}
       <div className="space-y-2">
         <Label htmlFor="input" className="text-sm font-medium text-gray-700">
-          {queryType.category === 'CREDIT' ? 'CPF ou CNPJ' : 'Documento/Informação'}
+          {queryType.category.includes(QueryCategory.CREDIT) ? 'CPF ou CNPJ' : 'Documento/Informação'}
         </Label>
         <Input
           id="input"
           {...register('input')}
           placeholder={
-            queryType.category === 'CREDIT'
+            queryType.category.includes(QueryCategory.CREDIT)
               ? 'Digite o CPF ou CNPJ'
               : 'Digite a informação para consulta'
           }

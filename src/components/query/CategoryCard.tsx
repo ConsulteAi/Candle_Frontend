@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 interface CategoryCardProps {
   category: CategoryConfig;
   queryCount?: number;
+  isLoading?: boolean;
   className?: string;
 }
 
@@ -22,7 +23,7 @@ const colorClasses = {
   indigo: 'from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700',
 } as const;
 
-export function CategoryCard({ category, queryCount = 0, className }: CategoryCardProps) {
+export function CategoryCard({ category, queryCount = 0, isLoading = false, className }: CategoryCardProps) {
   const IconComponent = Icons[category.icon as keyof typeof Icons] as React.ElementType;
   const colorClass = colorClasses[category.color as keyof typeof colorClasses] || colorClasses.blue;
 
@@ -75,7 +76,9 @@ export function CategoryCard({ category, queryCount = 0, className }: CategoryCa
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <span className="text-sm text-gray-500">
-            {category.enabled ? `${queryCount} consultas disponíveis` : 'Novidades em breve'}
+            {category.enabled 
+              ? (isLoading ? "Carregando..." : `${queryCount} consultas disponíveis`)
+              : 'Novidades em breve'}
           </span>
 
           {category.enabled && (

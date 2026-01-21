@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useQueryExecution } from '@/hooks/useQueryExecution';
 import { QueryResultDisplay } from '@/components/query';
 import { Card, Button, Badge } from '@/components/candle';
-import type { QueryHistoryEntry, QueryCategory } from '@/types/query';
+import { QueryCategory, type QueryHistoryEntry } from '@/types/query';
 import { getCategoryConfig } from '@/constants/query-categories';
 
 export default function HistoricoPage() {
@@ -36,7 +36,7 @@ export default function HistoricoPage() {
       setFilteredQueries(queries);
     } else {
       setFilteredQueries(
-        queries.filter((q) => q.queryType.category === categoryFilter)
+        queries.filter((q) => q.queryType.category.includes(categoryFilter as QueryCategory))
       );
     }
   }, [categoryFilter, queries]);
@@ -177,7 +177,8 @@ export default function HistoricoPage() {
               </thead>
               <tbody>
                 {filteredQueries.map((query) => {
-                  const categoryConfig = getCategoryConfig(query.queryType.category);
+                  const mainCategory = query.queryType.category.length > 0 ? query.queryType.category[0] : QueryCategory.OTHER;
+                  const categoryConfig = getCategoryConfig(mainCategory);
 
                   return (
                     <tr

@@ -20,7 +20,7 @@ export class QueryTypesService {
    */
   static async getQueryTypesByCategory(category: QueryCategory): Promise<QueryType[]> {
     const allTypes = await this.getAllQueryTypes();
-    return allTypes.filter((qt) => qt.category === category && qt.isActive);
+    return allTypes.filter((qt) => qt.category.includes(category) && qt.isActive);
   }
 
   /**
@@ -49,10 +49,12 @@ export class QueryTypesService {
 
     allTypes.forEach((qt) => {
       if (qt.isActive) {
-        if (!grouped[qt.category]) {
-          grouped[qt.category] = [];
-        }
-        grouped[qt.category].push(qt);
+        qt.category.forEach((cat) => {
+          if (!grouped[cat]) {
+            grouped[cat] = [];
+          }
+          grouped[cat].push(qt);
+        });
       }
     });
 

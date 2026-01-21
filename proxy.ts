@@ -39,7 +39,7 @@ export function proxy(request: NextRequest) {
 
   // If trying to access auth pages while authenticated, redirect to dashboard
   if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   // If trying to access protected route without authentication
