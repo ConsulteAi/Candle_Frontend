@@ -33,7 +33,7 @@ export const CATEGORY_CONFIGS: Record<QueryCategory, CategoryConfig> = {
     name: 'Empresarial',
     description: 'Consultas de CNPJ, sócios e situação cadastral',
     icon: 'Building2',
-    enabled: false, // Em breve
+    enabled: true, // Em breve
     color: 'purple',
   },
   [QueryCategory.OTHER]: {
@@ -51,7 +51,7 @@ export const CATEGORY_CONFIGS: Record<QueryCategory, CategoryConfig> = {
     name: 'Pessoa Física',
     description: 'Dados cadastrais e informações pessoais',
     icon: 'User',
-    enabled: false,
+    enabled: true,
     color: 'cyan',
   },
   [QueryCategory.PHONE]: {
@@ -79,13 +79,13 @@ export const CATEGORY_CONFIGS: Record<QueryCategory, CategoryConfig> = {
  */
 export function getOrderedCategories(): CategoryConfig[] {
   const order: QueryCategory[] = [
-    QueryCategory.CREDIT,
-    QueryCategory.VEHICLE,
-    QueryCategory.OTHER,
-    QueryCategory.COMPANY,
+    // QueryCategory.CREDIT,
+    // QueryCategory.VEHICLE,
+    // QueryCategory.OTHER,
     QueryCategory.PERSON,
-    QueryCategory.PHONE,
-    QueryCategory.ADDRESS,
+    QueryCategory.COMPANY,
+    // QueryCategory.PHONE,
+    // QueryCategory.ADDRESS,
   ];
 
   return order.map((cat) => CATEGORY_CONFIGS[cat]);

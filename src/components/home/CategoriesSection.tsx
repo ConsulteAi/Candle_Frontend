@@ -31,20 +31,13 @@ const itemVariants = {
 };
 
 export default function CategoriesSection() {
-  const { groupByCategory, isLoading } = useQueryTypes();
+  const { getCountsByCategory, isLoading } = useQueryTypes();
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const loadCategoryCounts = async () => {
-      const grouped = await groupByCategory();
-
-      // Count queries per category
-      const counts: Record<string, number> = {};
-      Object.entries(grouped).forEach(([category, queries]) => {
-        counts[category] = queries.length;
-      });
-
-      setCategoryCounts(counts);
+      const counts = await getCountsByCategory();
+      setCategoryCounts(counts || {});
     };
 
     loadCategoryCounts();

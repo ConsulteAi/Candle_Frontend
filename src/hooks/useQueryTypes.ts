@@ -6,6 +6,7 @@ import {
   getQueryTypesByCategoryAction,
   getQueryTypeByCodeAction,
   groupByCategoryAction,
+  getCountsByCategoryAction,
 } from '@/actions/query-types.actions';
 import type { QueryType, QueryCategory } from '@/types/query';
 import { toast } from 'sonner';
@@ -93,11 +94,32 @@ export function useQueryTypes() {
     }
   };
 
+  const getCountsByCategory = async (): Promise<Record<QueryCategory, number>> => {
+    setIsLoading(true);
+    try {
+      const result = await getCountsByCategoryAction();
+
+      if (!result.success || !result.data) {
+        // Silently fail or log error, as this is often for UI badges
+        console.error(result.error || 'Erro ao contar consultas');
+        return {} as Record<QueryCategory, number>;
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error('Error counting query types:', error);
+      return {} as Record<QueryCategory, number>;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     getAllTypes,
     getByCategory,
     getByCode,
     groupByCategory,
+    getCountsByCategory,
     isLoading,
   };
 }

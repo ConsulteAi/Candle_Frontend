@@ -1,34 +1,49 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, Suspense, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Loader2, CreditCard } from 'lucide-react';
 import { Header, Footer } from '@/components/layout';
 import { PageHeader } from '@/components/shared';
 import { QueryList, QueryFilters, type FilterType } from '@/components/query';
-import { queriesMock } from '@/lib/consultas';
-import { QueryCategory } from '@/types/query';
+import { QueryCategory, type QueryType } from '@/types/query';
+import { useQueryTypes } from '@/hooks/useQueryTypes';
+import { getCategoryBySlug } from '@/constants/query-categories';
 
 function ConsultaPageContent() {
   const searchParams = useSearchParams();
-  // Default to showing all or specific logic based on params in future
+  const { getAllTypes, isLoading } = useQueryTypes();
+  
   const [filter, setFilter] = useState<FilterType>("ALL");
   const [search, setSearch] = useState("");
-  const router = useRouter();
+  const [queries, setQueries] = useState<QueryType[]>([]);
 
-  // Filter logic adapted from CreditoPageContent
-  const filteredQueries = queriesMock.filter((query) => {
+  useEffect(() => {
+    const init = async () => {
+      // 1. Fetch all queries
+      const data = await getAllTypes();
+      setQueries(data);
+
+      // 2. Set filter from URL
+      const categorySlug = searchParams.get('category');
+      if (categorySlug) {
+        const categoryConfig = getCategoryBySlug(categorySlug);
+        if (categoryConfig) {
+          setFilter(categoryConfig.category);
+        }
+      }
+    };
+
+    init();
+  }, []); // Run once on mount
+
+  const filteredQueries = queries.filter((query) => {
     let matchType = false;
     
-    // Map FilterType to QueryCategory logic
     if (filter === "ALL") {
       matchType = true;
-    } else if (filter === QueryCategory.PERSON) {
-      matchType = query.category === QueryCategory.PERSON || query.category === QueryCategory.CREDIT;
-    } else if (filter === QueryCategory.COMPANY) {
-      matchType = query.category === QueryCategory.COMPANY || query.category === QueryCategory.CREDIT;
-    } else if (filter === "BOTH") {
-      matchType = query.category === QueryCategory.CREDIT; // Assuming CREDIT covers both or specific "BOTH" type if exists
+    } else {
+      matchType = query.category === filter;
     }
 
     const matchSearch =
@@ -66,7 +81,13 @@ function ConsultaPageContent() {
 
         <section className="py-12">
           <div className="container max-w-7xl mx-auto px-4">
-             <QueryList queries={filteredQueries} />
+            {isLoading && queries.length === 0 ? (
+               <div className="flex items-center justify-center py-12">
+                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+               </div>
+            ) : (
+               <QueryList queries={filteredQueries} />
+            )}
           </div>
         </section>
       </main>

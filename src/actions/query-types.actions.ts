@@ -54,3 +54,15 @@ export async function groupByCategoryAction(): Promise<
     return { success: false, error: 'Erro ao agrupar consultas' };
   }
 }
+
+export async function getCountsByCategoryAction(): Promise<
+  ActionState<Record<QueryCategory, number>>
+> {
+  try {
+    const data = await QueryTypesService.getCountsByCategory();
+    return { success: true, data };
+  } catch (error: any) {
+    console.error('Get counts by category error:', error);
+    return { success: false, error: 'Erro ao contar consultas por categoria' };
+  }
+}

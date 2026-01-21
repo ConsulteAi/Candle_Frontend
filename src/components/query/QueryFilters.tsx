@@ -6,11 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { QueryCategory } from "@/types/query";
 
-export type FilterType =
-  | "ALL"
-  | QueryCategory.PERSON
-  | QueryCategory.COMPANY
-  | "BOTH";
+export type FilterType = "ALL" | QueryCategory;
 
 interface QueryFiltersProps {
   filter: FilterType;
@@ -43,6 +39,14 @@ export function QueryFilters({
               className="rounded-full"
             >
               Todos
+            </Button>
+            <Button
+              variant={filter === QueryCategory.CREDIT ? "default" : "outline"}
+              size="sm"
+              onClick={() => onFilterChange(QueryCategory.CREDIT)}
+              className="rounded-full"
+            >
+              Crédito
             </Button>
             <Button
               variant={filter === QueryCategory.PERSON ? "default" : "outline"}

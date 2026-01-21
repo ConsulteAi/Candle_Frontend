@@ -58,4 +58,12 @@ export class QueryTypesService {
 
     return grouped;
   }
+
+  /**
+   * Contar query types por categoria (endpoint otimizado)
+   */
+  static async getCountsByCategory(): Promise<Record<QueryCategory, number>> {
+    const response = await httpClient.get<Record<QueryCategory, number>>('/query-types/counts-by-category');
+    return response.data;
+  }
 }
