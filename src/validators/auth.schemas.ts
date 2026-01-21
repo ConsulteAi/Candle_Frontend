@@ -63,6 +63,9 @@ export const registerSchema = z.object({
       (val) => !val || /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(val) || /^\d{14}$/.test(val),
       'CNPJ inválido'
     ),
+  terms: z.boolean().refine((val) => val === true, {
+    message: 'Você precisa concordar com os termos de uso',
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'As senhas não coincidem',
   path: ['confirmPassword'],

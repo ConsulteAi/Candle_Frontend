@@ -8,6 +8,7 @@
 import { cookies } from 'next/headers';
 import { AuthService } from '@/services/auth.service';
 import type { LoginDTO, RegisterDTO, AuthResponse, User } from '@/types';
+import { sanitizeUser } from '@/lib/utils';
 
 // Estado de retorno genérico
 export interface ActionState<T = unknown> {
@@ -25,6 +26,21 @@ export async function loginAction(
 ): Promise<ActionState<AuthResponse>> {
   try {
     const data = await AuthService.login(credentials);
+
+    // Se o login retornou token mas não user, buscamos o user
+    if (data.accessToken && !data.user) {
+        try {
+            const user = await AuthService.getMe(data.accessToken);
+            data.user = user;
+        } catch (error) {
+            console.error('Failed to fetch user details after login:', error);
+        }
+    }
+
+    // Sanitize user data
+    if (data.user) {
+      data.user = sanitizeUser(data.user);
+    }
 
     // Set httpOnly cookies for authentication
     const cookieStore = await cookies();
@@ -79,7 +95,32 @@ export async function registerAction(
   userData: RegisterDTO
 ): Promise<ActionState<AuthResponse>> {
   try {
-    const data = await AuthService.register(userData);
+    let data = await AuthService.register(userData);
+
+    // Se o backend não retornar tokens no registro (apenas o usuário), fazemos login automático
+    if (!data.accessToken) {
+      console.log('Registration successful, performing auto-login...');
+      data = await AuthService.login({
+        email: userData.email,
+        password: userData.password,
+      });
+    }
+
+    // Se o login (direto ou via registro) retornou token mas não user, buscamos o user
+    if (data.accessToken && !data.user) {
+        try {
+            const user = await AuthService.getMe(data.accessToken);
+            data.user = user;
+        } catch (error) {
+            console.error('Failed to fetch user details after login:', error);
+            // Optionally fail or continue with partial data
+        }
+    }
+
+    // Sanitize user data
+    if (data.user) {
+      data.user = sanitizeUser(data.user);
+    }
 
     // Set httpOnly cookies for authentication
     const cookieStore = await cookies();
@@ -135,7 +176,7 @@ export async function getMeAction(): Promise<ActionState<User>> {
     const data = await AuthService.getMe();
     return {
       success: true,
-      data,
+      data: sanitizeUser(data),
     };
   } catch (error: any) {
     console.error('GetMe error:', error);
@@ -215,7 +256,7 @@ export async function updateProfileAction(
     const updatedUser = await AuthService.updateProfile(data);
     return {
       success: true,
-      data: updatedUser,
+      data: sanitizeUser(updatedUser),
     };
   } catch (error: any) {
     console.error('Update profile error:', error);

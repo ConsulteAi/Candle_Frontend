@@ -2,15 +2,31 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Search, Menu, X, CreditCard, User, LogIn } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Search, Menu, X, CreditCard, User, LogIn, LogOut, Settings, Wallet } from 'lucide-react';
 import { useState } from 'react';
-import { useIsAuthenticated, useUser } from '@/store/authStore';
-import { Button } from '@/components/candle';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isAuthenticated = useIsAuthenticated();
-  const user = useUser();
+  const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  const firstName = user?.name?.trim().split(' ')[0] || 'Usuário';
 
   return (
     <motion.header
@@ -49,30 +65,58 @@ export function Header() {
           </Link>
 
           {isAuthenticated ? (
-            <>
-              <Link href="/dashboard">
-                <motion.div
-                  className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
-                  whileHover={{ y: -1 }}
-                >
-                  <User className="w-4 h-4" />
-                  Dashboard
-                </motion.div>
-              </Link>
-              <div className="flex items-center gap-3 ml-2">
-                <div className="px-3 py-1.5 bg-blue-50 rounded-lg">
-                  <p className="text-xs font-semibold text-blue-600">
-                    R$ {user?.balance.toFixed(2) || "0,00"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
-                  <User className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-900">
-                    {user?.name?.split(" ")[0] || "Usuário"}
+            <div className="flex items-center gap-4">
+               {/* Balance Badge */}
+               <motion.div 
+                 whileHover={{ scale: 1.05 }}
+                 className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/50 border border-blue-100 rounded-full"
+               >
+                  <Wallet className="w-3.5 h-3.5 text-blue-600" />
+                  <span className="text-xs font-bold text-blue-600">
+                    R$ {user?.balance?.toFixed(2) || "0,00"}
                   </span>
-                </div>
-              </div>
-            </>
+               </motion.div>
+
+               {/* User Dropdown */}
+               <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 rounded-xl px-2 hover:bg-gray-100 flex items-center gap-2 group">
+                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                      Olá, {firstName}
+                    </span>
+                    <Avatar className="h-8 w-8 border-2 border-white shadow-sm ring-1 ring-gray-100 group-hover:ring-blue-100 transition-all">
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xs">
+                        {firstName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => router.push('/dashboard')} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Configurações</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600 cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sair</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ) : (
             <div className="flex items-center gap-3 ml-2">
               <Link href="/login">
@@ -82,7 +126,7 @@ export function Header() {
                 </Button>
               </Link>
               <Link href="/register">
-                <Button variant="primary" size="sm">
+                <Button className="bg-gradient-primary text-white border-0 hover:opacity-90 transition-opacity" size="sm">
                   Criar Conta
                 </Button>
               </Link>
@@ -133,15 +177,36 @@ export function Header() {
                 <User className="w-4 h-4" />
                 Dashboard
               </Link>
+              
+               <button
+                onClick={() => {
+                  handleLogout();
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors text-left"
+              >
+                <LogOut className="w-4 h-4" />
+                Sair
+              </button>
+
               <div className="pt-2 border-t border-gray-200">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs text-gray-600">Saldo</span>
                   <span className="text-sm font-semibold text-blue-600">
-                    R$ {user?.balance.toFixed(2) || "0,00"}
+                    R$ {user?.balance?.toFixed(2) || "0,00"}
                   </span>
                 </div>
-                <p className="text-sm text-gray-900">{user?.name}</p>
-                <p className="text-xs text-gray-600">{user?.email}</p>
+                <div className="flex items-center gap-2">
+                   <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-blue-100 text-blue-700 text-xs">
+                        {firstName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                      <p className="text-xs text-gray-600">{user?.email}</p>
+                    </div>
+                </div>
               </div>
             </>
           ) : (
@@ -153,7 +218,7 @@ export function Header() {
                 </Button>
               </Link>
               <Link href="/register" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="primary" className="w-full">
+                <Button className="w-full bg-gradient-primary text-white border-0">
                   Criar Conta
                 </Button>
               </Link>

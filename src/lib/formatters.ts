@@ -13,6 +13,25 @@ export function formatCnpj(cnpj: string): string {
   return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
 }
 
+export function formatPhone(phone: string): string {
+  if (!phone) return "";
+  const cleaned = phone.replace(/\D/g, "");
+  
+  if (cleaned.length > 11) return phone;
+  
+  if (cleaned.length > 10) {
+    // (11) 99999-9999
+    return cleaned.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
+  } else if (cleaned.length > 5) {
+    // (11) 9999-9999 or partial
+    return cleaned.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+  } else if (cleaned.length > 2) {
+    return cleaned.replace(/^(\d{2})(\d{0,5}).*/, "($1) $2");
+  } else {
+    return cleaned;
+  }
+}
+
 export function formatDate(dateString: string): string {
   if (!dateString || dateString.trim() === "") return "";
 

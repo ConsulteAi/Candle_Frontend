@@ -21,7 +21,7 @@ export function TopBar() {
           {/* Balance */}
           {user && (
             <div className="px-4 py-2 bg-gradient-primary rounded-lg text-white font-semibold text-sm shadow-md">
-              R$ {user.balance.toFixed(2)}
+              R$ {user.balance?.toFixed(2) || '0,00'}
             </div>
           )}
 

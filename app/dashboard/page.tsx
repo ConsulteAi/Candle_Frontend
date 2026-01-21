@@ -25,7 +25,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Saldo Disponível',
-      value: `R$ ${user?.balance.toFixed(2) || '0,00'}`,
+      value: `R$ ${user?.balance?.toFixed(2) || '0,00'}`,
       icon: Wallet,
     },
     {

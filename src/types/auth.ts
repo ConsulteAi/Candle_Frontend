@@ -30,9 +30,8 @@ export interface RegisterDTO {
   name: string;
   email: string;
   password: string;
-  cpf?: string;
-  cnpj?: string;
-  phone: string;
+  cpfCnpj: string;
+  phone?: string;
 }
 
 export interface RefreshTokenDTO {

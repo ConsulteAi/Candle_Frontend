@@ -31,8 +31,9 @@ export class AuthService {
   /**
    * Buscar dados do usuário autenticado
    */
-  static async getMe(): Promise<User> {
-    const response = await httpClient.get<User>('/auth/me');
+  static async getMe(token?: string): Promise<User> {
+    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+    const response = await httpClient.get<User>('/auth/me', config);
     return response.data;
   }
 
