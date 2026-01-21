@@ -194,13 +194,15 @@ export function StatsCard({ icon, label, value, trend, delay = 0 }: StatsCardPro
 // BADGE COMPONENT
 // ============================================================================
 
+
 interface BadgeProps {
   children: React.ReactNode;
   variant?: 'primary' | 'success' | 'warning' | 'error' | 'info';
   size?: 'sm' | 'md';
+  className?: string;
 }
 
-export function Badge({ children, variant = 'primary', size = 'md' }: BadgeProps) {
+export function Badge({ children, variant = 'primary', size = 'md', className = '' }: BadgeProps) {
   const variants = {
     primary: 'bg-blue-100 text-blue-700 border-blue-200',
     success: 'bg-green-100 text-green-700 border-green-200',
@@ -215,11 +217,12 @@ export function Badge({ children, variant = 'primary', size = 'md' }: BadgeProps
   };
 
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full font-semibold border ${variants[variant]} ${sizes[size]}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full font-semibold border ${variants[variant]} ${sizes[size]} ${className}`}>
       {children}
     </span>
   );
 }
+
 
 // ============================================================================
 // BALANCE BADGE COMPONENT (Dashboard)

@@ -21,9 +21,30 @@ export interface Transaction {
   billingType?: BillingType;
 }
 
+
+export interface CreditCard {
+  holderName: string;
+  number: string;
+  expiryMonth: string;
+  expiryYear: string;
+  ccv: string;
+}
+
+export interface CreditCardHolderInfo {
+  name: string;
+  email: string;
+  cpfCnpj: string;
+  postalCode: string;
+  addressNumber: string;
+  addressComplement?: string;
+  phone: string;
+}
+
 export interface RechargeRequest {
   amount: number;
   billingType: BillingType;
+  creditCard?: CreditCard;
+  creditCardHolderInfo?: CreditCardHolderInfo;
 }
 
 export interface RechargeResponse {
@@ -53,3 +74,4 @@ export interface BalanceResponse {
   available: number;
   updatedAt: string;
 }
+

@@ -62,6 +62,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
+
         <nav className="hidden md:flex items-center gap-6">
           <Link href="/consulta">
             <motion.div
@@ -75,13 +76,22 @@ export function Header() {
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
+               <Button 
+                 size="sm" 
+                 variant="ghost" 
+                 className="h-8 px-3 rounded-full text-blue-600 hover:bg-blue-50 font-medium text-xs border border-blue-100 bg-blue-50/30"
+                 onClick={() => router.push('/recarregar')}
+               >
+                 + Recarregar
+               </Button>
+
                {/* Balance Badge */}
                <motion.div 
                  whileHover={{ scale: 1.05 }}
-                 className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/50 border border-blue-100 rounded-full"
+                 className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-full"
                >
-                  <Wallet className="w-3.5 h-3.5 text-blue-600" />
-                  <span className="text-xs font-bold text-blue-600">
+                  <Wallet className="w-3.5 h-3.5 text-gray-500" />
+                  <span className="text-xs font-bold text-gray-700">
                     R$ {formattedBalance}
                   </span>
                </motion.div>
@@ -113,6 +123,10 @@ export function Header() {
                   <DropdownMenuItem onClick={() => router.push('/dashboard')} className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/recarregar')} className="cursor-pointer">
+                    <Wallet className="mr-2 h-4 w-4" />
+                    <span>Recarregar</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
@@ -185,6 +199,15 @@ export function Header() {
               >
                 <User className="w-4 h-4" />
                 Dashboard
+              </Link>
+
+              <Link
+                href="/recarregar"
+                className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Wallet className="w-4 h-4" />
+                Recarregar Carteira
               </Link>
               
                <button

@@ -20,6 +20,7 @@ export class PaymentService {
     return response.data;
   }
 
+
   /**
    * Buscar extrato de transações
    */
@@ -27,21 +28,29 @@ export class PaymentService {
     page = 1,
     limit = 20
   ): Promise<{ transactions: Transaction[]; total: number; pages: number }> {
-    const response = await httpClient.get<{
-      transactions: Transaction[];
-      total: number;
-      pages: number;
-    }>('/transactions', {
+    const response = await httpClient.get<any>('/payments', {
       params: { page, limit },
     });
-    return response.data;
+    
+    // Map backend response structure to frontend structure if different
+    // Backend returns: { data: TransactionItemDto[], total, page, limit }
+    // Frontend expects: { transactions: Transaction[], total, pages }
+    
+    const { data, total } = response.data;
+    const pages = Math.ceil(total / limit);
+
+    return {
+      transactions: data,
+      total,
+      pages
+    };
   }
 
   /**
    * Buscar detalhes de uma transação
    */
   static async getTransactionById(id: string): Promise<Transaction> {
-    const response = await httpClient.get<Transaction>(`/transactions/${id}`);
+    const response = await httpClient.get<Transaction>(`/payments/${id}`);
     return response.data;
   }
 
@@ -49,11 +58,15 @@ export class PaymentService {
    * Verificar status de pagamento
    */
   static async checkPaymentStatus(paymentId: string): Promise<PaymentStatusResponse> {
-    const response = await httpClient.get<PaymentStatusResponse>(
-      `/payments/${paymentId}/status`
-    );
-    return response.data;
+    const response = await httpClient.get<any>(`/payments/${paymentId}`);
+    return {
+      id: response.data.id,
+      status: response.data.status,
+      paidAt: response.data.confirmedAt,
+      amount: response.data.amount
+    };
   }
+
 
   /**
    * Cancelar pagamento pendente
