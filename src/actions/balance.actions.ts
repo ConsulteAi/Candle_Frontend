@@ -17,7 +17,7 @@ export interface ActionState<T = unknown> {
 /**
  * Action para buscar saldo do usuário
  */
-export async function getBalanceAction(): Promise<ActionState<BalanceResponse>> {
+export async function getBalanceAction(): Promise<ActionState<BalanceResponse> & { statusCode?: number }> {
   try {
     const data = await BalanceService.getBalance();
     return { success: true, data };
@@ -26,6 +26,7 @@ export async function getBalanceAction(): Promise<ActionState<BalanceResponse>> 
     return {
       success: false,
       error: error.response?.data?.message || 'Erro ao buscar saldo',
+      statusCode: error.response?.status || 500
     };
   }
 }

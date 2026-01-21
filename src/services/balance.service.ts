@@ -3,15 +3,16 @@
  * Serviço para consulta de saldo do usuário
  */
 
-import httpClient from '@/lib/api/httpClient';
+import { serverHttpClient } from '@/lib/api/serverHttpClient';
 import type { BalanceResponse } from '@/types';
 
 export class BalanceService {
   /**
-   * Buscar saldo do usuário autenticado
+   * Buscar saldo atual
+   * Executado no server side via Server Action
    */
   static async getBalance(): Promise<BalanceResponse> {
-    const response = await httpClient.get<BalanceResponse>('/balance');
+    const response = await serverHttpClient.get<BalanceResponse>('/balance');
     return response.data;
   }
 }

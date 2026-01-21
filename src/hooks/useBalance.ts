@@ -14,6 +14,8 @@ export function useBalance() {
   const updateBalance = useAuthStore((state) => state.updateBalance);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
+  const logout = useAuthStore((state) => state.logout);
+
   /**
    * Buscar saldo do usuário no backend
    */
@@ -24,11 +26,17 @@ export function useBalance() {
       const result = await getBalanceAction();
       if (result.success && result.data) {
         updateBalance(result.data.available);
+      } else if (result.statusCode === 401) {
+        logout();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching balance:', error);
+      // Handle 401 Unauthorized
+      if (error?.response?.status === 401 || error?.status === 401 || error?.message?.includes('401')) {
+        logout();
+      }
     }
-  }, [isAuthenticated, updateBalance]);
+  }, [isAuthenticated, updateBalance, logout]);
 
   /**
    * Formatar saldo para exibição

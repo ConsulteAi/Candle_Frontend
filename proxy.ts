@@ -12,6 +12,7 @@ const publicRoutes = [
   '/lgpd',
   '/sobre',
   '/cookies',
+  '/consulta', // Allow catalog access
 ];
 
 // Routes that should redirect to dashboard if already authenticated

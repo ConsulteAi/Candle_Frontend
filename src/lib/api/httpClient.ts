@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/authStore';
 import { refreshTokenAction } from '@/actions/auth.actions';
 
 // Base URL da API (do .env)
-const baseURL = process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:3000';
+const baseURL = process.env.NEXT_PUBLIC_BASE_API_URL || 'http://localhost:4000';
 
 // Criar instância do Axios
 export const httpClient = axios.create({

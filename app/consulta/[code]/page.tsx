@@ -1,7 +1,7 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { ArrowLeft, Loader2, ShieldCheck, Zap, Info, CheckCircle2 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Header, Footer } from '@/components/layout';
@@ -13,11 +13,9 @@ import { QueryCategory, type ExecuteQueryResponse, type QueryHistoryEntry, type 
 import { Button, Card, StatsCard, Badge } from '@/design-system/ComponentsTailwind';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
 
 function QueryExecutionContent() {
   const params = useParams();
-  const router = useRouter();
   const code = params.code as string;
 
   const { queryType, isLoading, isError, notFound } = useQueryByTypeSWR(code);
@@ -225,13 +223,7 @@ export default function QueryExecutionPage() {
     <div className="min-h-screen flex flex-col bg-gray-50/50">
       <Header />
       <main className="flex-1">
-        <Suspense fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-          </div>
-        }>
-           <QueryExecutionContent />
-        </Suspense>
+         <QueryExecutionContent />
       </main>
       <Footer />
     </div>
