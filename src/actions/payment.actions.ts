@@ -147,3 +147,57 @@ export async function refreshBalanceAction(): Promise<ActionState<number>> {
     };
   }
 }
+
+/**
+ * Action para buscar detalhes de uma transação específica
+ */
+export async function getTransactionByIdAction(
+  transactionId: string
+): Promise<ActionState<RechargeResponse>> {
+  try {
+    const transaction = await PaymentService.getTransactionById(transactionId);
+    return {
+      success: true,
+      data: transaction,
+    };
+  } catch (error: any) {
+    console.error('Get transaction error:', error);
+    return {
+      success: false,
+      error: 'Transação não encontrada',
+    };
+  }
+}
+
+/**
+ * Action para buscar pagamento pendente (PIX ou Boleto)
+ * Retorna a transação pendente mais recente, se houver
+ */
+export async function getPendingPaymentAction(): Promise<ActionState<RechargeResponse | null>> {
+  try {
+    // Busca últimas transações
+    const result = await PaymentService.getTransactions(1, 10);
+    
+    // Filtra por PENDING e PIX/BOLETO
+    const pendingTx = result.transactions.find(
+      (tx) => tx.status === 'PENDING' && (tx.billingType === 'PIX' || tx.billingType === 'BOLETO')
+    );
+
+    if (!pendingTx) {
+      return { success: true, data: null };
+    }
+
+    // Busca detalhes completos da transação pendente
+    const fullDetails = await PaymentService.getTransactionById(pendingTx.id);
+    return {
+      success: true,
+      data: fullDetails,
+    };
+  } catch (error: any) {
+    console.error('Get pending payment error:', error);
+    return {
+      success: false,
+      error: 'Erro ao buscar pagamentos pendentes',
+    };
+  }
+}

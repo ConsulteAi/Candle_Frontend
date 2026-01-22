@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CreditCard,
   QrCode,
@@ -12,7 +12,8 @@ import {
   Copy,
   Check,
   ShieldCheck,
-  Clock
+  Clock,
+  AlertCircle
 } from 'lucide-react';
 import { usePayment } from '@/hooks/usePayment';
 import { Button, Card, Badge } from '@/components/candle';
@@ -30,8 +31,8 @@ const PRESET_AMOUNTS = [50, 100, 200, 300, 500, 1000];
 
 export default function RechargePage() {
   const router = useRouter();
-  // ... existing hook calls ...
-  const { createRecharge, checkPaymentStatus } = usePayment();
+  const searchParams = useSearchParams();
+  const { createRecharge, checkPaymentStatus, getTransactionById, getPendingPayment } = usePayment();
   
   // Steps: amount -> method -> payment (form or display) -> success
   const [step, setStep] = useState<'amount' | 'method' | 'payment'>('amount');
@@ -42,13 +43,50 @@ export default function RechargePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(false);
+  
+  // Pending payment banner
+  const [pendingPayment, setPendingPayment] = useState<RechargeResponse | null>(null);
+  const [showPendingBanner, setShowPendingBanner] = useState(false);
 
-  // Reset state when unmounting or successful completion
+  // Check for tx param or pending payments on mount
   useEffect(() => {
-    return () => {
-      // Cleanup if needed
+    const txId = searchParams.get('tx');
+    
+    const loadTransaction = async () => {
+      if (txId) {
+        // Resume specific transaction from URL
+        const result = await getTransactionById(txId);
+        if (result.success && result.data) {
+          setPaymentData(result.data);
+          setAmount(result.data.amount);
+          setBillingType(result.data.billingType || 'PIX');
+          setStep('payment');
+        }
+      } else {
+        // Check for any pending payments
+        const result = await getPendingPayment();
+        if (result.success && result.data) {
+          setPendingPayment(result.data);
+          setShowPendingBanner(true);
+        }
+      }
     };
-  }, []);
+
+    loadTransaction();
+  }, [searchParams, getTransactionById, getPendingPayment]);
+
+  // Resume pending payment from banner
+  const handleResumePendingPayment = () => {
+    if (pendingPayment) {
+      setPaymentData(pendingPayment);
+      setAmount(pendingPayment.amount);
+      setBillingType(pendingPayment.billingType || 'PIX');
+      setStep('payment');
+      setShowPendingBanner(false);
+      // Update URL
+      router.replace(`/recarregar?tx=${pendingPayment.id}`, { scroll: false });
+    }
+  };
 
   // Poll for PIX status
   useEffect(() => {
@@ -131,6 +169,8 @@ export default function RechargePage() {
       setPaymentData(result.data);
       if (type === 'PIX' || type === 'BOLETO') {
          setStep('payment');
+         // Update URL with transaction ID for resumption
+         router.replace(`/recarregar?tx=${result.data.id}`, { scroll: false });
       } else if (type === 'CREDIT_CARD') {
          // Credit Card usually returns instant status, check if CONFIRMED
          if (result.data.status === 'CONFIRMED' || result.data.status === 'RECEIVED') {
@@ -187,6 +227,47 @@ export default function RechargePage() {
           </div>
         </div>
       </div>
+
+      {/* Pending Payment Banner */}
+      {showPendingBanner && pendingPayment && step === 'amount' && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center justify-between gap-4"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+              <AlertCircle className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <p className="font-medium text-amber-900">
+                Você tem um pagamento {pendingPayment.billingType} pendente
+              </p>
+              <p className="text-sm text-amber-700">
+                Valor: R$ {pendingPayment.amount.toFixed(2)}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPendingBanner(false)}
+              className="text-amber-700 hover:text-amber-900"
+            >
+              Ignorar
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleResumePendingPayment}
+              className="bg-amber-600 hover:bg-amber-700 shadow-amber-500/30"
+            >
+              Continuar Pagamento
+            </Button>
+          </div>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}

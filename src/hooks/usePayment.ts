@@ -10,8 +10,10 @@ import {
   checkPaymentStatusAction,
   cancelPaymentAction,
   refreshBalanceAction,
+  getTransactionByIdAction,
+  getPendingPaymentAction,
 } from '@/actions/payment.actions';
-import type { RechargeRequest } from '@/types/payment';
+import type { RechargeRequest, RechargeResponse } from '@/types/payment';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/authStore';
 
@@ -135,6 +137,40 @@ export function usePayment() {
     }
   }, []);
 
+  /**
+   * Buscar transação por ID
+   */
+  const getTransactionById = useCallback(async (transactionId: string): Promise<{ success: boolean; data?: RechargeResponse; error?: string }> => {
+    try {
+      const result = await getTransactionByIdAction(transactionId);
+
+      if (result.success && result.data) {
+        return { success: true, data: result.data };
+      }
+
+      return { success: false, error: result.error };
+    } catch (error) {
+      return { success: false, error: 'Erro ao buscar transação' };
+    }
+  }, []);
+
+  /**
+   * Buscar pagamento pendente (PIX ou Boleto)
+   */
+  const getPendingPayment = useCallback(async (): Promise<{ success: boolean; data?: RechargeResponse | null; error?: string }> => {
+    try {
+      const result = await getPendingPaymentAction();
+
+      if (result.success) {
+        return { success: true, data: result.data };
+      }
+
+      return { success: false, error: result.error };
+    } catch (error) {
+      return { success: false, error: 'Erro ao buscar pagamento pendente' };
+    }
+  }, []);
+
   return {
     isLoading,
     createRecharge,
@@ -142,5 +178,7 @@ export function usePayment() {
     checkPaymentStatus,
     cancelPayment,
     refreshBalance,
+    getTransactionById,
+    getPendingPayment,
   };
 }

@@ -50,11 +50,22 @@ export class PaymentService {
   }
 
   /**
-   * Buscar detalhes de uma transação
+   * Buscar detalhes de uma transação (retorna formato compatível com RechargeResponse)
    */
-  static async getTransactionById(id: string): Promise<Transaction> {
-    const response = await serverHttpClient.get<Transaction>(`/payments/${id}`);
-    return response.data;
+  static async getTransactionById(id: string): Promise<RechargeResponse> {
+    const response = await serverHttpClient.get<any>(`/payments/${id}`);
+    const data = response.data;
+    return {
+      id: data.id,
+      amount: data.amount,
+      status: data.status,
+      billingType: data.billingType,
+      invoiceUrl: data.invoiceUrl,
+      bankSlipUrl: data.bankSlipUrl,
+      pixQrCode: data.pixQrCode,
+      pixCopyPaste: data.pixCopyPaste,
+      createdAt: data.createdAt,
+    };
   }
 
   /**

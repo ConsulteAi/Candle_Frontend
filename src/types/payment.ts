@@ -53,9 +53,12 @@ export interface RechargeResponse {
   invoiceId?: string;
   pixQrCode?: string;
   pixCopyPaste?: string;
+  bankSlipUrl?: string;
   dueDate?: string;
   status: PaymentStatus;
   amount: number;
+  billingType?: BillingType;
+  createdAt?: string;
 }
 
 export interface PaymentStatusResponse {
