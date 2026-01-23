@@ -48,7 +48,7 @@ export async function loginAction(
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 15, // 15 minutes (access token expiry)
+      maxAge: 60 * 60 * 24, // 24 hours (access token expiry)
     });
     cookieStore.set('refreshToken', data.refreshToken, {
       httpOnly: true,
@@ -122,7 +122,7 @@ export async function registerAction(
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: tokens.expiresIn || 60 * 15, // Use backend expiry or default 15 minutes
+      maxAge: tokens.expiresIn || 60 * 60 * 24, // Use backend expiry or default 24 hours
     });
     cookieStore.set('refreshToken', data.refreshToken, {
       httpOnly: true,
@@ -285,7 +285,7 @@ export async function refreshTokenAction(
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 15, // 15 minutes
+      maxAge: 60 * 60 * 24, // 24 hours
     });
     cookieStore.set('refreshToken', tokens.refreshToken, {
       httpOnly: true,

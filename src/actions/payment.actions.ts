@@ -189,6 +189,12 @@ export async function getPendingPaymentAction(): Promise<ActionState<RechargeRes
 
     // Busca detalhes completos da transação pendente
     const fullDetails = await PaymentService.getTransactionById(pendingTx.id);
+    
+    // Verifica novamente se o status é PENDING (para garantir que não mudou entre as chamadas)
+    if (fullDetails.status !== 'PENDING') {
+      return { success: true, data: null };
+    }
+
     return {
       success: true,
       data: fullDetails,

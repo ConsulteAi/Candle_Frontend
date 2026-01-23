@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, FileText, TrendingUp, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@/store/authStore';
@@ -9,13 +10,23 @@ import { StatsCard, Card } from '@/components/candle';
 import { categorias } from '@/lib/consultas';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const user = useUser();
   const { formattedBalance, fetchBalance } = useBalance();
 
+  // Protect Dashboard: Admin/Master only
+  useEffect(() => {
+    if (user && user.role !== 'ADMIN' && user.role !== 'MASTER') {
+      router.replace('/carteira');
+    }
+  }, [user, router]);
+
   // Fetch balance on mount
   useEffect(() => {
-    fetchBalance();
-  }, [fetchBalance]);
+    if (user && (user.role === 'ADMIN' || user.role === 'MASTER')) {
+      fetchBalance();
+    }
+  }, [fetchBalance, user]);
 
   // Mock stats - Replace with real data later
   const stats = [

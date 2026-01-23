@@ -40,7 +40,7 @@ export default function RechargePage() {
   useEffect(() => {
     const checkPendingPayments = async () => {
       const result = await getPendingPayment();
-      if (result.success && result.data) {
+      if (result.success && result.data && result.data.status === 'PENDING') {
         setPendingPayment(result.data);
         setShowPendingBanner(true);
       }
@@ -135,25 +135,14 @@ export default function RechargePage() {
 
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center gap-6 pb-6 border-b border-gray-200/50">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="secondary" 
-                size="sm" 
-                className="rounded-full w-10 h-10 p-0 flex items-center justify-center border-gray-200 shadow-sm hover:shadow-md transition-all"
-                onClick={() => step === 'amount' ? router.back() : setStep(prev => prev === 'credit-card-form' ? 'method' : 'amount')}
-              >
-                <ArrowLeft className="h-5 w-5 text-gray-700" />
-              </Button>
-
               <div>
-                <h1 className="text-3xl font-display font-bold text-gray-900 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-display font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 mb-2 pb-2">
                   Recarregar Carteira
                 </h1>
                 <p className="text-gray-500 font-medium">
                   Escolha um valor para adicionar créditos na sua conta
                 </p>
               </div>
-            </div>
           </div>
 
           {/* Pending Payment Banner */}

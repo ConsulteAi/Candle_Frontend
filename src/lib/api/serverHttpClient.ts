@@ -74,10 +74,10 @@ serverAxios.interceptors.response.use(
           sameSite: 'lax' as const,
         };
 
-        // Access Token (15 min)
+        // Access Token (24 hours)
         cookieStore.set('accessToken', newAccessToken, {
           ...cookieOptions,
-          maxAge: 60 * 15,
+          maxAge: 60 * 60 * 24,
         });
 
         // Refresh Token (7 days)
