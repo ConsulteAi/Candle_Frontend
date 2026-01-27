@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Lock, Loader2, Search } from 'lucide-react';
+import { ShieldCheck, Lock, Loader2, Search, AlertCircle } from 'lucide-react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { loginSchema } from '@/validators/auth.schemas';
@@ -14,11 +14,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const {
     register,
@@ -31,20 +33,27 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginDTO) => {
     setIsLoading(true);
+    setLoginError(null);
     // Artificial delay for specific "premium feel" requested in design system
     await new Promise((resolve) => setTimeout(resolve, 800));
     
     try {
       const result = await login(data);
 
-      if (!result.success && result.fieldErrors) {
-        Object.entries(result.fieldErrors).forEach(([field, messages]) => {
-          setError(field as keyof LoginDTO, {
-            type: 'server',
-            message: messages[0],
+      if (!result.success) {
+        if (result.fieldErrors) {
+          Object.entries(result.fieldErrors).forEach(([field, messages]) => {
+            setError(field as keyof LoginDTO, {
+              type: 'server',
+              message: messages[0],
+            });
           });
-        });
+        } else if (result.error) {
+           setLoginError(result.error);
+        }
       }
+    } catch (err) {
+      setLoginError('Ocorreu um erro inesperado. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
@@ -119,6 +128,20 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {loginError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <Alert variant="destructive" className="bg-red-50 text-red-900 border-red-200">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800 ml-2 font-medium">
+                      {loginError}
+                    </AlertDescription>
+                  </Alert>
+                </motion.div>
+              )}
               {/* Email Field */}
               <div className="space-y-2">
                 <Label htmlFor="email" className={`text-sm font-semibold transition-colors ${focusedField === 'email' ? 'text-blue-600' : 'text-gray-700'}`}>

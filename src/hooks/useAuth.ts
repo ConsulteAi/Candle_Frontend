@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { loginAction, registerAction, logoutAction } from '@/actions/auth.actions';
 import type { LoginDTO, RegisterDTO } from '@/types';
-import { toast } from 'sonner';
 
 export function useAuth() {
   const router = useRouter();
@@ -30,7 +29,6 @@ export function useAuth() {
 
         if (result.success && result.data) {
           setAuth(result.data);
-          toast.success('Login realizado com sucesso!');
           router.push('/');
           return { success: true };
         }
@@ -39,10 +37,8 @@ export function useAuth() {
           return { success: false, fieldErrors: result.fieldErrors };
         }
 
-        toast.error(result.error || 'Erro ao fazer login');
         return { success: false, error: result.error };
       } catch (error) {
-        toast.error('Erro inesperado ao fazer login');
         return { success: false, error: 'Erro inesperado' };
       }
     },
@@ -59,19 +55,17 @@ export function useAuth() {
 
         if (result.success && result.data) {
           setAuth(result.data);
-          toast.success('Conta criada com sucesso!');
           router.push('/');
           return { success: true };
         }
 
         if (result.fieldErrors) {
+          console.log(result.fieldErrors);
           return { success: false, fieldErrors: result.fieldErrors };
         }
 
-        toast.error(result.error || 'Erro ao criar conta');
         return { success: false, error: result.error };
       } catch (error) {
-        toast.error('Erro inesperado ao criar conta');
         return { success: false, error: 'Erro inesperado' };
       }
     },
@@ -85,7 +79,6 @@ export function useAuth() {
     try {
       await logoutAction();
       clearAuth();
-      toast.success('Logout realizado com sucesso');
       router.push('/login');
     } catch (error) {
       // Mesmo com erro, limpa o estado local

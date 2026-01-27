@@ -5,7 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Lock, Loader2, Search } from 'lucide-react';
+import { ShieldCheck, Lock, Loader2, Search, AlertCircle } from 'lucide-react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { registerSchema, type RegisterFormData } from '@/validators/auth.schemas';
@@ -14,12 +14,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { formatCpf, formatPhone } from '@/lib/formatters';
 
 export default function RegisterPage() {
   const { register: registerUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [registerError, setRegisterError] = useState<string | null>(null);
 
   const {
     register,
@@ -38,6 +40,7 @@ export default function RegisterPage() {
     // Remove confirmPassword and terms before sending to API
     const { confirmPassword, terms, ...registerData } = data;
     setIsLoading(true);
+    setRegisterError(null);
     // Artificial delay for premium feel
     await new Promise((resolve) => setTimeout(resolve, 800));
 
@@ -55,14 +58,20 @@ export default function RegisterPage() {
 
       const result = await registerUser(payload);
 
-      if (!result.success && result.fieldErrors) {
-        Object.entries(result.fieldErrors).forEach(([field, messages]) => {
-          setError(field as keyof RegisterFormData, {
-            type: 'server',
-            message: messages[0],
+      if (!result.success) { 
+        if (result.fieldErrors) {
+          Object.entries(result.fieldErrors).forEach(([field, messages]) => {
+            setError(field as keyof RegisterFormData, {
+              type: 'server',
+              message: messages[0],
+            });
           });
-        });
+        } else if (result.error) {
+           setRegisterError(result.error);
+        }
       }
+    } catch (err) {
+      setRegisterError('Ocorreu um erro inesperado ao criar a conta. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
@@ -167,6 +176,20 @@ export default function RegisterPage() {
             </h2>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              {registerError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <Alert variant="destructive" className="bg-red-50 text-red-900 border-red-200">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800 ml-2 font-medium">
+                      {registerError}
+                    </AlertDescription>
+                  </Alert>
+                </motion.div>
+              )}
               
               {renderInput('name', 'Nome Completo', 'João da Silva', 'text', register('name'))}
               

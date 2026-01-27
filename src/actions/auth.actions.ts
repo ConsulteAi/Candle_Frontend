@@ -146,11 +146,11 @@ export async function registerAction(
       };
     }
 
-    // Email já cadastrado
+    // Conflito (Email ou CPF/CNPJ já cadastrado)
     if (error.response?.status === 409) {
       return {
         success: false,
-        error: 'Este email já está cadastrado',
+        error: error.response?.data?.message || 'Este email ou CPF/CNPJ já está cadastrado',
       };
     }
 
