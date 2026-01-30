@@ -26,6 +26,7 @@ export default function RechargePage() {
   const [customAmount, setCustomAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [pendingPayment, setPendingPayment] = useState<RechargeResponse | null>(null);
+  const [limitError, setLimitError] = useState(false);
 
   // Check for pending payments on mount
   useEffect(() => {
@@ -45,6 +46,14 @@ export default function RechargePage() {
 
   const handleCustomAmountChange = (value: string) => {
     const numValue = parseFloat(value.replace(/[^\d.,]/g, '').replace(',', '.'));
+    
+    // Check limit
+    if (!isNaN(numValue) && numValue > 10000) {
+      setLimitError(true);
+      setTimeout(() => setLimitError(false), 2000);
+      return;
+    }
+
     if (!isNaN(numValue)) {
       setAmount(numValue);
     }
@@ -169,10 +178,16 @@ export default function RechargePage() {
                           <label className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-1 block">
                             Outro Valor
                           </label>
-                          <p className="text-xs text-slate-400">Mínimo R$ 5,00 • Máximo R$ 10.000,00</p>
+                          <p className={`text-xs transition-colors duration-300 ${limitError ? 'text-red-500 font-medium' : 'text-slate-400'}`}>
+                            {limitError ? '• Valor limite de R$ 10.000,00 atingido' : 'Mínimo R$ 5,00 • Máximo R$ 10.000,00'}
+                          </p>
                         </div>
-                        <div className="relative group w-full md:w-64">
-                           <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-display text-xl font-bold transition-colors ${isCustomSelected ? 'text-emerald-600' : 'text-slate-400'}`}>R$</span>
+                        <motion.div 
+                          animate={limitError ? { x: [0, -6, 6, -6, 6, 0] } : {}}
+                          transition={{ duration: 0.4 }}
+                          className="relative group w-full md:w-64"
+                        >
+                           <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-display text-xl font-bold transition-colors ${limitError ? 'text-red-500' : (isCustomSelected ? 'text-emerald-600' : 'text-slate-400')}`}>R$</span>
                            <input
                             type="text"
                             value={customAmount}
@@ -180,13 +195,15 @@ export default function RechargePage() {
                             placeholder="0,00"
                             className={`
                               w-full h-14 pl-12 pr-4 rounded-xl border-2 outline-none font-display text-xl font-bold bg-white transition-all
-                              ${isCustomSelected 
-                                ? 'border-emerald-500 shadow-lg shadow-emerald-500/10 text-emerald-900' 
-                                : 'border-slate-200 text-slate-900 focus:border-emerald-400'
+                              ${limitError
+                                ? 'border-red-400 text-red-600 focus:border-red-500 bg-red-50/50'
+                                : (isCustomSelected 
+                                  ? 'border-emerald-500 shadow-lg shadow-emerald-500/10 text-emerald-900' 
+                                  : 'border-slate-200 text-slate-900 focus:border-emerald-400')
                               }
                             `}
                            />
-                        </div>
+                        </motion.div>
                      </div>
                   </div>
                 </Card>
@@ -222,26 +239,29 @@ export default function RechargePage() {
                 <Card className="glass-strong border-0 shadow-2xl shadow-slate-200/50 bg-white relative overflow-hidden ring-1 ring-slate-100">
                   <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-400 to-emerald-600" />
                   
-                  <div className="p-6 md:p-8 space-y-6">
-                    <h3 className="font-display font-bold text-slate-900 text-xl">Resumo</h3>
+                  <div className="p-5 md:p-8 space-y-6">
+                    <h3 className="font-display font-bold text-slate-900 text-xl md:text-2xl">Resumo</h3>
                     
                     <div className="space-y-4">
-                      <div className="flex justify-between items-center text-slate-600">
+                      <div className="flex justify-between items-center text-slate-600 text-sm md:text-base">
                         <span>Recarga</span>
                         <span className="font-medium text-slate-900">R$ {amount.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between items-center text-emerald-600 bg-emerald-50 p-2 rounded-lg">
-                        <span className="flex items-center gap-1.5 text-sm font-bold">
-                           <Zap className="w-3.5 h-3.5 fill-emerald-600" /> PIX
+                      <div className="flex justify-between items-center text-emerald-600 bg-emerald-50 p-2.5 rounded-xl">
+                        <span className="flex items-center gap-2 text-sm font-bold">
+                           <Zap className="w-4 h-4 fill-emerald-600" /> PIX
                         </span>
-                        <span className="text-xs font-bold uppercase tracking-wider">Instantâneo</span>
+                        <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider">Instantâneo</span>
                       </div>
                     </div>
 
                     <div className="pt-6 border-t border-slate-100">
-                      <div className="flex justify-between items-end mb-1">
-                        <span className="text-slate-500 font-medium">Total a pagar</span>
-                        <span className="text-3xl font-display font-bold text-slate-900">R$ {amount.toFixed(2)}</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-slate-500 font-bold text-xs uppercase tracking-wider">Total a pagar</span>
+                        <div className="flex items-baseline gap-1 flex-wrap">
+                          <span className="text-lg font-bold text-slate-400">R$</span>
+                          <span className="text-3xl md:text-4xl font-display font-black text-slate-900 tracking-tight break-all">{amount.toFixed(2)}</span>
+                        </div>
                       </div>
                     </div>
 
