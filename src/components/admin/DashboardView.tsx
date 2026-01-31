@@ -1,5 +1,6 @@
 'use client';
 
+// Imports removed
 import { motion } from 'framer-motion';
 import { 
   Users, 

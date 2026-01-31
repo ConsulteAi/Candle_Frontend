@@ -11,7 +11,16 @@ import type {
   QueryTypeFilters,
   AdminTransaction,
   TransactionFilters,
-  DashboardQueries
+  DashboardQueries,
+  AdminQuery,
+  AdminTransactionListQueryDto,
+  AdminQueryListQueryDto,
+  CreateQueryTypeDto,
+  UpdateQueryTypeDto,
+  Provider,
+  CreateProviderDto,
+  UpdateProviderDto,
+  HealthCheckResponseDto
 } from '@/types/admin';
 import type { UserRole } from '@/types/auth';
 
@@ -64,6 +73,16 @@ export const AdminService = {
     await serverHttpClient.post(`${BASE_URL}/users/${id}/adjust-balance`, data);
   },
 
+  getUserTransactions: async (id: string, params: AdminTransactionListQueryDto): Promise<PaginatedResponse<AdminTransaction>> => {
+    const response = await serverHttpClient.get<PaginatedResponse<AdminTransaction>>(`${BASE_URL}/users/${id}/transactions`, { params });
+    return response.data;
+  },
+
+  getUserQueries: async (id: string, params: AdminQueryListQueryDto): Promise<PaginatedResponse<AdminQuery>> => {
+    const response = await serverHttpClient.get<PaginatedResponse<AdminQuery>>(`${BASE_URL}/users/${id}/queries`, { params });
+    return response.data;
+  },
+
   // --- Query Types ---
   getQueryTypes: async (filters: QueryTypeFilters): Promise<PaginatedResponse<QueryType>> => {
     const response = await serverHttpClient.get<PaginatedResponse<QueryType>>(`${BASE_URL}/query-types`, { params: filters });
@@ -76,6 +95,47 @@ export const AdminService = {
 
   updateQueryType: async (id: string, updates: Partial<QueryType>): Promise<QueryType> => {
     const response = await serverHttpClient.patch<QueryType>(`${BASE_URL}/query-types/${id}`, updates);
+    return response.data;
+  },
+
+  // --- Query Types (Enhanced) ---
+  createQueryType: async (data: CreateQueryTypeDto): Promise<QueryType> => {
+    const response = await serverHttpClient.post<QueryType>(`${BASE_URL}/query-types`, data);
+    return response.data;
+  },
+
+  // --- Providers ---
+  getProviders: async (): Promise<Provider[]> => {
+    const response = await serverHttpClient.get<Provider[]>(`${BASE_URL}/providers`);
+    return response.data;
+  },
+
+  getProviderById: async (id: string): Promise<Provider> => {
+    const response = await serverHttpClient.get<Provider>(`${BASE_URL}/providers/${id}`);
+    return response.data;
+  },
+
+  createProvider: async (data: CreateProviderDto): Promise<Provider> => {
+    const response = await serverHttpClient.post<Provider>(`${BASE_URL}/providers`, data);
+    return response.data;
+  },
+
+  updateProvider: async (id: string, data: UpdateProviderDto): Promise<Provider> => {
+    const response = await serverHttpClient.patch<Provider>(`${BASE_URL}/providers/${id}`, data);
+    return response.data;
+  },
+
+  deleteProvider: async (id: string): Promise<void> => {
+    await serverHttpClient.delete(`${BASE_URL}/providers/${id}`);
+  },
+
+  toggleProvider: async (id: string): Promise<Provider> => {
+    const response = await serverHttpClient.post<Provider>(`${BASE_URL}/providers/${id}/toggle`);
+    return response.data;
+  },
+
+  checkProviderHealth: async (id: string): Promise<HealthCheckResponseDto> => {
+    const response = await serverHttpClient.get<HealthCheckResponseDto>(`${BASE_URL}/providers/${id}/health`);
     return response.data;
   },
 

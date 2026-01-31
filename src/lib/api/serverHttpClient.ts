@@ -48,8 +48,12 @@ serverAxios.interceptors.response.use(
 
         if (!refreshToken) {
             // No refresh token, clear session and throw
-            cookieStore.delete('accessToken');
-            cookieStore.delete('refreshToken');
+            try {
+              cookieStore.delete('accessToken');
+              cookieStore.delete('refreshToken');
+            } catch (e) {
+              // Ignore cookie errors (e.g. inside Server Component)
+            }
             return Promise.reject(error);
         }
 
@@ -74,17 +78,22 @@ serverAxios.interceptors.response.use(
           sameSite: 'lax' as const,
         };
 
-        // Access Token (24 hours)
-        cookieStore.set('accessToken', newAccessToken, {
-          ...cookieOptions,
-          maxAge: 60 * 60 * 24,
-        });
+        try {
+          // Access Token (24 hours)
+          cookieStore.set('accessToken', newAccessToken, {
+            ...cookieOptions,
+            maxAge: 60 * 60 * 24,
+          });
 
-        // Refresh Token (7 days)
-        cookieStore.set('refreshToken', newRefreshToken, {
-          ...cookieOptions,
-          maxAge: 60 * 60 * 24 * 7,
-        });
+          // Refresh Token (7 days)
+          cookieStore.set('refreshToken', newRefreshToken, {
+            ...cookieOptions,
+            maxAge: 60 * 60 * 24 * 7,
+          });
+        } catch (e) {
+          // Ignore cookie errors (e.g. inside Server Component)
+          // The current request will still succeed due to header update below
+        }
 
         // Update Authorization header and retry
         if (originalRequest.headers) {

@@ -11,17 +11,19 @@ import {
   BarChart3, 
   Database,
   Search,
-  LogOut
+  LogOut,
+  Activity
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { UserRole } from '@/types/auth';
 
 const menuItems = [
   { name: 'Dashboard', href: '/backoffice', icon: LayoutDashboard },
   { name: 'Usuários', href: '/backoffice/users', icon: Users },
   { name: 'Transações', href: '/backoffice/transactions', icon: Wallet },
-  // { name: 'Consultas', href: '/backoffice/queries', icon: Search },
-  // { name: 'Tipos de Consulta', href: '/backoffice/query-types', icon: Database },
+  { name: 'Tipos de Consulta', href: '/backoffice/query-types', icon: Database, role: UserRole.MASTER },
+  { name: 'Provedores', href: '/backoffice/providers', icon: Activity, role: UserRole.MASTER },
 ];
 
 export function AdminSidebar() {
@@ -46,6 +48,7 @@ export function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
+          if (item.role && user?.role !== item.role) return null;
           const isActive = pathname === item.href;
           return (
             <Link key={item.href} href={item.href}>

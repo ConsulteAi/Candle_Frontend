@@ -5,19 +5,17 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   Search, 
   Filter, 
-  MoreVertical, 
-  Shield, 
-  Ban, 
-  CheckCircle, 
-  AlertCircle,
-  CreditCard,
-  UserCog
+  ArrowRight
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+import { useUser } from '@/store/authStore';
+import { UserRole } from '@/types/auth';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
 import {
   Table,
   TableBody,
@@ -26,14 +24,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Select,
   SelectContent,
@@ -44,7 +34,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 
 import type { AdminUser, PaginatedResponse } from '@/types/admin';
-import { UserRole } from '@/types/auth'; // Ensure path is correct
 
 interface UsersClientViewProps {
   initialData: PaginatedResponse<AdminUser>;
@@ -53,6 +42,7 @@ interface UsersClientViewProps {
 export function UsersClientView({ initialData }: UsersClientViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const currentUser = useUser();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
 
   // Debounce search
@@ -165,7 +155,9 @@ export function UsersClientView({ initialData }: UsersClientViewProps) {
               <TableRow>
                 <TableHead className="font-semibold text-slate-600">Usuário</TableHead>
                 <TableHead className="font-semibold text-slate-600">Status</TableHead>
-                <TableHead className="font-semibold text-slate-600">Role</TableHead>
+                {currentUser?.role === UserRole.MASTER && (
+                  <TableHead className="font-semibold text-slate-600">Role</TableHead>
+                )}
                 <TableHead className="font-semibold text-slate-600">Saldo</TableHead>
                 <TableHead className="font-semibold text-slate-600">Cadastro</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
@@ -182,7 +174,9 @@ export function UsersClientView({ initialData }: UsersClientViewProps) {
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(user.status)}</TableCell>
-                  <TableCell>{getRoleBadge(user.role)}</TableCell>
+                  {currentUser?.role === UserRole.MASTER && (
+                    <TableCell>{getRoleBadge(user.role)}</TableCell>
+                  )}
                   <TableCell>
                     <span className={`font-mono font-medium ${user.balance.available > 0 ? 'text-emerald-600' : 'text-slate-500'}`}>
                       {user.balance.available.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -192,26 +186,9 @@ export function UsersClientView({ initialData }: UsersClientViewProps) {
                     {format(new Date(user.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                   </TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-[160px]">
-                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                        <DropdownMenuItem className="cursor-pointer">
-                          <UserCog className="mr-2 h-4 w-4" /> Detalhes
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="cursor-pointer">
-                          <CreditCard className="mr-2 h-4 w-4" /> Ajustar Saldo
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-red-600 cursor-pointer focus:bg-red-50 focus:text-red-700">
-                          <Ban className="mr-2 h-4 w-4" /> Suspender
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button variant="ghost" size="icon" onClick={() => router.push(`/backoffice/users/${user.id}`)}>
+                      <ArrowRight className="h-4 w-4 text-slate-400" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -248,7 +225,7 @@ export function UsersClientView({ initialData }: UsersClientViewProps) {
                  variant="outline" 
                  size="sm"
                  onClick={() => handlePageChange(initialData.page + 1)}
-                 disabled={initialData.data.length < initialData.limit} // This is a rough check, strict would be total pages check
+                 disabled={initialData.data.length < initialData.limit}
                >
                  Próxima
                </Button>

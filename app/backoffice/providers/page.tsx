@@ -1,24 +1,22 @@
 'use client';
 
-import { QueryTypesManager } from '@/components/admin/QueryTypesManager';
+import { ProvidersManager } from '@/components/admin/ProvidersManager';
 import { useAuth } from '@/hooks/useAuth';
 import { UserRole } from '@/types/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
-export default function QueryTypesPage() {
+export default function ProvidersPage() {
   const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    // If user is loaded and not MASTER, redirect
     if (user && user.role !== UserRole.MASTER) {
       router.push('/backoffice');
     }
   }, [user, router]);
 
-  // If user is not yet loaded or not MASTER, show loading or nothing
   if (!user || user.role !== UserRole.MASTER) {
     return (
        <div className="flex h-screen items-center justify-center">
@@ -30,10 +28,10 @@ export default function QueryTypesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-display font-bold tracking-tight mb-2">Tipos de Consulta</h1>
-        <p className="text-slate-500 text-lg">Gerencie os tipos de consultas disponíveis no sistema.</p>
+        <h1 className="text-3xl font-display font-bold tracking-tight mb-2">Provedores API</h1>
+        <p className="text-slate-500 text-lg">Gerencie os provedores e verifique o status das integrações.</p>
       </div>
-      <QueryTypesManager />
+      <ProvidersManager />
     </div>
   );
 }

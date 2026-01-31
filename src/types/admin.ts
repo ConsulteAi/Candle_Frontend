@@ -141,7 +141,10 @@ export interface QueryType {
   name: string;
   description?: string;
   category: string[];
+  endpoint: string;
+  providerCredential?: any;
   price: number;
+  cost: number;
   cachedPrice: number;
   cacheTtlMinutes: number;
   isActive: boolean;
@@ -217,3 +220,100 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
 }
+
+// --- User Lists types ---
+
+export interface AdminQuery {
+  id: string;
+  userId: string;
+  queryType: {
+    id: string;
+    code: string;
+    name: string;
+  };
+  providerId: string;
+  providerName: string;
+  status: 'SUCCESS' | 'FAILED' | 'PENDING' | 'PROCESSING';
+  cost: number;
+  durationMs: number;
+  createdAt: string;
+  responseStatus?: number;
+  cacheHit: boolean;
+  errorMessage?: string;
+  protocol?: string;
+}
+
+export interface AdminTransactionListQueryDto {
+  userId: string;
+  limit?: number;
+  page?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface AdminQueryListQueryDto {
+  userId: string;
+  limit?: number;
+  page?: number;
+  status?: string;
+  queryTypeCode?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+// --- Provider Types ---
+
+export interface Provider {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  baseUrl: string;
+  credentialsKey?: string;
+  timeout: number;
+  retryAttempts: number;
+  isActive: boolean;
+  priority: number;
+  avgResponseTime: number | null;
+  successRate: number | null;
+  lastHealthCheck: string | null;
+  lastErrorAt: string | null;
+}
+
+export interface CreateProviderDto {
+  code: string;
+  name: string;
+  description?: string;
+  baseUrl: string;
+  credentialsKey?: string;
+  timeout?: number;
+  retryAttempts?: number;
+  isActive?: boolean;
+  priority?: number;
+}
+
+export interface UpdateProviderDto extends Partial<CreateProviderDto> {}
+
+export interface HealthCheckResponseDto {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  responseTime: number;
+  timestamp: string;
+  details?: any;
+}
+
+// --- Query Type DTOs ---
+
+export interface CreateQueryTypeDto {
+  code: string;
+  name: string;
+  description?: string;
+  category: string[];
+  endpoint?: string;
+  price: number;
+  cost: number;
+  cachedPrice?: number;
+  cacheTtlMinutes?: number;
+  providerId: string;
+}
+
+export interface UpdateQueryTypeDto extends Partial<CreateQueryTypeDto> {}

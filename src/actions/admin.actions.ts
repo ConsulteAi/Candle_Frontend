@@ -26,11 +26,17 @@ export async function getDashboardOverviewAction(): Promise<ActionState<Dashboar
   }
 }
 
+import { redirect } from 'next/navigation';
+import { isAxiosError } from 'axios';
+
 export async function getUsersAction(filters: UserFilters): Promise<ActionState<PaginatedResponse<AdminUser>>> {
   try {
     const data = await AdminService.getUsers(filters);
     return { success: true, data };
   } catch (error: any) {
+    if (isAxiosError(error) && error.response?.status === 401) {
+      redirect('/auth/login');
+    }
     console.error('getUsersAction error:', error);
     return { success: false, error: 'Erro ao listar usuários' };
   }

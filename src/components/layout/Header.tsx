@@ -149,7 +149,7 @@ export function Header() {
                   )}
 
                   {(user?.role === 'ADMIN' || user?.role === 'MASTER') && (
-                    <DropdownMenuItem onClick={() => router.push('/backoffice')} className="rounded-xl cursor-pointer py-2.5 focus:bg-slate-50 font-medium text-slate-600">
+                    <DropdownMenuItem onClick={() => router.push('/backoffice')} className="rounded-xl cursor-pointer py-2.5 focus:bg-slate-100 focus:text-slate-900 text-slate-600 font-medium">
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span>Backoffice</span>
                     </DropdownMenuItem>
