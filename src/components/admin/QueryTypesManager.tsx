@@ -104,10 +104,19 @@ export function QueryTypesManager() {
   };
 
   const handleToggle = async (id: string) => {
+    // Optimistic update
+    setQueryTypes(prev => prev.map(qt => 
+      qt.id === id ? { ...qt, isActive: !qt.isActive } : qt
+    ));
+
     try {
       await httpClient.post(`/admin/query-types/${id}/toggle`);
-      fetchQueryTypes();
+      // No need to refetch if successful
     } catch (error) {
+      // Revert on error
+      setQueryTypes(prev => prev.map(qt => 
+        qt.id === id ? { ...qt, isActive: !qt.isActive } : qt
+      ));
       toast({
         title: 'Erro',
         description: 'Não foi possível alterar o status.',
@@ -146,10 +155,12 @@ export function QueryTypesManager() {
     setIsModalOpen(true);
   };
 
-  const filteredTypes = queryTypes.filter(qt => 
-    qt.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    qt.code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTypes = queryTypes
+    .filter(qt => 
+      qt.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      qt.code.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="space-y-4">

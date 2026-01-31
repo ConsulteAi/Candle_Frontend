@@ -295,10 +295,10 @@ export interface CreateProviderDto {
 export interface UpdateProviderDto extends Partial<CreateProviderDto> {}
 
 export interface HealthCheckResponseDto {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  responseTime: number;
-  timestamp: string;
-  details?: any;
+  isHealthy: boolean;
+  avgResponseTime?: number;
+  successRate?: number;
+  lastCheck?: string;
 }
 
 // --- Query Type DTOs ---

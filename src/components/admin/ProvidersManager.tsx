@@ -80,10 +80,19 @@ export function ProvidersManager() {
   };
 
   const handleToggle = async (id: string) => {
+    // Optimistic update
+    setProviders(prev => prev.map(p => 
+      p.id === id ? { ...p, isActive: !p.isActive } : p
+    ));
+
     try {
       await httpClient.post(`/admin/providers/${id}/toggle`);
-      fetchProviders();
+      // No need to refetch if successful
     } catch (error) {
+       // Revert on error
+      setProviders(prev => prev.map(p => 
+        p.id === id ? { ...p, isActive: !p.isActive } : p
+      ));
       toast({
         title: 'Erro',
         description: 'Não foi possível alterar o status.',
@@ -110,13 +119,12 @@ export function ProvidersManager() {
   const handleHealthCheck = async (id: string) => {
     try {
       const response = await httpClient.get<HealthCheckResponseDto>(`/admin/providers/${id}/health`);
-      const status = response.data.status;
-      const responseTime = response.data.responseTime;
+      const { isHealthy, avgResponseTime } = response.data;
       
       toast({
-        title: `Health Check: ${status === 'healthy' ? 'OK' : status.toUpperCase()}`,
-        description: `Tempo de resposta: ${responseTime}ms`,
-        variant: status === 'healthy' ? 'default' : 'destructive'
+        title: `Health Check: ${isHealthy ? 'OK' : 'FALHA'}`,
+        description: `Latência Média: ${avgResponseTime ? avgResponseTime + 'ms' : 'N/A'}`,
+        variant: isHealthy ? 'default' : 'destructive'
       });
       // Optionally refresh list to update lastHealthCheck timestamp if backend updates it
       fetchProviders();
@@ -127,7 +135,7 @@ export function ProvidersManager() {
         variant: 'destructive'
       });
     }
-  }
+  };
 
   const openModal = (item: Provider | null = null) => {
     setEditingItem(item);
@@ -157,10 +165,12 @@ export function ProvidersManager() {
     setIsModalOpen(true);
   };
 
-  const filteredProviders = providers.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProviders = providers
+    .filter(p => 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.code.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="space-y-4">
