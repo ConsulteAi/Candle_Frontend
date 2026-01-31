@@ -23,6 +23,8 @@ serverAxios.interceptors.request.use(async (config) => {
     const headersList = await headers();
     const token = cookieStore.get('accessToken')?.value;
     const userAgent = headersList.get('user-agent');
+    const forwardedFor = headersList.get('x-forwarded-for');
+    const realIp = headersList.get('x-real-ip');
     
     if (config.headers) {
       if (token) {
@@ -30,6 +32,12 @@ serverAxios.interceptors.request.use(async (config) => {
       }
       if (userAgent) {
         config.headers['User-Agent'] = userAgent;
+      }
+      if (forwardedFor) {
+        config.headers['X-Forwarded-For'] = forwardedFor;
+      }
+      if (realIp) {
+        config.headers['X-Real-IP'] = realIp;
       }
     }
   } catch (error) {
