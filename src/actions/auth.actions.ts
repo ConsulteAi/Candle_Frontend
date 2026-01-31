@@ -74,6 +74,15 @@ export async function loginAction(
 
     // Credenciais inválidas
     if (error.response?.status === 401) {
+      const errorMessage = error.response?.data?.message;
+      
+      if (errorMessage === 'Conta suspensa') {
+        return {
+          success: false,
+          error: 'Sua conta está suspensa. Entre em contato com o suporte para mais informações.',
+        };
+      }
+
       return {
         success: false,
         error: 'Email ou senha incorretos',

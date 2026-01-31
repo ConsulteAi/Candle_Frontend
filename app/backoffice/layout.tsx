@@ -1,6 +1,6 @@
 import { AdminSidebar } from '@/components/layout/AdminSidebar';
 import { AdminGuard } from '@/components/auth/AdminGuard';
-import { Toaster } from 'sonner';
+
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +21,6 @@ export default function BackofficeLayout({
              {children}
            </div>
         </main>
-        <Toaster richColors position="top-right" />
       </div>
     </AdminGuard>
   );

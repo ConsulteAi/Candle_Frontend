@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { env } from '@/lib/env';
 
 /**
@@ -16,18 +16,25 @@ const serverAxios = axios.create({
   },
 });
 
-// Request Interceptor: Add Access Token from Cookies
+// Request Interceptor: Add Access Token from Cookies & User-Agent
 serverAxios.interceptors.request.use(async (config) => {
   try {
     const cookieStore = await cookies();
+    const headersList = await headers();
     const token = cookieStore.get('accessToken')?.value;
+    const userAgent = headersList.get('user-agent');
     
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (config.headers) {
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      if (userAgent) {
+        config.headers['User-Agent'] = userAgent;
+      }
     }
   } catch (error) {
-    // Ignore error if cookies() fails (e.g. static generation)
-    console.warn('Could not access cookies in serverHttpClient', error);
+    // Ignore error if cookies/headers fail (e.g. static generation)
+    console.warn('Could not access request context in serverHttpClient', error);
   }
   return config;
 });
