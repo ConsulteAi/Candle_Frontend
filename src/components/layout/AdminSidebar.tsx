@@ -24,7 +24,7 @@ const menuItems = [
   { name: 'Dashboard', href: '/backoffice', icon: LayoutDashboard },
   { name: 'Usuários', href: '/backoffice/users', icon: Users },
   { name: 'Transações', href: '/backoffice/transactions', icon: Wallet },
-  { name: 'Tipos de Consulta', href: '/backoffice/query-types', icon: Database, role: UserRole.MASTER },
+  { name: 'Tipos de Consulta', href: '/backoffice/query-types', icon: Database },
   { name: 'Provedores', href: '/backoffice/providers', icon: Activity, role: UserRole.MASTER },
   { name: 'Tenants', href: '/backoffice/tenants', icon: Building2, role: UserRole.MASTER },
 ];

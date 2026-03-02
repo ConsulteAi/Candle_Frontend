@@ -12,14 +12,14 @@ export default function QueryTypesPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // If user is loaded and not MASTER, redirect
-    if (user && user.role !== UserRole.MASTER) {
+    // If user is loaded and not MASTER or ADMIN, redirect
+    if (user && user.role !== UserRole.MASTER && user.role !== UserRole.ADMIN) {
       router.push('/backoffice');
     }
   }, [user, router]);
 
-  // If user is not yet loaded or not MASTER, show loading or nothing
-  if (!user || user.role !== UserRole.MASTER) {
+  // If user is not yet loaded or not MASTER/ADMIN, show loading
+  if (!user || (user.role !== UserRole.MASTER && user.role !== UserRole.ADMIN)) {
     return (
        <div className="flex h-screen items-center justify-center">
          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />

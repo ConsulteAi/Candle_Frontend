@@ -82,8 +82,10 @@ export function QueryTypesManager() {
 
   useEffect(() => {
     fetchQueryTypes();
-    fetchProviders();
-  }, []);
+    if (isMaster) {
+      fetchProviders();
+    }
+  }, [isMaster]);
 
   const handleSave = async () => {
     try {
@@ -228,7 +230,6 @@ export function QueryTypesManager() {
                      <Switch 
                         checked={qt.isActive}
                         onCheckedChange={() => handleToggle(qt.id)}
-                        disabled={!isMaster}
                      />
                   </TableCell>
                   <TableCell className="text-right">
