@@ -356,4 +356,6 @@ export interface UpdateTenantDto {
   asaasApiUrl?: string;
   asaasWebhookSecret?: string;
   isActive?: boolean;
+  domain?: string | null;
+  ownerId?: string | null;
 }

@@ -81,17 +81,27 @@ export function TenantsManager() {
 
   const handleSave = async () => {
     try {
+      const payloadDomain = formData.domain?.trim() || undefined;
+      const payloadOwnerId = formData.ownerId?.trim() || null;
+
       if (editingItem) {
         const updateData: UpdateTenantDto = {
           name: formData.name,
           asaasApiKey: formData.asaasApiKey,
           asaasApiUrl: formData.asaasApiUrl,
           asaasWebhookSecret: formData.asaasWebhookSecret,
+          domain: payloadDomain,
+          ownerId: payloadOwnerId,
         };
         await httpClient.patch(`/admin/tenants/${editingItem.id}`, updateData);
         toast({ title: 'Sucesso', description: 'Tenant atualizado.' });
       } else {
-        await httpClient.post('/admin/tenants', formData);
+        const createData = {
+          ...formData,
+          domain: payloadDomain,
+          ownerId: payloadOwnerId || undefined, // undefined for POST
+        };
+        await httpClient.post('/admin/tenants', createData);
         toast({ title: 'Sucesso', description: 'Tenant criado. Providers e QueryTypes foram clonados do default.' });
       }
       setIsModalOpen(false);
