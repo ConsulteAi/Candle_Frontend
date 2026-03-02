@@ -13,7 +13,8 @@ import {
   Database,
   Search,
   LogOut,
-  Activity
+  Activity,
+  Building2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,6 +26,7 @@ const menuItems = [
   { name: 'Transações', href: '/backoffice/transactions', icon: Wallet },
   { name: 'Tipos de Consulta', href: '/backoffice/query-types', icon: Database, role: UserRole.MASTER },
   { name: 'Provedores', href: '/backoffice/providers', icon: Activity, role: UserRole.MASTER },
+  { name: 'Tenants', href: '/backoffice/tenants', icon: Building2, role: UserRole.MASTER },
 ];
 
 export function AdminSidebar() {
