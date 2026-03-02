@@ -222,7 +222,7 @@ export function QueryTypesManager() {
                   <TableCell className="font-mono text-xs">{qt.code}</TableCell>
                   <TableCell>
                     <div className="font-medium">{qt.name}</div>
-                    <div className="text-xs text-slate-500">{qt.providerName}</div>
+                    {isMaster && <div className="text-xs text-slate-500">{qt.providerName}</div>}
                   </TableCell>
                   <TableCell>R$ {qt.cost.toFixed(2)}</TableCell>
                   <TableCell>R$ {qt.price.toFixed(2)}</TableCell>
