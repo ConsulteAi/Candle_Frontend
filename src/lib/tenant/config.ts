@@ -60,10 +60,15 @@ async function fetchTenantConfig(fallbackId: string): Promise<TenantConfig> {
   try {
     const apiUrl =
       process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:4000";
-    // Em modo dinâmico (com painel de admin que ajusta UI), cache agressivo no fetch
-    // gerava dados desatualizados. O backend já faz cache no Redis e invalida no save.
+    // Passamos o fallbackId (host original) no header x-tenant-domain
+    // para que o backend Middleware resolva o tenant correto no SSR.
+    // Usamos revalidateTag para limpar o cache de dados globalmente APENAS quando o Admin salva as configurações.
     const res = await fetch(`${apiUrl}/public/tenants/ui-config`, {
-      cache: "no-store",
+      headers: {
+        "x-tenant-domain": fallbackId,
+      },
+      next: { tags: ["tenant-config"] },
+      cache: "force-cache",
     });
 
     if (!res.ok) {
