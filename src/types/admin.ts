@@ -320,6 +320,17 @@ export interface UpdateQueryTypeDto extends Partial<CreateQueryTypeDto> {}
 
 // --- Tenant Management ---
 
+export interface TenantUiSettings {
+  name?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+  contactEmail?: string;
+  colors?: {
+    primary?: string;
+    primaryForeground?: string;
+  };
+}
+
 export interface Tenant {
   id: string;
   slug: string;
@@ -333,6 +344,7 @@ export interface Tenant {
   ownerId?: string | null;
   ownerName?: string;
   ownerEmail?: string;
+  uiSettings?: TenantUiSettings;
   _count?: {
     users: number;
     providers: number;

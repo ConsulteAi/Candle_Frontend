@@ -29,7 +29,7 @@ export async function generateMetadata(
   props: { params: Promise<{ tenant: string }> }
 ): Promise<Metadata> {
   const resolvedParams = await props.params;
-  const tenant = getTenantById(resolvedParams.tenant || 'candle');
+  const tenant = await getTenantById(resolvedParams.tenant || 'candle');
 
   return {
     title: {
@@ -50,7 +50,7 @@ export default async function RootLayout(props: Readonly<{
 }>) {
   // Await params per Next.js 15+ convention for dynamic routes
   const resolvedParams = await props.params;
-  const tenant = getTenantById(resolvedParams.tenant || 'candle');
+  const tenant = await getTenantById(resolvedParams.tenant || 'candle');
 
   return (
     <html lang="pt-BR" className={`${outfit.variable} ${dmSans.variable} ${inter.variable}`} suppressHydrationWarning>

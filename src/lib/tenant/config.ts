@@ -5,6 +5,7 @@ export interface TenantColors {
 
 export interface TenantConfig {
   id: string; // e.g., 'candle', 'cliente-a'
+  dbId?: string;
   domain: string; // e.g., 'candel.com.br', 'clientea.com'
   name: string; // e.g., 'ConsultaAi', 'Cliente A'
   logoUrl: string; // e.g., '/logo.png'
@@ -28,45 +29,66 @@ export const DEFAULT_TENANT: TenantConfig = {
 };
 
 /**
- * Parse the TENANTS_CONFIG environment variable
+ * Helper definition to parse API response to TenantConfig
  */
-export function getTenants(): TenantConfig[] {
+function parseTenantData(t: any, fallbackId: string): TenantConfig {
+  if (!t) return DEFAULT_TENANT;
+
+  const uiSettings = t.uiSettings || {};
+  const colors = uiSettings.colors || {};
+
+  return {
+    id: t.slug || fallbackId, // Frontend ID is the backend SLUG, use fallback if not returned
+    dbId: t.id || "",
+    domain: t.domain || "",
+    name: uiSettings.name || t.name || DEFAULT_TENANT.name,
+    logoUrl: uiSettings.logoUrl || DEFAULT_TENANT.logoUrl,
+    faviconUrl: uiSettings.faviconUrl || DEFAULT_TENANT.faviconUrl,
+    contactEmail: uiSettings.contactEmail || DEFAULT_TENANT.contactEmail,
+    colors: {
+      primary: colors.primary || DEFAULT_TENANT.colors.primary,
+      primaryForeground:
+        colors.primaryForeground || DEFAULT_TENANT.colors.primaryForeground,
+    },
+  };
+}
+
+/**
+ * Fetch a single tenant configuration from the dynamic backend API
+ */
+async function fetchTenantConfig(fallbackId: string): Promise<TenantConfig> {
   try {
-    const tenantsJson = process.env.TENANTS_CONFIG;
-    if (!tenantsJson) {
-      return [DEFAULT_TENANT];
+    const apiUrl =
+      process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:4000";
+    // Em modo dinâmico (com painel de admin que ajusta UI), cache agressivo no fetch
+    // gerava dados desatualizados. O backend já faz cache no Redis e invalida no save.
+    const res = await fetch(`${apiUrl}/public/tenants/ui-config`, {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      console.warn(`Failed to fetch tenant config`);
+      return DEFAULT_TENANT;
     }
-    return JSON.parse(tenantsJson) as TenantConfig[];
+
+    const data = await res.json();
+    return parseTenantData(data, fallbackId);
   } catch (error) {
-    console.error("Failed to parse TENANTS_CONFIG:", error);
-    return [DEFAULT_TENANT];
+    console.error("Failed to fetch tenant from API:", error);
+    return DEFAULT_TENANT;
   }
 }
 
 /**
  * Get tenant configuration based on the requested host
  */
-export function getTenantByHost(host: string): TenantConfig {
-  // Clear port for local testing
-  const hostname = host.split(":")[0];
-
-  const tenants = getTenants();
-
-  const tenant = tenants.find(
-    (t) => t.domain === hostname || t.domain === host,
-  );
-
-  if (!tenant) {
-    return DEFAULT_TENANT;
-  }
-
-  return tenant;
+export async function getTenantByHost(host: string): Promise<TenantConfig> {
+  return fetchTenantConfig(host);
 }
 
 /**
- * Get tenant configuration by its ID (useful for SSG/SSR components inside app/[tenant])
+ * Get tenant configuration by its ID (slug)
  */
-export function getTenantById(id: string): TenantConfig {
-  const tenants = getTenants();
-  return tenants.find((t) => t.id === id) || DEFAULT_TENANT;
+export async function getTenantById(id: string): Promise<TenantConfig> {
+  return fetchTenantConfig(id);
 }

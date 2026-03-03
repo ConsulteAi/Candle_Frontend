@@ -14,7 +14,8 @@ import {
   Search,
   LogOut,
   Activity,
-  Building2
+  Building2,
+  Palette
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,6 +28,7 @@ const menuItems = [
   { name: 'Tipos de Consulta', href: '/backoffice/query-types', icon: Database },
   { name: 'Provedores', href: '/backoffice/providers', icon: Activity, role: UserRole.MASTER },
   { name: 'Tenants', href: '/backoffice/tenants', icon: Building2, role: UserRole.MASTER },
+  { name: 'Identidade Visual', href: '/backoffice/ui-settings', icon: Palette },
 ];
 
 export function AdminSidebar() {

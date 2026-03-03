@@ -21,13 +21,13 @@ const authRoutes = ["/login", "/register"];
 /**
  * Middleware para proteção de rotas e Multi-tenant
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const url = request.nextUrl;
   const { pathname } = request.nextUrl;
 
   // 1. Tenant Resolution
   const hostname = request.headers.get("host") || "";
-  const tenant = getTenantByHost(hostname);
+  const tenant = await getTenantByHost(hostname);
 
   // 2. Authentication Checks
   const isPublicRoute = publicRoutes.some(
