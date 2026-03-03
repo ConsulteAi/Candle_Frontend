@@ -40,11 +40,6 @@ export default function TransactionPage() {
       
       if (result.success && result.data) {
         setPaymentData(result.data);
-        
-        // If already confirmed, show success
-        if (result.data.status === 'CONFIRMED' || result.data.status === 'RECEIVED') {
-          toast.success('Este pagamento já foi confirmado!');
-        }
       } else {
         setNotFound(true);
       }
@@ -68,8 +63,7 @@ export default function TransactionPage() {
       if (result.success && result.data) {
         if (result.data.status === 'CONFIRMED' || result.data.status === 'RECEIVED') {
           clearInterval(interval);
-          toast.success('Pagamento recebido!');
-          router.push('/carteira');
+          setPaymentData(result.data);
         }
       }
     }, 5000);
