@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { httpClient as api } from '@/lib/api/httpClient';
+import { revalidateTenantConfig } from '../../../app/actions/tenant';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -122,7 +123,10 @@ export function UiSettingsManager() {
       document.documentElement.style.setProperty('--primary', formData.primaryColor);
       document.documentElement.style.setProperty('--primary-foreground', formData.primaryForegroundColor);
 
-      // Force refresh so Server Components (like Sidebar) get the updated name
+      // Purge Next.js Vercel Edge Cache globally so all users see the new brand immediately
+      await revalidateTenantConfig();
+
+      // Force refresh so Server Components (like Sidebar) get the updated name locally
       setTimeout(() => {
         window.location.reload();
       }, 500);
