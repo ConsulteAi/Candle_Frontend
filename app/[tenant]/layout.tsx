@@ -1,5 +1,3 @@
-
-
 import type { Metadata } from "next";
 import { Inter, Outfit, DM_Sans } from "next/font/google";
 import "../globals.css";
@@ -48,7 +46,6 @@ export default async function RootLayout(props: Readonly<{
   children: React.ReactNode;
   params: Promise<{ tenant: string }>;
 }>) {
-  // Await params per Next.js 15+ convention for dynamic routes
   const resolvedParams = await props.params;
   const tenant = await getTenantById(resolvedParams.tenant || 'candle');
 

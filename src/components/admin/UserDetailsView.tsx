@@ -19,13 +19,22 @@ import { ptBR } from 'date-fns/locale';
 import { UserTransactionsList } from './UserTransactionsList';
 import { UserQueriesList } from './UserQueriesList';
 
+import { useAuth } from '@/hooks/useAuth';
+import { UserRole } from '@/types/auth';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
@@ -46,6 +55,7 @@ interface UserDetailsViewProps {
 
 export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
   const router = useRouter();
+  const { user: currentUser } = useAuth();
   const [user, setUser] = useState(initialUser);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,6 +64,11 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
   const [balanceAmount, setBalanceAmount] = useState('');
   const [balanceDescription, setBalanceDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Role Modal State
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
 
   const handleAdjustBalance = async () => {
     const amount = parseFloat(balanceAmount.replace(',', '.'));
@@ -111,6 +126,26 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
     }
   };
 
+  const handleRoleChange = async () => {
+    if (!selectedRole || selectedRole === user.role) {
+      setIsRoleModalOpen(false);
+      return;
+    }
+
+    setIsUpdatingRole(true);
+    try {
+      await httpClient.patch(`/admin/users/${user.id}/role`, { role: selectedRole });
+      toast.success('Papel atualizado com sucesso');
+      setUser(prev => ({ ...prev, role: selectedRole as any }));
+      setIsRoleModalOpen(false);
+      router.refresh();
+    } catch (error) {
+      toast.error('Erro ao atualizar papel');
+    } finally {
+      setIsUpdatingRole(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -126,6 +161,36 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
     }
   };
 
+  const getRoleBadge = (role: string) => {
+    switch (role) {
+      case UserRole.MASTER:
+        if (currentUser?.role !== UserRole.MASTER) return null;
+        return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-none">Master</Badge>;
+      case UserRole.ADMIN:
+        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-none">Admin</Badge>;
+      case UserRole.USER:
+        return <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 border-none">Usuário</Badge>;
+      default:
+        if (currentUser?.role !== UserRole.MASTER && role === UserRole.MASTER) return null;
+        return <Badge variant="outline">{role}</Badge>;
+    }
+  };
+
+  const canEditRole = 
+    currentUser?.role === UserRole.MASTER || 
+    (currentUser?.role === UserRole.ADMIN && user.role !== UserRole.MASTER && currentUser.email !== user.email);
+
+  const roleOptions = currentUser?.role === UserRole.MASTER 
+    ? [
+        { label: 'Master', value: UserRole.MASTER }, 
+        { label: 'Admin', value: UserRole.ADMIN }, 
+        { label: 'Usuário', value: UserRole.USER }
+      ]
+    : [
+        { label: 'Admin', value: UserRole.ADMIN }, 
+        { label: 'Usuário', value: UserRole.USER }
+      ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -138,6 +203,7 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold tracking-tight text-slate-900">{user.name}</h1>
               {getStatusBadge(user.status)}
+              {getRoleBadge(user.role)}
             </div>
             <p className="text-slate-500 text-sm flex items-center gap-2 mt-1">
               ID: <span className="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">{user.id}</span>
@@ -145,6 +211,15 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+           {canEditRole && (
+             <Button 
+               variant="outline" 
+               onClick={() => { setSelectedRole(user.role); setIsRoleModalOpen(true); }}
+               disabled={isLoading}
+             >
+               <Shield className="w-4 h-4 mr-2" /> Alterar Papel
+             </Button>
+           )}
            {user.status === 'ACTIVE' ? (
              <Button variant="destructive" onClick={() => handleStatusChange('SUSPENDED')} disabled={isLoading}>
                <Ban className="w-4 h-4 mr-2" /> Suspender Usuário
@@ -299,6 +374,46 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
              <Button variant="outline" onClick={() => setIsBalanceModalOpen(false)}>Cancelar</Button>
              <Button onClick={handleAdjustBalance} disabled={isSubmitting}>
                {isSubmitting ? 'Processando...' : 'Confirmar Ajuste'}
+             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Role Adjustment Modal */}
+      <Dialog open={isRoleModalOpen} onOpenChange={setIsRoleModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alterar Papel</DialogTitle>
+            <DialogDescription>
+              Altere as permissões de acesso de {user.name} na plataforma.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+             <div className="space-y-2">
+               <Label>Papel do Usuário</Label>
+               <Select value={selectedRole} onValueChange={setSelectedRole}>
+                 <SelectTrigger>
+                   <SelectValue placeholder="Selecione um papel" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {roleOptions.map((opt) => (
+                     <SelectItem key={opt.value} value={opt.value}>
+                       {opt.label}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+               <p className="text-xs text-slate-500 mt-2">
+                 Admin tem acesso ao painel. Usuário tem acesso apenas à área logada.
+               </p>
+             </div>
+          </div>
+          
+          <DialogFooter>
+             <Button variant="outline" onClick={() => setIsRoleModalOpen(false)}>Cancelar</Button>
+             <Button onClick={handleRoleChange} disabled={isUpdatingRole}>
+               {isUpdatingRole ? 'Processando...' : 'Confirmar'}
              </Button>
           </DialogFooter>
         </DialogContent>
