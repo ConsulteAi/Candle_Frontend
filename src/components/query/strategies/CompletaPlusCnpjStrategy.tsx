@@ -75,7 +75,7 @@ export function CompletaPlusCnpjStrategy({ data }: QueryStrategyProps<CompletaPl
                      <InfoBox 
                         label="Email"
                         value={data.company.email}
-                        icon={<Mail className="w-4 h-4 text-blue-500" />}
+                        icon={<Mail className="w-4 h-4 text-primary" />}
                      />
                   )}
                 </div>
@@ -189,7 +189,7 @@ export function CompletaPlusCnpjStrategy({ data }: QueryStrategyProps<CompletaPl
       {/* Queries History */}
       <StrategySectionWrapper
          title={`Histórico de Consultas (${data.queries.length})`}
-         icon={<Search className="w-5 h-5 text-blue-500" />}
+         icon={<Search className="w-5 h-5 text-primary" />}
          isEmpty={data.queries.length === 0}
          emptyMessage="Nenhuma consulta recente encontrada."
       >

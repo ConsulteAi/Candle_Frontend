@@ -35,7 +35,7 @@ export function SerasaCrednetPefinProtestoSpcPfStrategy({ data }: QueryStrategyP
     <div className="space-y-8 animate-in fade-in duration-500">
       
       {/* Header with Person Info */}
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-blue-500">
+      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
          <StrategyHeader 
            title={data.person.name}
            protocol={data.protocol}
@@ -49,12 +49,12 @@ export function SerasaCrednetPefinProtestoSpcPfStrategy({ data }: QueryStrategyP
            <InfoBox 
              label="Documento" 
              value={data.person.document}
-             icon={<User className="w-4 h-4 text-blue-500" />}
+             icon={<User className="w-4 h-4 text-primary" />}
            />
            <InfoBox 
              label="Nascimento" 
              value={formatDisplayDate(data.person.birthDate)}
-             icon={<Calendar className="w-4 h-4 text-blue-500" />}
+             icon={<Calendar className="w-4 h-4 text-primary" />}
            />
            {data.person.motherName && (
              <div className="col-span-2">
@@ -99,7 +99,7 @@ export function SerasaCrednetPefinProtestoSpcPfStrategy({ data }: QueryStrategyP
        {/* Company Participations */}
        <StrategySectionWrapper
          title="Participação em Empresas"
-         icon={<Briefcase className="w-5 h-5 text-blue-500" />}
+         icon={<Briefcase className="w-5 h-5 text-primary" />}
          count={data.companyParticipations?.length || 0}
          isEmpty={!data.companyParticipations || data.companyParticipations.length === 0}
        >
@@ -114,7 +114,7 @@ export function SerasaCrednetPefinProtestoSpcPfStrategy({ data }: QueryStrategyP
                    {company.socialReason}
                  </p>
                  <p className="text-xs text-gray-500 font-mono mt-0.5">CNPJ: {company.cnpj}</p>
-                 <div className="mt-2 text-xs font-medium text-blue-600 bg-blue-50 inline-block px-2 py-1 rounded">
+                 <div className="mt-2 text-xs font-medium text-primary bg-primary/10 inline-block px-2 py-1 rounded">
                    Participação: {company.participation}%
                  </div>
                </div>

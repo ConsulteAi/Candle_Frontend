@@ -35,8 +35,6 @@ export async function createRechargeAction(
       data: recharge,
     };
   } catch (error: any) {
-    console.error('Create recharge error:', error);
-
     // Erros de validação do backend
     if (error.response?.status === 400 && error.response?.data?.errors) {
       return {
@@ -68,7 +66,6 @@ export async function getTransactionsAction(
       data,
     };
   } catch (error: any) {
-    console.error('Get transactions error:', error);
     return {
       success: false,
       error: 'Erro ao buscar transações',
@@ -97,7 +94,6 @@ export async function checkPaymentStatusAction(
       data: status,
     };
   } catch (error: any) {
-    console.error('Check payment status error:', error);
     return {
       success: false,
       error: 'Erro ao verificar status do pagamento',
@@ -117,7 +113,6 @@ export async function cancelPaymentAction(
       success: true,
     };
   } catch (error: any) {
-    console.error('Cancel payment error:', error);
     return {
       success: false,
       error: 'Erro ao cancelar pagamento',
@@ -140,7 +135,6 @@ export async function refreshBalanceAction(): Promise<ActionState<number>> {
       data: data.balance,
     };
   } catch (error: any) {
-    console.error('Refresh balance error:', error);
     return {
       success: false,
       error: 'Erro ao atualizar saldo',
@@ -161,7 +155,6 @@ export async function getTransactionByIdAction(
       data: transaction,
     };
   } catch (error: any) {
-    console.error('Get transaction error:', error);
     return {
       success: false,
       error: 'Transação não encontrada',
@@ -200,7 +193,6 @@ export async function getPendingPaymentAction(): Promise<ActionState<RechargeRes
       data: fullDetails,
     };
   } catch (error: any) {
-    console.error('Get pending payment error:', error);
     return {
       success: false,
       error: 'Erro ao buscar pagamentos pendentes',

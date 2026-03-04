@@ -82,7 +82,7 @@ export function CategoryCard({ category, queryCount = 0, isLoading = false, clas
           </span>
 
           {category.enabled && (
-            <span className="text-sm font-semibold text-blue-600 flex items-center gap-1">
+            <span className="text-sm font-semibold text-primary flex items-center gap-1">
               Acessar
               <Icons.ArrowRight className="w-4 h-4" />
             </span>

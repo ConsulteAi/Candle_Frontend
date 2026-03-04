@@ -40,7 +40,6 @@ export function UserTransactionsList({ userId }: UserTransactionsListProps) {
       });
       setData(response.data);
     } catch (err) {
-      console.error(err);
       setError('Não foi possível carregar as transações.');
     } finally {
       setIsLoading(false);

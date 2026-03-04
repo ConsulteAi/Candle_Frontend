@@ -22,7 +22,7 @@ export function LocalizaStrategy({ data }: QueryStrategyProps<LocalizaResult>) {
     <div className="space-y-6 animate-in fade-in duration-500">
       
       {/* Basic Info Card */}
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-blue-500">
+      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
           <div className="flex flex-col gap-6">
              <div className="flex-1">
                <StrategyHeader 
@@ -38,13 +38,13 @@ export function LocalizaStrategy({ data }: QueryStrategyProps<LocalizaResult>) {
                  <InfoBox 
                    label="Documento" 
                    value={data.basicInfo.document}
-                   icon={<User className="w-4 h-4 text-blue-500" />}
+                   icon={<User className="w-4 h-4 text-primary" />}
                  />
                  {data.basicInfo.birthDate && (
                    <InfoBox 
                       label="Nascimento" 
                       value={formatDisplayDate(data.basicInfo.birthDate)}
-                      icon={<Calendar className="w-4 h-4 text-blue-500" />}
+                      icon={<Calendar className="w-4 h-4 text-primary" />}
                    />
                  )}
                  {data.basicInfo.motherName && (
@@ -65,14 +65,14 @@ export function LocalizaStrategy({ data }: QueryStrategyProps<LocalizaResult>) {
         {/* Contact Info */}
         <Card className="p-6 h-full border border-gray-100 shadow-lg">
             <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-              <Phone className="w-5 h-5 text-blue-500" />
+              <Phone className="w-5 h-5 text-primary" />
               Contatos
             </h3>
             
             <div className="space-y-6">
               {data.contact.mainPhone && (
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
-                  <span className="text-xs text-blue-600 dark:text-blue-300 font-bold uppercase tracking-wide">Telefone Principal</span>
+                <div className="p-4 bg-primary/10 dark:bg-primary/80/20 rounded-xl border border-primary/20 dark:border-primary/80">
+                  <span className="text-xs text-primary dark:text-primary/40 font-bold uppercase tracking-wide">Telefone Principal</span>
                   <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{data.contact.mainPhone}</p>
                 </div>
               )}

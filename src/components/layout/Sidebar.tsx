@@ -2,16 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  Search,
-  Wallet,
-  FileText,
-  Settings,
-  LogOut,
-} from 'lucide-react';
+import { LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { TenantBrand } from '@/components/ui/TenantBrand';
+import { TenantLogo } from '@/components/ui/TenantLogo';
 
 const navigation = [
   {
@@ -31,10 +26,8 @@ export function Sidebar() {
         {/* Logo */}
         <div className="flex h-16 items-center justify-center border-b border-gray-200 px-6">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-primary" />
-            <span className="text-xl font-display font-bold gradient-text">
-              ConsultaAi
-            </span>
+            <TenantLogo className="h-8 w-8" />
+            <TenantBrand className="text-xl gradient-text" />
           </Link>
         </div>
 
@@ -51,7 +44,7 @@ export function Sidebar() {
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
                   isActive
-                    ? 'bg-blue-50 text-blue-600 shadow-sm'
+                    ? 'bg-primary/10 text-primary shadow-sm'
                     : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                 )}
               >

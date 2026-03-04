@@ -22,7 +22,6 @@ export async function getBalanceAction(): Promise<ActionState<BalanceResponse> &
     const data = await BalanceService.getBalance();
     return { success: true, data };
   } catch (error: any) {
-    console.error('Get balance error:', error);
     return {
       success: false,
       error: error.response?.data?.message || 'Erro ao buscar saldo',

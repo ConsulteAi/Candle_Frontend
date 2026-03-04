@@ -1,62 +1,66 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { getTenantByHost } from "./src/lib/tenant/config";
 
 // Public routes that don't require authentication
 const publicRoutes = [
-  '/',
-  '/login',
-  '/register',
-  '/forgot-password',
-  '/termos',
-  '/privacidade',
-  '/lgpd',
-  '/sobre',
-  '/cookies',
+  "/",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/termos",
+  "/politica-de-privacidade",
+  "/lgpd",
+  "/sobre",
+  "/cookies",
 ];
 
 // Routes that should redirect to dashboard if already authenticated
-const authRoutes = ['/login', '/register'];
+const authRoutes = ["/login", "/register"];
 
 /**
- * Proxy middleware para proteção de rotas
- * Redireciona usuários não autenticados para /login
- * Redireciona usuários autenticados das páginas de auth para /
+ * Middleware para proteção de rotas e Multi-tenant
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
+  const url = request.nextUrl;
   const { pathname } = request.nextUrl;
 
-  // Check if route matches a public route or starts with public path
-  const isPublicRoute = publicRoutes.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
-  );
+  // 1. Tenant Resolution
+  const hostname = request.headers.get("host") || "";
+  const tenant = await getTenantByHost(hostname);
 
-  // Check if it's an auth route
+  // 2. Authentication Checks
+  const isPublicRoute = publicRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
-  // Get access token from cookies (will be set by server actions)
-  const accessToken = request.cookies.get('accessToken')?.value;
+  const accessToken = request.cookies.get("accessToken")?.value;
   const isAuthenticated = !!accessToken;
 
-  // If trying to access auth pages while authenticated, redirect to dashboard
+  // Se tentar acessar auth pages (ex: /login) estando logado, manda pro dashboard
   if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL('/', request.url));
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
   }
 
-  // If trying to access protected route without authentication
+  // Se tentar acessar protected route sem estar logado
   if (!isPublicRoute && !isAuthenticated) {
-    const loginUrl = new URL('/login', request.url);
-    // Add redirect parameter to return to original page after login
-    loginUrl.searchParams.set('redirect', pathname);
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Allow request to proceed
+  // 3. Rewrite request to the tenant folder
+  // Ex: /dashboard -> /[tenant]/dashboard
+  if (tenant) {
+    url.pathname = `/${tenant.id}${pathname}`;
+    return NextResponse.rewrite(url);
+  }
+
   return NextResponse.next();
 }
 
-/**
- * Configuração de quais rotas o proxy middleware deve ser executado
- */
 export const config = {
   matcher: [
     /*
@@ -65,7 +69,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public files (public folder)
+     * - api routes (if any global APIs need to bypass tenant rewrite)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

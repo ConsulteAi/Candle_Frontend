@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { TenantBrand } from '@/components/ui/TenantBrand';
 import { 
   LayoutDashboard, 
   Users, 
@@ -12,7 +13,9 @@ import {
   Database,
   Search,
   LogOut,
-  Activity
+  Activity,
+  Building2,
+  Palette
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,8 +25,10 @@ const menuItems = [
   { name: 'Dashboard', href: '/backoffice', icon: LayoutDashboard },
   { name: 'Usuários', href: '/backoffice/users', icon: Users },
   { name: 'Transações', href: '/backoffice/transactions', icon: Wallet },
-  { name: 'Tipos de Consulta', href: '/backoffice/query-types', icon: Database, role: UserRole.MASTER },
+  { name: 'Tipos de Consulta', href: '/backoffice/query-types', icon: Database },
   { name: 'Provedores', href: '/backoffice/providers', icon: Activity, role: UserRole.MASTER },
+  { name: 'Tenants', href: '/backoffice/tenants', icon: Building2, role: UserRole.MASTER },
+  { name: 'Identidade Visual', href: '/backoffice/ui-settings', icon: Palette },
 ];
 
 export function AdminSidebar() {
@@ -35,11 +40,11 @@ export function AdminSidebar() {
       {/* Header */}
       <div className="p-6 border-b border-slate-800">
         <Link href="/" className="flex items-center gap-2 group">
-           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-all">
+           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/30 transition-all">
              <BarChart3 className="h-5 w-5 text-white" />
            </div>
            <div className="flex flex-col">
-             <span className="font-display font-bold text-lg text-white leading-none tracking-tight">Consulte Ai</span>
+             <span className="font-display font-bold text-lg text-white leading-none tracking-tight"><TenantBrand /></span>
              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-0.5">Backoffice</span>
            </div>
         </Link>
@@ -55,11 +60,11 @@ export function AdminSidebar() {
               <div 
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
                   isActive 
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50' 
+                    ? 'bg-primary text-white shadow-lg shadow-primary/50' 
                     : 'hover:bg-slate-800 hover:text-white'
                 }`}
               >
-                <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-blue-400'}`} />
+                <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-primary/70'}`} />
                 <span className="font-medium text-sm">{item.name}</span>
                 {isActive && (
                   <motion.div

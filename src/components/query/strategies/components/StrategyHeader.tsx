@@ -59,8 +59,6 @@ export function StrategyHeader({
                        setIsDownloading(true);
                        await downloadPdf(pdfUrl, `relatorio-${protocol || 'documento'}.pdf`);
                      } catch (e) {
-                       console.error(e);
-                       // Fallback to old behavior if fetch fails completely (e.g. due to CORS or other network issues that window.open might handle differently)
                        window.open(pdfUrl, '_blank');
                      } finally {
                        setIsDownloading(false);

@@ -1,6 +1,6 @@
-import axios, { AxiosError } from 'axios';
-import { cookies, headers } from 'next/headers';
-import { env } from '@/lib/env';
+import axios, { AxiosError } from "axios";
+import { cookies, headers } from "next/headers";
+import { env } from "@/lib/env";
 
 /**
  * Server-side HTTP Client
@@ -12,37 +12,46 @@ const serverAxios = axios.create({
   baseURL: env.baseApiUrl,
   timeout: 30000,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Request Interceptor: Add Access Token from Cookies & User-Agent
+// Request Interceptor: Add Access Token from Cookies & User-Agent & Tenant Domain
 serverAxios.interceptors.request.use(async (config) => {
   try {
     const cookieStore = await cookies();
     const headersList = await headers();
-    const token = cookieStore.get('accessToken')?.value;
-    const userAgent = headersList.get('user-agent');
-    const forwardedFor = headersList.get('x-forwarded-for');
-    const realIp = headersList.get('x-real-ip');
-    
+    const token = cookieStore.get("accessToken")?.value;
+    const userAgent = headersList.get("user-agent");
+    const forwardedFor = headersList.get("x-forwarded-for");
+    const realIp = headersList.get("x-real-ip");
+
+    // Extract host for multi-tenant resolution
+    let currentDomain = headersList.get("host");
+    if (currentDomain) {
+      currentDomain = currentDomain.split(":")[0]; // localhost:3000 -> localhost
+    }
+
     if (config.headers) {
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
       if (userAgent) {
-        config.headers['User-Agent'] = userAgent;
+        config.headers["User-Agent"] = userAgent;
       }
       if (forwardedFor) {
-        config.headers['X-Forwarded-For'] = forwardedFor;
+        config.headers["X-Forwarded-For"] = forwardedFor;
       }
       if (realIp) {
-        config.headers['X-Real-IP'] = realIp;
+        config.headers["X-Real-IP"] = realIp;
       }
+
+      // Inject the Tenant Domain header for the backend
+      config.headers["X-Tenant-Domain"] = currentDomain || "consultaai.net.br"; // Fallback
     }
   } catch (error) {
     // Ignore error if cookies/headers fail (e.g. static generation)
-    console.warn('Could not access request context in serverHttpClient', error);
+    console.warn("Could not access request context in serverHttpClient", error);
   }
   return config;
 });
@@ -59,49 +68,50 @@ serverAxios.interceptors.response.use(
 
       try {
         const cookieStore = await cookies();
-        const refreshToken = cookieStore.get('refreshToken')?.value;
+        const refreshToken = cookieStore.get("refreshToken")?.value;
 
         if (!refreshToken) {
-            // No refresh token, clear session and throw
-            try {
-              cookieStore.delete('accessToken');
-              cookieStore.delete('refreshToken');
-            } catch (e) {
-              // Ignore cookie errors (e.g. inside Server Component)
-            }
-            return Promise.reject(error);
+          // No refresh token, clear session and throw
+          try {
+            cookieStore.delete("accessToken");
+            cookieStore.delete("refreshToken");
+          } catch (e) {
+            // Ignore cookie errors (e.g. inside Server Component)
+          }
+          return Promise.reject(error);
         }
 
         // Call refresh endpoint directly (bypass interceptors to avoid loops)
         const refreshResponse = await axios.post(
           `${env.baseApiUrl}/auth/refresh`,
           { refreshToken },
-          { headers: { 'Content-Type': 'application/json' } }
+          { headers: { "Content-Type": "application/json" } },
         );
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshResponse.data;
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+          refreshResponse.data;
 
         if (!newAccessToken) {
-            throw new Error('Refresh failed: No access token returned');
+          throw new Error("Refresh failed: No access token returned");
         }
 
         // Update Cookies
-        const isProduction = process.env.NODE_ENV === 'production';
+        const isProduction = process.env.NODE_ENV === "production";
         const cookieOptions = {
           httpOnly: true,
           secure: isProduction,
-          sameSite: 'lax' as const,
+          sameSite: "lax" as const,
         };
 
         try {
           // Access Token (24 hours)
-          cookieStore.set('accessToken', newAccessToken, {
+          cookieStore.set("accessToken", newAccessToken, {
             ...cookieOptions,
             maxAge: 60 * 60 * 24,
           });
 
           // Refresh Token (7 days)
-          cookieStore.set('refreshToken', newRefreshToken, {
+          cookieStore.set("refreshToken", newRefreshToken, {
             ...cookieOptions,
             maxAge: 60 * 60 * 24 * 7,
           });
@@ -112,27 +122,25 @@ serverAxios.interceptors.response.use(
 
         // Update Authorization header and retry
         if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         }
-        
-        return serverAxios(originalRequest);
 
+        return serverAxios(originalRequest);
       } catch (refreshError) {
-        console.error('Server refresh token failed:', refreshError);
         // Clear session on failure
         try {
-            const cookieStore = await cookies();
-            cookieStore.delete('accessToken');
-            cookieStore.delete('refreshToken');
+          const cookieStore = await cookies();
+          cookieStore.delete("accessToken");
+          cookieStore.delete("refreshToken");
         } catch (e) {
-            // ignore
+          // ignore
         }
         return Promise.reject(refreshError);
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export const serverHttpClient = serverAxios;

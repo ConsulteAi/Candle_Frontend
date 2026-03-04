@@ -51,7 +51,7 @@ export default function QuerySidebar() {
         </ul>
       </div>
 
-      <div className="rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 p-6 text-white">
+      <div className="rounded-2xl bg-gradient-to-br from-primary to-cyan-500 p-6 text-white">
         <h3 className="font-bold mb-2">Precisa de ajuda?</h3>
         <p className="text-sm text-white/80 mb-4">
           Nossa equipe está disponível para tirar suas dúvidas sobre esta
@@ -59,7 +59,7 @@ export default function QuerySidebar() {
         </p>
         <Button
           variant="secondary"
-          className="w-full bg-white text-blue-600 hover:bg-white/90"
+          className="w-full bg-white text-primary hover:bg-white/90"
         >
           Falar com suporte
         </Button>

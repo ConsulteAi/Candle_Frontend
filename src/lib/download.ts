@@ -19,7 +19,6 @@ export const downloadPdf = async (url: string, fileName: string = 'documento.pdf
         // Use absolute URL to avoid potential relative path resolution issues
         const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
         const proxyUrl = `${baseUrl}/api/pdf-proxy`;
-        console.log('Attempting proxy fetch (POST):', proxyUrl);
         return fetch(proxyUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -55,7 +54,6 @@ export const downloadPdf = async (url: string, fileName: string = 'documento.pdf
         return;
       }
       
-      console.error('Could not extract PDF from JSON response', data);
       throw new Error('Formato de resposta desconhecido');
     } else if (contentType?.includes('text/xml') || contentType?.includes('application/xml')) {
         const text = await response.text();
@@ -94,11 +92,9 @@ export const downloadPdf = async (url: string, fileName: string = 'documento.pdf
     // 1. Try direct fetch first
     try {
         // Skip direct fetch for known CORS-restricted domains to avoid console errors
-        // TODO: change to correct api url
         if (url.includes('api.consultasbigtech.com.br') ||
             url.includes('api.iconsultei.com.br') ||
             url.includes('api.sollosconsultas.com.br')) {
-           console.log('Skipping direct fetch for known CORS domain, using proxy immediately.');
            throw new Error('Force proxy');
         }
 
@@ -116,7 +112,6 @@ export const downloadPdf = async (url: string, fileName: string = 'documento.pdf
         await processResponse(proxyResponse);
     }
   } catch (error) {
-    console.error('Error downloading PDF:', error);
     throw error;
   }
 };

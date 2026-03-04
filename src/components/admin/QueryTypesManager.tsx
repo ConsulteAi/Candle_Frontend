@@ -23,6 +23,7 @@ import { Plus, Search, Edit, Loader2 } from 'lucide-react';
 import { httpClient } from '@/lib/api/httpClient';
 import type { QueryType, CreateQueryTypeDto, PaginatedResponse, Provider } from '@/types/admin';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuthStore } from '@/store/authStore';
 
 export function QueryTypesManager() {
   const [queryTypes, setQueryTypes] = useState<QueryType[]>([]);
@@ -32,6 +33,8 @@ export function QueryTypesManager() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<QueryType | null>(null);
   const { toast } = useToast();
+  const user = useAuthStore(state => state.user);
+  const isMaster = user?.role === 'MASTER';
 
   const [formData, setFormData] = useState<Partial<CreateQueryTypeDto>>({
     code: '',
@@ -69,14 +72,20 @@ export function QueryTypesManager() {
       const response = await httpClient.get<Provider[]>('/admin/providers');
       setProviders(response.data);
     } catch (error) {
-      console.error('Failed to fetch providers', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível carregar os provedores.',
+        variant: 'destructive'
+      });
     }
   };
 
   useEffect(() => {
     fetchQueryTypes();
-    fetchProviders();
-  }, []);
+    if (isMaster) {
+      fetchProviders();
+    }
+  }, [isMaster]);
 
   const handleSave = async () => {
     try {
@@ -173,9 +182,11 @@ export function QueryTypesManager() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button onClick={() => openModal()}>
-          <Plus className="mr-2 h-4 w-4" /> Nova Consulta
-        </Button>
+        {isMaster && (
+          <Button onClick={() => openModal()}>
+            <Plus className="mr-2 h-4 w-4" /> Nova Consulta
+          </Button>
+        )}
       </div>
 
       <div className="rounded-md border bg-white">
@@ -211,7 +222,7 @@ export function QueryTypesManager() {
                   <TableCell className="font-mono text-xs">{qt.code}</TableCell>
                   <TableCell>
                     <div className="font-medium">{qt.name}</div>
-                    <div className="text-xs text-slate-500">{qt.providerName}</div>
+                    {isMaster && <div className="text-xs text-slate-500">{qt.providerName}</div>}
                   </TableCell>
                   <TableCell>R$ {qt.cost.toFixed(2)}</TableCell>
                   <TableCell>R$ {qt.price.toFixed(2)}</TableCell>
@@ -239,14 +250,16 @@ export function QueryTypesManager() {
             <DialogTitle>{editingItem ? 'Editar Consulta' : 'Nova Consulta'}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Código</Label>
-              <Input 
-                className="col-span-3"
-                value={formData.code}
-                onChange={(e) => setFormData({...formData, code: e.target.value})}
-              />
-            </div>
+            {isMaster && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Código</Label>
+                <Input 
+                  className="col-span-3"
+                  value={formData.code}
+                  onChange={(e) => setFormData({...formData, code: e.target.value})}
+                />
+              </div>
+            )}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Nome</Label>
               <Input 
@@ -263,23 +276,27 @@ export function QueryTypesManager() {
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Endpoint</Label>
-              <Input 
-                className="col-span-3"
-                value={formData.endpoint}
-                onChange={(e) => setFormData({...formData, endpoint: e.target.value})}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Preço Cache</Label>
-              <Input 
-                 type="number"
-                className="col-span-3"
-                value={formData.cachedPrice}
-                onChange={(e) => setFormData({...formData, cachedPrice: parseFloat(e.target.value)})}
-              />
-            </div>
+            {isMaster && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Endpoint</Label>
+                <Input 
+                  className="col-span-3"
+                  value={formData.endpoint}
+                  onChange={(e) => setFormData({...formData, endpoint: e.target.value})}
+                />
+              </div>
+            )}
+            {isMaster && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Preço Cache</Label>
+                <Input 
+                   type="number"
+                  className="col-span-3"
+                  value={formData.cachedPrice}
+                  onChange={(e) => setFormData({...formData, cachedPrice: parseFloat(e.target.value)})}
+                />
+              </div>
+            )}
              <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Preço</Label>
               <Input 
@@ -296,26 +313,29 @@ export function QueryTypesManager() {
                 className="col-span-3"
                 value={formData.cost}
                 onChange={(e) => setFormData({...formData, cost: parseFloat(e.target.value)})}
+                disabled={!isMaster}
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Provedor</Label>
-              <div className="col-span-3">
-                 <Select 
-                   value={formData.providerId} 
-                   onValueChange={(value) => setFormData({...formData, providerId: value})}
-                 >
-                   <SelectTrigger>
-                     <SelectValue placeholder="Selecione um provedor" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     {providers.map((p) => (
-                       <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
+            {isMaster && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Provedor</Label>
+                <div className="col-span-3">
+                   <Select 
+                     value={formData.providerId} 
+                     onValueChange={(value) => setFormData({...formData, providerId: value})}
+                   >
+                     <SelectTrigger>
+                       <SelectValue placeholder="Selecione um provedor" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {providers.map((p) => (
+                         <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                </div>
               </div>
-            </div>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancelar</Button>

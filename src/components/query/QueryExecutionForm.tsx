@@ -241,11 +241,11 @@ export function QueryExecutionForm({
 
 
       {/* Price info */}
-      <div className="p-4 rounded-lg bg-blue-50 border border-blue-100">
+      <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-gray-700">Valor da consulta:</span>
           <div className="text-right">
-            <span className="text-2xl font-bold text-blue-600">
+            <span className="text-2xl font-bold text-primary">
               R$ {currentPrice.toFixed(2)}
             </span>
             {queryType.cachedPrice < queryType.price && (

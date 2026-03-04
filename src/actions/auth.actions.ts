@@ -33,7 +33,7 @@ export async function loginAction(
             const user = await AuthService.getMe(data.accessToken);
             data.user = user;
         } catch (error) {
-            console.error('Failed to fetch user details after login:', error);
+            // ignore error
         }
     }
 
@@ -62,7 +62,6 @@ export async function loginAction(
       data,
     };
   } catch (error: any) {
-    console.error('Login error:', error);
 
     // Erros de validação do backend
     if (error.response?.status === 400 && error.response?.data?.errors) {
@@ -121,7 +120,6 @@ export async function registerAction(
       const user = await AuthService.getMe(tokens.accessToken);
       data.user = sanitizeUser(user);
     } catch (error) {
-      console.error('Failed to fetch user details after registration:', error);
       // Continue without user data - will be fetched on next page load
     }
 
@@ -145,8 +143,6 @@ export async function registerAction(
       data,
     };
   } catch (error: any) {
-    console.error('Register error:', error);
-
     // Erros de validação do backend
     if (error.response?.status === 400 && error.response?.data?.errors) {
       return {
@@ -182,7 +178,6 @@ export async function getMeAction(): Promise<ActionState<User>> {
       data: sanitizeUser(data),
     };
   } catch (error: any) {
-    console.error('GetMe error:', error);
     return {
       success: false,
       error: 'Erro ao buscar dados do usuário',
@@ -206,8 +201,6 @@ export async function logoutAction(): Promise<ActionState<void>> {
       success: true,
     };
   } catch (error: any) {
-    console.error('Logout error:', error);
-
     // Clear cookies even if API call fails
     const cookieStore = await cookies();
     cookieStore.delete('accessToken');
@@ -233,8 +226,6 @@ export async function changePasswordAction(
       success: true,
     };
   } catch (error: any) {
-    console.error('Change password error:', error);
-
     if (error.response?.status === 401) {
       return {
         success: false,
@@ -262,8 +253,6 @@ export async function updateProfileAction(
       data: sanitizeUser(updatedUser),
     };
   } catch (error: any) {
-    console.error('Update profile error:', error);
-
     if (error.response?.status === 400 && error.response?.data?.errors) {
       return {
         success: false,
@@ -308,8 +297,6 @@ export async function refreshTokenAction(
       data: tokens,
     };
   } catch (error: any) {
-    console.error('Refresh token error:', error);
-
     // Clear cookies on refresh failure
     const cookieStore = await cookies();
     cookieStore.delete('accessToken');

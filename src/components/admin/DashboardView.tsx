@@ -107,7 +107,7 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
           value={overview?.revenueThisMonth.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) ?? 'R$ 0,00'}
           subtext={`+${overview?.revenueToday.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} hoje`}
           icon={TrendingUp}
-          colorClass="text-blue-600 bg-blue-600"
+          colorClass="text-primary bg-primary"
         />
 
         {/* PROFIT - HIGHLIGHTED */}
@@ -164,8 +164,8 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
                     <AreaChart data={revenueData?.revenueByDay || []}>
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -195,7 +195,7 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
                           padding: '12px 16px'
                         }}
                         formatter={(value: any) => [
-                          <span key="val" className="font-bold text-blue-600">R$ {value}</span>, 
+                          <span key="val" className="font-bold text-primary">R$ {value}</span>, 
                           <span key="label" className="text-slate-500 font-medium">Receita</span>
                         ]}
                         labelFormatter={(label) => new Date(label).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
@@ -203,7 +203,7 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
                       <Area 
                         type="monotone" 
                         dataKey="amount" 
-                        stroke="#3b82f6" 
+                        stroke="hsl(var(--primary))" 
                         strokeWidth={3}
                         fillOpacity={1} 
                         fill="url(#colorRevenue)" 
@@ -243,7 +243,7 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
                            <tr key={query.id} className="hover:bg-slate-50/50 transition-colors group">
                              <td className="px-6 py-4">
                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs group-hover:scale-110 transition-transform">
+                                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs group-hover:scale-110 transition-transform">
                                     {query.code.substring(0, 2)}
                                   </div>
                                   <div>
@@ -330,25 +330,25 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
            </Card>
 
            {/* Quick Actions or Summary */}
-           <Card className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-none shadow-xl">
+           <Card className="bg-gradient-to-br from-primary to-primary/80 text-white border-none shadow-xl">
              <CardHeader>
                <CardTitle className="text-white">Resumo Operacional</CardTitle>
              </CardHeader>
              <CardContent className="space-y-4">
                <div className="flex justify-between items-center border-b border-white/20 pb-3">
-                 <span className="text-blue-100 text-sm">Saldo em Circulação</span>
+                 <span className="text-white/80 text-sm">Saldo em Circulação</span>
                  <span className="font-bold text-lg">
                    {overview?.totalBalanceInCirculation.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                  </span>
                </div>
                <div className="flex justify-between items-center border-b border-white/20 pb-3">
-                 <span className="text-blue-100 text-sm">Custo Operacional</span>
+                 <span className="text-white/80 text-sm">Custo Operacional</span>
                  <span className="font-bold text-lg">
                    {queriesStats?.totalCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                  </span>
                </div>
                <div className="pt-2">
-                 <div className="flex items-center gap-2 text-sm text-blue-100 mb-2">
+                 <div className="flex items-center gap-2 text-sm text-white/80 mb-2">
                    <Activity className="w-4 h-4" /> Margem de Lucro Atual
                  </div>
                  {/* Profit Margin Calculation (Avoid division by zero) */}

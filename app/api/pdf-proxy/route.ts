@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
       headers,
     });
   } catch (error) {
-    console.error('Proxy Fetch Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

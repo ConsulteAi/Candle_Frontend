@@ -60,7 +60,6 @@ export function useAuth() {
         }
 
         if (result.fieldErrors) {
-          console.log(result.fieldErrors);
           return { success: false, fieldErrors: result.fieldErrors };
         }
 

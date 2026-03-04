@@ -40,8 +40,6 @@ export async function assessCreditCpfAction(
       data: result,
     };
   } catch (error: any) {
-    console.error('Assess CPF credit error:', error);
-
     // Saldo insuficiente
     if (error.response?.status === 402) {
       return {
@@ -84,7 +82,6 @@ export async function assessPremiumAction(
       data: result,
     };
   } catch (error: any) {
-    console.error('Assess premium credit error:', error);
 
     if (error.response?.status === 402) {
       return {
@@ -126,7 +123,6 @@ export async function assessCorporateAction(
       data: result,
     };
   } catch (error: any) {
-    console.error('Assess corporate credit error:', error);
 
     if (error.response?.status === 402) {
       return {
@@ -168,7 +164,6 @@ export async function createQueryAction(
       data: result,
     };
   } catch (error: any) {
-    console.error('Create query error:', error);
 
     if (error.response?.status === 402) {
       return {
@@ -205,7 +200,6 @@ export async function getQueryHistoryAction(
       data,
     };
   } catch (error: any) {
-    console.error('Get query history error:', error);
     return {
       success: false,
       error: 'Erro ao buscar histórico de consultas',
@@ -226,7 +220,6 @@ export async function getQueryByIdAction(
       data,
     };
   } catch (error: any) {
-    console.error('Get query by ID error:', error);
     return {
       success: false,
       error: 'Erro ao buscar consulta',
@@ -247,7 +240,6 @@ export async function getQueryByProtocolAction(
       data,
     };
   } catch (error: any) {
-    console.error('Get query by protocol error:', error);
     return {
       success: false,
       error: 'Erro ao buscar consulta',

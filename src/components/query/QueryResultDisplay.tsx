@@ -37,8 +37,8 @@ export function QueryResultDisplay({ query, className }: QueryResultDisplayProps
             {/* Protocolo Section */}
             <div className="p-4 flex flex-col justify-center">
                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                     <Hash className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <div className="p-1.5 bg-primary/10 dark:bg-primary/80/20 rounded-md">
+                     <Hash className="w-3.5 h-3.5 text-primary dark:text-primary/50" />
                   </div>
                   <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Consulta</span>
                </div>

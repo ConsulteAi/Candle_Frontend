@@ -1,5 +1,5 @@
-import { UserRole } from './auth';
-import { BillingType, PaymentStatus } from './payment';
+import { UserRole } from "./auth";
+import { BillingType, PaymentStatus } from "./payment";
 
 // --- Dashboard & Stats Types ---
 
@@ -55,7 +55,7 @@ export interface DashboardQueries {
 }
 
 export interface RevenueStats {
-  period: 'day' | 'week' | 'month';
+  period: "day" | "week" | "month";
   startDate: string;
   endDate: string;
   totalRevenue: number;
@@ -89,7 +89,7 @@ export interface ProviderStats {
     successRate: number | null;
     lastHealthCheck: string | null;
     lastErrorAt: string | null;
-    healthStatus: 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
+    healthStatus: "healthy" | "degraded" | "unhealthy" | "unknown";
     queryTypesCount: number;
     queriesLast24h: number;
   }>;
@@ -103,7 +103,7 @@ export interface AdminUser {
   name: string;
   cpfCnpj: string;
   phone?: string;
-  status: 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED' | 'BANNED';
+  status: "PENDING_VERIFICATION" | "ACTIVE" | "SUSPENDED" | "BANNED";
   role: UserRole;
   emailVerifiedAt?: string;
   createdAt: string;
@@ -233,7 +233,7 @@ export interface AdminQuery {
   };
   providerId: string;
   providerName: string;
-  status: 'SUCCESS' | 'FAILED' | 'PENDING' | 'PROCESSING';
+  status: "SUCCESS" | "FAILED" | "PENDING" | "PROCESSING";
   price: number;
   durationMs: number;
   createdAt: string;
@@ -317,3 +317,57 @@ export interface CreateQueryTypeDto {
 }
 
 export interface UpdateQueryTypeDto extends Partial<CreateQueryTypeDto> {}
+
+// --- Tenant Management ---
+
+export interface TenantUiSettings {
+  name?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+  contactEmail?: string;
+  colors?: {
+    primary?: string;
+    primaryForeground?: string;
+  };
+}
+
+export interface Tenant {
+  id: string;
+  slug: string;
+  name: string;
+  asaasApiKey: string;
+  asaasApiUrl: string;
+  asaasWebhookSecret: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  ownerId?: string | null;
+  ownerName?: string;
+  ownerEmail?: string;
+  uiSettings?: TenantUiSettings;
+  _count?: {
+    users: number;
+    providers: number;
+    queryTypes: number;
+  };
+}
+
+export interface CreateTenantDto {
+  slug: string;
+  name: string;
+  asaasApiKey: string;
+  asaasApiUrl?: string;
+  asaasWebhookSecret: string;
+  domain?: string;
+  ownerId?: string;
+}
+
+export interface UpdateTenantDto {
+  name?: string;
+  asaasApiKey?: string;
+  asaasApiUrl?: string;
+  asaasWebhookSecret?: string;
+  isActive?: boolean;
+  domain?: string | null;
+  ownerId?: string | null;
+}

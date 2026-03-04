@@ -40,7 +40,7 @@ export function QueryFilters({
                 onClick={() => onFilterChange(tab.id as FilterType)}
                 className={cn(
                   "relative px-6 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 z-10",
-                  filter === tab.id ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+                  filter === tab.id ? "text-primary" : "text-gray-500 hover:text-gray-700"
                 )}
               >
                 {filter === tab.id && (
@@ -59,13 +59,13 @@ export function QueryFilters({
           {/* Search Input */}
           <div className="w-full md:w-96">
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-primary transition-colors" />
               <input
                 type="text"
                 placeholder="Buscar consulta..."
                 value={search}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-100 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all outline-none font-medium text-gray-700 placeholder:text-gray-400"
+                className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-100 rounded-2xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-medium text-gray-700 placeholder:text-gray-400"
               />
             </div>
           </div>

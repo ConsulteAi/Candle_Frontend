@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Download, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { QueryStrategyProps } from '@/types/query-strategies';
+import { toast } from 'sonner';
 
 export function DefaultStrategy({ data, queryId }: QueryStrategyProps) {
   const [copied, setCopied] = useState(false);
@@ -14,7 +15,7 @@ export function DefaultStrategy({ data, queryId }: QueryStrategyProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy:', error);
+      toast.error('Não foi possível copiar o resultado.');
     }
   };
 

@@ -42,7 +42,6 @@ export function useQueryExecution() {
 
       return result.data;
     } catch (error) {
-      console.error('Error executing query:', error);
       const errorMsg = 'Erro inesperado ao executar consulta. Tente novamente.';
       setError(errorMsg);
       return null;
@@ -66,7 +65,6 @@ export function useQueryExecution() {
 
       return result.data;
     } catch (error) {
-      console.error('Error fetching query history:', error);
       return null;
     } finally {
       setIsLoading(false);
@@ -107,7 +105,6 @@ export function useQueryExecution() {
 
       return historyEntry;
     } catch (error) {
-      console.error('Error fetching query by ID:', error);
       toast.error('Erro ao buscar consulta');
       return null;
     } finally {

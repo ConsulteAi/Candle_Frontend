@@ -58,8 +58,6 @@ export async function assessCreditAction(
       data: result,
     };
   } catch (error) {
-    console.error("Error in assessCreditAction:", error);
-
     return {
       status: "error",
       error: isApiError(error)
@@ -97,8 +95,6 @@ export async function assessPremiumCreditAction(
       data: result,
     };
   } catch (error) {
-    console.error("Error in assessPremiumCreditAction:", error);
-
     return {
       status: "error",
       error: isApiError(error)
@@ -136,8 +132,6 @@ export async function assessCorporateAction(
       data: result,
     };
   } catch (error) {
-    console.error("Error in assessCorporateAction:", error);
-
     return {
       status: "error",
       error: isApiError(error)

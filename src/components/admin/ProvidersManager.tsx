@@ -247,7 +247,7 @@ export function ProvidersManager() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                         <Button variant="ghost" size="icon" onClick={() => handleHealthCheck(p.id)} title="Verificar Saúde">
-                           <Activity className="h-4 w-4 text-blue-500" />
+                           <Activity className="h-4 w-4 text-primary" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => openModal(p)}>
                            <Edit className="h-4 w-4" />

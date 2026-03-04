@@ -29,7 +29,6 @@ export async function executeQueryAction(
 
     return { success: true, data: response };
   } catch (error: any) {
-    console.error('Execute query error:', error);
 
     if (error.response?.status === 402) {
       return { success: false, error: 'Saldo insuficiente. Recarregue sua carteira.' };
@@ -50,7 +49,6 @@ export async function getQueryHistoryAction(
     const data = await QueryExecutionService.getQueryHistory(page, limit);
     return { success: true, data };
   } catch (error: any) {
-    console.error('Get query history error:', error);
     return { success: false, error: 'Erro ao buscar histórico' };
   }
 }
@@ -62,7 +60,6 @@ export async function getQueryByIdAction(
     const data = await QueryExecutionService.getQueryById(id);
     return { success: true, data };
   } catch (error: any) {
-    console.error('Get query by ID error:', error);
     return { success: false, error: 'Erro ao buscar consulta' };
   }
 }

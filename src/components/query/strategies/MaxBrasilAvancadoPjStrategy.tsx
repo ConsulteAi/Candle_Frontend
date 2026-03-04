@@ -83,7 +83,7 @@ export function MaxBrasilAvancadoPjStrategy({ data }: QueryStrategyProps<MaxBras
          <Card className="overflow-hidden border border-gray-100 shadow-lg">
            <div className="p-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
               <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-500" />
+                <Users className="w-5 h-5 text-primary" />
                 Quadro Societário
               </h3>
            </div>

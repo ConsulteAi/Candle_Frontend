@@ -26,7 +26,7 @@ export function SummaryCard({
 }: SummaryCardProps) {
   
   const colors = {
-    blue: "bg-blue-50 text-blue-700 border-blue-100",
+    blue: "bg-primary/10 text-primary/90 border-primary/20",
     red: "bg-red-50 text-red-700 border-red-100",
     green: "bg-green-50 text-green-700 border-green-100",
     gray: "bg-gray-50 text-gray-700 border-gray-100",

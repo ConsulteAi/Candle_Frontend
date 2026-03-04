@@ -99,7 +99,7 @@ export function UsersClientView({ initialData }: UsersClientViewProps) {
       case 'MASTER':
         return <Badge className="bg-purple-100 text-purple-700 border-purple-200">MASTER</Badge>;
       case 'ADMIN':
-        return <Badge className="bg-blue-100 text-blue-700 border-blue-200">ADMIN</Badge>;
+        return <Badge className="bg-primary/10 text-primary border-primary/20">ADMIN</Badge>;
       default:
         return <span className="text-slate-500 text-sm">Usuário</span>;
     }
@@ -183,7 +183,7 @@ export function UsersClientView({ initialData }: UsersClientViewProps) {
         </div>
         <div className="flex items-center gap-2">
            <Button 
-             className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
+             className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20"
              onClick={handleExportCsv}
              disabled={isExporting}
            >

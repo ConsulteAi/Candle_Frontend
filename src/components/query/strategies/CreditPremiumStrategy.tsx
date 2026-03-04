@@ -42,8 +42,8 @@ export function CreditPremiumStrategy({ data }: QueryStrategyProps<PremiumCredit
 
         {/* Status Card (Left) - Mimics ScoreGauge layout */}
         <div className="md:col-span-4">
-           <Card className="h-full relative overflow-hidden border-2 border-blue-100 dark:border-blue-900 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-800 p-0">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl" />
+           <Card className="h-full relative overflow-hidden border-2 border-primary/20 dark:border-primary/80 bg-gradient-to-br from-white to-primary/10 dark:from-gray-900 dark:to-gray-800 p-0">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/50/10 rounded-full blur-3xl" />
 
               <div className="relative z-10 flex flex-col items-center justify-center py-8 h-full">
                 <div className="relative mb-4">
@@ -270,7 +270,7 @@ export function CreditPremiumStrategy({ data }: QueryStrategyProps<PremiumCredit
       {/* Queries Table */}
        <StrategySectionWrapper
          title={`Histórico de Consultas (${data.queries?.length || 0})`}
-         icon={<Eye className="w-5 h-5 text-blue-500" />}
+         icon={<Eye className="w-5 h-5 text-primary" />}
          isEmpty={!data.queries || data.queries.length === 0}
          emptyMessage="Nenhuma consulta recente."
       >

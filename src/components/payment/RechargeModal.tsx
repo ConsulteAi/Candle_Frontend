@@ -140,8 +140,8 @@ export function RechargeModal({ isOpen, onClose, onSuccess }: RechargeModalProps
                       onClick={() => handleAmountSelect(value)}
                       className={`p-4 rounded-xl border-2 transition-all font-semibold ${
                         amount === value && !customAmount
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 hover:border-blue-300 text-gray-700'
+                          ? 'border-primary bg-primary/10 text-primary/90'
+                          : 'border-gray-200 hover:border-primary/40 text-gray-700'
                       }`}
                     >
                       R$ {value}
@@ -159,7 +159,7 @@ export function RechargeModal({ isOpen, onClose, onSuccess }: RechargeModalProps
                   value={customAmount}
                   onChange={(e) => handleCustomAmountChange(e.target.value)}
                   placeholder="R$ 0,00"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors"
                 />
               </div>
 
@@ -181,7 +181,7 @@ export function RechargeModal({ isOpen, onClose, onSuccess }: RechargeModalProps
               <div>
                 <button
                   onClick={() => setStep('amount')}
-                  className="text-sm text-blue-500 hover:text-blue-600 mb-4"
+                  className="text-sm text-primary hover:text-primary mb-4"
                 >
                   ← Voltar
                 </button>
@@ -193,11 +193,11 @@ export function RechargeModal({ isOpen, onClose, onSuccess }: RechargeModalProps
                     onClick={() => setBillingType('PIX')}
                     className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
                       billingType === 'PIX'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-gray-200 hover:border-primary/40'
                     }`}
                   >
-                    <QrCode className="h-6 w-6 text-blue-600" />
+                    <QrCode className="h-6 w-6 text-primary" />
                     <div className="text-left">
                       <div className="font-semibold text-gray-900">PIX</div>
                       <div className="text-sm text-gray-600">
@@ -210,11 +210,11 @@ export function RechargeModal({ isOpen, onClose, onSuccess }: RechargeModalProps
                     onClick={() => setBillingType('BOLETO')}
                     className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
                       billingType === 'BOLETO'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-gray-200 hover:border-primary/40'
                     }`}
                   >
-                    <Barcode className="h-6 w-6 text-blue-600" />
+                    <Barcode className="h-6 w-6 text-primary" />
                     <div className="text-left">
                       <div className="font-semibold text-gray-900">Boleto</div>
                       <div className="text-sm text-gray-600">
@@ -227,11 +227,11 @@ export function RechargeModal({ isOpen, onClose, onSuccess }: RechargeModalProps
                     onClick={() => setBillingType('CREDIT_CARD')}
                     className={`w-full p-4 rounded-xl border-2 transition-all flex items-center gap-4 ${
                       billingType === 'CREDIT_CARD'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-gray-200 hover:border-primary/40'
                     }`}
                   >
-                    <CreditCard className="h-6 w-6 text-blue-600" />
+                    <CreditCard className="h-6 w-6 text-primary" />
                     <div className="text-left">
                       <div className="font-semibold text-gray-900">
                         Cartão de Crédito
@@ -306,13 +306,13 @@ export function RechargeModal({ isOpen, onClose, onSuccess }: RechargeModalProps
                 )}
 
                 {/* Status */}
-                <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-                  <p className="text-sm font-medium text-blue-900">
+                <div className="mt-6 p-4 bg-primary/10 rounded-xl">
+                  <p className="text-sm font-medium text-primary/80">
                     {checkingStatus
                       ? 'Verificando pagamento...'
                       : 'Aguardando pagamento...'}
                   </p>
-                  <p className="text-xs text-blue-700 mt-1">
+                  <p className="text-xs text-primary/90 mt-1">
                     O saldo será creditado automaticamente após a confirmação
                   </p>
                 </div>

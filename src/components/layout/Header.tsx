@@ -7,6 +7,8 @@ import { Search, Menu, X, CreditCard, LogOut, Settings, Wallet, LayoutDashboard,
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useBalance } from '@/hooks/useBalance';
+import { TenantBrand } from '@/components/ui/TenantBrand';
+import { TenantLogo } from '@/components/ui/TenantLogo';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -53,15 +55,10 @@ export function Header() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 shadow-lg shadow-blue-500/25 group-hover:shadow-blue-500/40 transition-all duration-300">
-              <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <Search className="h-6 w-6 text-white stroke-[2.5px]" />
-            </div>
+            <TenantLogo className="h-10 w-10 sm:h-12 sm:w-12 transition-transform duration-300 group-hover:scale-105" />
             <div className="flex flex-col">
-              <span className="text-2xl font-display font-black tracking-tight text-slate-900 leading-none group-hover:text-blue-900 transition-colors">
-                Consulta<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Ai</span>
-              </span>
-              <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400 leading-none mt-1 group-hover:text-blue-400 transition-colors">
+              <TenantBrand className="text-xl sm:text-2xl gradient-text" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-none mt-1 group-hover:text-primary transition-colors">
                 Platform
               </span>
             </div>
@@ -75,14 +72,14 @@ export function Header() {
                {/* Balance Pill */}
                <motion.div
                  whileHover={{ scale: 1.02 }}
-                 className="flex items-center gap-4 pl-3 pr-6 h-14 bg-gradient-to-br from-white to-blue-50/50 backdrop-blur-md border border-blue-100/60 rounded-full shadow-sm hover:shadow-md transition-all group cursor-default"
+                 className="flex items-center gap-4 pl-3 pr-6 h-14 bg-gradient-to-br from-white to-primary/5 backdrop-blur-md border border-primary/20 rounded-full shadow-sm hover:shadow-md transition-all group cursor-default"
                >
-                  <div className="w-10 h-10 rounded-full bg-blue-100/50 border border-blue-200/50 flex items-center justify-center group-hover:bg-blue-500 group-hover:border-blue-500 transition-all duration-300">
-                    <Wallet className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors" />
+                  <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                    <Wallet className="w-5 h-5 text-primary group-hover:text-white transition-colors" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] uppercase font-extrabold text-blue-400/80 leading-none mb-1 tracking-wider">Seu Saldo</span>
-                    <span className="text-lg font-display font-black text-slate-800 leading-none group-hover:text-blue-700 transition-colors">
+                    <span className="text-[10px] uppercase font-extrabold text-primary/60 leading-none mb-1 tracking-wider">Seu Saldo</span>
+                    <span className="text-lg font-display font-black text-slate-800 leading-none group-hover:text-primary transition-colors">
                       {formattedBalance}
                     </span>
                   </div>
@@ -91,7 +88,7 @@ export function Header() {
                {/* Recharge Button */}
                <Link href="/recarregar">
                  <Button
-                   className="rounded-full h-14 px-8 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition-all duration-300 border-2 border-white/10"
+                   className="rounded-full h-14 px-8 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300 border-2 border-white/10"
                  >
                    <Plus className="w-4 h-4 mr-2 stroke-[3px]" />
                    Recarregar
@@ -102,22 +99,22 @@ export function Header() {
                <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-4 pl-2 pr-5 h-14 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group outline-none">
-                     <Avatar className="h-11 w-11 border-2 border-white shadow-sm ring-2 ring-slate-100 group-hover:ring-blue-100 transition-all">
+                     <Avatar className="h-11 w-11 border-2 border-white shadow-sm ring-2 ring-slate-100 group-hover:ring-primary/20 transition-all">
                       <AvatarFallback className="bg-gradient-to-br from-slate-100 to-slate-200 text-slate-700 font-bold text-sm">
                         {firstName.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start gap-0.5">
-                       <span className="text-sm font-bold text-slate-700 leading-tight group-hover:text-blue-700 transition-colors">
+                       <span className="text-sm font-bold text-slate-700 leading-tight group-hover:text-primary transition-colors">
                          {firstName}
                        </span>
-                       <span className="text-[11px] font-medium text-slate-400 group-hover:text-blue-400 transition-colors">
+                       <span className="text-[11px] font-medium text-slate-400 group-hover:text-primary/60 transition-colors">
                          Menu
                        </span>
                     </div>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-64 p-2 rounded-2xl glass-strong border-white/50 shadow-xl shadow-blue-900/5 mt-2" align="end" forceMount>
+                <DropdownMenuContent className="w-64 p-2 rounded-2xl glass-strong border-white/50 shadow-xl shadow-primary/5 mt-2" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal p-3 bg-slate-50/50 rounded-xl mb-2">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-bold text-slate-900 leading-none">{user?.name}</p>
@@ -128,17 +125,17 @@ export function Header() {
                   </DropdownMenuLabel>
                   
                   <div className="space-y-1">
-                    <DropdownMenuItem onClick={() => router.push('/carteira')} className="rounded-xl cursor-pointer py-2.5 focus:bg-blue-50 focus:text-blue-700 font-medium">
+                    <DropdownMenuItem onClick={() => router.push('/carteira')} className="rounded-xl cursor-pointer py-2.5 focus:bg-primary/10 focus:text-primary font-medium">
                       <Wallet className="mr-2 h-4 w-4" />
                       <span>Carteira</span>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={() => router.push('/historico')} className="rounded-xl cursor-pointer py-2.5 focus:bg-blue-50 focus:text-blue-700 font-medium">
+                    <DropdownMenuItem onClick={() => router.push('/historico')} className="rounded-xl cursor-pointer py-2.5 focus:bg-primary/10 focus:text-primary font-medium">
                       <CreditCard className="mr-2 h-4 w-4" />
                       <span>Histórico</span>
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem onClick={() => router.push('/recarregar')} className="rounded-xl cursor-pointer py-2.5 focus:bg-blue-50 focus:text-blue-700 font-medium">
+                    <DropdownMenuItem onClick={() => router.push('/recarregar')} className="rounded-xl cursor-pointer py-2.5 focus:bg-primary/10 focus:text-primary font-medium">
                       <Plus className="mr-2 h-4 w-4" />
                       <span>Recarregar</span>
                     </DropdownMenuItem>
@@ -167,12 +164,12 @@ export function Header() {
           ) : (
             <div className="flex items-center gap-3 ml-2">
               <Link href="/login">
-                <Button variant="ghost" className="rounded-full px-6 text-slate-600 hover:text-blue-600 hover:bg-blue-50 font-bold">
+                <Button variant="ghost" className="rounded-full px-6 text-slate-600 hover:text-primary hover:bg-primary/10 font-bold">
                   Entrar
                 </Button>
               </Link>
               <Link href="/register">
-                <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-6 font-bold shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5">
+                <Button className="rounded-full bg-primary hover:bg-primary/90 text-white px-6 font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5">
                   Criar Conta
                 </Button>
               </Link>
@@ -183,7 +180,7 @@ export function Header() {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden p-3 rounded-xl hover:bg-slate-100 text-slate-600 hover:text-blue-600 transition-all"
+          className="md:hidden p-3 rounded-xl hover:bg-slate-100 text-slate-600 hover:text-primary transition-all"
         >
           {isMenuOpen ? (
             <X className="h-6 w-6" />
@@ -209,13 +206,13 @@ export function Header() {
              {/* ... Mobile links ... */}
              {isAuthenticated ? (
                 <>
-                 <Link href="/carteira" onClick={() => setIsMenuOpen(false)} className="flex items-center p-3 rounded-xl hover:bg-blue-50 text-slate-700 font-medium">
-                    <Wallet className="w-5 h-5 mr-3 text-blue-500" /> Carteira
+                 <Link href="/carteira" onClick={() => setIsMenuOpen(false)} className="flex items-center p-3 rounded-xl hover:bg-primary/10 text-slate-700 font-medium">
+                    <Wallet className="w-5 h-5 mr-3 text-primary" /> Carteira
                  </Link>
-                 <Link href="/historico" onClick={() => setIsMenuOpen(false)} className="flex items-center p-3 rounded-xl hover:bg-blue-50 text-slate-700 font-medium">
-                    <CreditCard className="w-5 h-5 mr-3 text-blue-500" /> Histórico
+                 <Link href="/historico" onClick={() => setIsMenuOpen(false)} className="flex items-center p-3 rounded-xl hover:bg-primary/10 text-slate-700 font-medium">
+                    <CreditCard className="w-5 h-5 mr-3 text-primary" /> Histórico
                  </Link>
-                 <Link href="/recarregar" onClick={() => setIsMenuOpen(false)} className="flex items-center p-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold shadow-md shadow-blue-500/20 mb-2">
+                 <Link href="/recarregar" onClick={() => setIsMenuOpen(false)} className="flex items-center p-3 rounded-xl bg-gradient-to-r from-primary to-primary/90 text-white font-bold shadow-md shadow-primary/20 mb-2">
                     <Plus className="w-5 h-5 mr-3" /> Recarregar
                  </Link>
                  <button onClick={handleLogout} className="flex items-center p-3 rounded-xl hover:bg-red-50 text-red-600 font-medium">
@@ -225,12 +222,12 @@ export function Header() {
              ) : (
                 <div className="flex flex-col gap-3 p-2">
                   <Link href="/login" onClick={() => setIsMenuOpen(false)} className="w-full">
-                    <Button variant="ghost" className="w-full rounded-xl h-12 text-slate-600 hover:text-blue-600 hover:bg-blue-50 font-bold border border-slate-200">
+                    <Button variant="ghost" className="w-full rounded-xl h-12 text-slate-600 hover:text-primary hover:bg-primary/10 font-bold border border-slate-200">
                       Entrar
                     </Button>
                   </Link>
                   <Link href="/register" onClick={() => setIsMenuOpen(false)} className="w-full">
-                    <Button className="w-full rounded-xl h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-600/20">
+                    <Button className="w-full rounded-xl h-12 bg-primary hover:bg-primary/90 text-white font-bold shadow-lg shadow-primary/20">
                       Criar Conta
                     </Button>
                   </Link>

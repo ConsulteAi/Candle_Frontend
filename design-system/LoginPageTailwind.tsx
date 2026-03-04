@@ -25,7 +25,6 @@ export default function LoginPageTailwind() {
     e.preventDefault();
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Login:', formData);
     setIsLoading(false);
   };
 

@@ -21,7 +21,6 @@ export async function getDashboardOverviewAction(): Promise<ActionState<Dashboar
     const data = await AdminService.getDashboardOverview();
     return { success: true, data };
   } catch (error: any) {
-    console.error('getDashboardOverviewAction error:', error);
     return { success: false, error: 'Erro ao carregar dashboard' };
   }
 }
@@ -37,7 +36,6 @@ export async function getUsersAction(filters: UserFilters): Promise<ActionState<
     if (isAxiosError(error) && error.response?.status === 401) {
       redirect('/auth/login');
     }
-    console.error('getUsersAction error:', error);
     return { success: false, error: 'Erro ao listar usuários' };
   }
 }
@@ -47,7 +45,6 @@ export async function getRevenueStatsAction(params?: { period?: string; days?: n
     const data = await AdminService.getRevenueStats(params);
     return { success: true, data };
   } catch (error: any) {
-    console.error('getRevenueStatsAction error:', error);
     return { success: false, error: 'Erro ao carregar receita' };
   }
 }
@@ -57,7 +54,6 @@ export async function getProviderStatsAction(): Promise<ActionState<ProviderStat
       const data = await AdminService.getProviderStats();
       return { success: true, data };
   } catch (error: any) {
-      console.error('getProviderStatsAction error:', error);
       return { success: false, error: 'Erro ao carregar status de providers' };
   }
 }
@@ -67,7 +63,6 @@ export async function getDashboardQueriesAction(): Promise<ActionState<Dashboard
     const data = await AdminService.getDashboardQueries();
     return { success: true, data };
   } catch (error: any) {
-    console.error('getDashboardQueriesAction error:', error);
     return { success: false, error: 'Erro ao carregar estatísticas de consultas' };
   }
 }
@@ -77,7 +72,6 @@ export async function getTransactionsAction(filters: TransactionFilters): Promis
     const data = await AdminService.getTransactions(filters);
     return { success: true, data };
   } catch (error: any) {
-    console.error('getTransactionsAction error:', error);
     return { success: false, error: 'Erro ao listar transações' };
   }
 }
@@ -87,7 +81,6 @@ export async function getQueryTypesAction(filters: QueryTypeFilters): Promise<Ac
     const data = await AdminService.getQueryTypes(filters);
     return { success: true, data };
   } catch (error: any) {
-    console.error('getQueryTypesAction error:', error);
     return { success: false, error: 'Erro ao listar tipos de consulta' };
   }
 }

@@ -2,7 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -14,9 +19,15 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['var(--font-display)', 'Outfit', 'system-ui', 'sans-serif'],
-        body: ['var(--font-body)', 'DM Sans', 'system-ui', 'sans-serif'],
-        sans: ['var(--font-body)', 'DM Sans', 'Inter', 'system-ui', 'sans-serif'],
+        display: ["var(--font-display)", "Outfit", "system-ui", "sans-serif"],
+        body: ["var(--font-body)", "DM Sans", "system-ui", "sans-serif"],
+        sans: [
+          "var(--font-body)",
+          "DM Sans",
+          "Inter",
+          "system-ui",
+          "sans-serif",
+        ],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -25,8 +36,8 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "hsl(var(--primary) / <alpha-value>)",
+          foreground: "hsl(var(--primary-foreground) / <alpha-value>)",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -64,29 +75,31 @@ export default {
         },
         // Candle specific colors (Blue primary)
         blue: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+          50: "#eff6ff",
+          100: "#dbeafe",
+          200: "#bfdbfe",
+          300: "#93c5fd",
+          400: "#60a5fa",
+          500: "#3b82f6",
+          600: "#2563eb",
+          700: "#1d4ed8",
+          800: "#1e40af",
+          900: "#1e3a8a",
         },
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
-        'gradient-secondary': 'linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #60a5fa 100%)',
-        'gradient-accent': 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+        "gradient-primary": "var(--gradient-primary)",
+        "gradient-secondary":
+          "linear-gradient(135deg, hsl(var(--primary) / 0.8) 0%, hsl(var(--primary)) 50%, hsl(var(--primary) / 0.9) 100%)",
+        "gradient-accent":
+          "linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--primary)) 100%)",
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(59, 130, 246, 0.15)',
-        'glass-strong': '0 12px 48px 0 rgba(59, 130, 246, 0.25)',
-        'glow-sm': '0 0 10px rgba(59, 130, 246, 0.5)',
-        'glow-md': '0 0 20px rgba(59, 130, 246, 0.5)',
-        'glow-lg': '0 0 30px rgba(59, 130, 246, 0.5)',
+        glass: "0 8px 32px 0 hsl(var(--primary) / 0.15)",
+        "glass-strong": "0 12px 48px 0 hsl(var(--primary) / 0.25)",
+        "glow-sm": "0 0 10px hsl(var(--primary) / 0.5)",
+        "glow-md": "0 0 20px hsl(var(--primary) / 0.5)",
+        "glow-lg": "0 0 30px hsl(var(--primary) / 0.5)",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -122,7 +135,7 @@ export default {
           "0%": { opacity: "0", transform: "translateX(20px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
         },
-        "float": {
+        float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10px)" },
         },
@@ -139,7 +152,7 @@ export default {
         "scale-in": "scale-in 0.4s ease-out forwards",
         "slide-in-left": "slide-in-left 0.5s ease-out forwards",
         "slide-in-right": "slide-in-right 0.5s ease-out forwards",
-        "float": "float 3s ease-in-out infinite",
+        float: "float 3s ease-in-out infinite",
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
       },
     },

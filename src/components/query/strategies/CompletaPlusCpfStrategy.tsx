@@ -32,7 +32,7 @@ export function CompletaPlusCpfStrategy({ data }: QueryStrategyProps<CompletaPlu
     <div className="space-y-6 animate-in fade-in duration-500">
       
       {/* Header Info */}
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-blue-600">
+      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
          <StrategyHeader
             title={data.person.name}
             protocol={data.protocol}
@@ -44,18 +44,18 @@ export function CompletaPlusCpfStrategy({ data }: QueryStrategyProps<CompletaPlu
              <InfoBox 
                label="Documento" 
                value={data.person.document}
-               icon={<User className="w-4 h-4 text-blue-500" />}
+               icon={<User className="w-4 h-4 text-primary" />}
              />
              <InfoBox 
                label="Nascimento" 
                value={`${formatDisplayDate(data.person.birthDate)} (${data.person.gender})`}
-               icon={<Calendar className="w-4 h-4 text-blue-500" />}
+               icon={<Calendar className="w-4 h-4 text-primary" />}
              />
              {data.person.email && (
                 <InfoBox 
                   label="Email" 
                   value={data.person.email}
-                  icon={<Mail className="w-4 h-4 text-blue-500" />}
+                  icon={<Mail className="w-4 h-4 text-primary" />}
                 />
              )}
              {data.person.motherName && (
@@ -133,7 +133,7 @@ export function CompletaPlusCpfStrategy({ data }: QueryStrategyProps<CompletaPlu
       {/* Queries History */}
       <StrategySectionWrapper
          title={`Histórico de Consultas (${data.queries.length})`}
-         icon={<Search className="w-5 h-5 text-blue-500" />}
+         icon={<Search className="w-5 h-5 text-primary" />}
          isEmpty={data.queries.length === 0}
          emptyMessage="Nenhuma consulta recente encontrada."
       >

@@ -32,7 +32,7 @@ export function BvsBasicaPfStrategy({ data }: QueryStrategyProps<BvsBasicaPfResu
     <div className="space-y-6 animate-in fade-in duration-500">
       
       {/* Header Info */}
-      <Card className="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-blue-500">
+      <Card className="p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
         <StrategyHeader 
            title={data.person.name}
            protocol={data.protocol}
@@ -44,12 +44,12 @@ export function BvsBasicaPfStrategy({ data }: QueryStrategyProps<BvsBasicaPfResu
            <InfoBox 
              label="Documento" 
              value={data.person.document}
-             icon={<User className="w-4 h-4 text-blue-500" />}
+             icon={<User className="w-4 h-4 text-primary" />}
            />
            <InfoBox 
              label="Nascimento" 
              value={formatDisplayDate(data.person.birthDate)}
-             icon={<Calendar className="w-4 h-4 text-blue-500" />}
+             icon={<Calendar className="w-4 h-4 text-primary" />}
            />
            {data.person.motherName && (
              <div className="col-span-2">

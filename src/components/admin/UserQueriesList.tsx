@@ -40,7 +40,6 @@ export function UserQueriesList({ userId }: UserQueriesListProps) {
       });
       setData(response.data);
     } catch (err) {
-      console.error(err);
       setError('Não foi possível carregar o histórico de consultas.');
     } finally {
       setIsLoading(false);

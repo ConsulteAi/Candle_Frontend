@@ -26,7 +26,6 @@ export function useQueryTypes() {
 
       return result.data;
     } catch (error) {
-      console.error('Error fetching query types:', error);
       toast.error('Erro ao buscar tipos de consulta');
       return [];
     } finally {
@@ -46,7 +45,6 @@ export function useQueryTypes() {
 
       return result.data;
     } catch (error) {
-      console.error('Error fetching query types by category:', error);
       toast.error('Erro ao buscar consultas da categoria');
       return [];
     } finally {
@@ -66,7 +64,6 @@ export function useQueryTypes() {
 
       return result.data || null;
     } catch (error) {
-      console.error('Error fetching query type by code:', error);
       toast.error('Erro ao buscar tipo de consulta');
       return null;
     } finally {
@@ -86,7 +83,6 @@ export function useQueryTypes() {
 
       return result.data;
     } catch (error) {
-      console.error('Error grouping query types:', error);
       toast.error('Erro ao agrupar consultas');
       return {} as Record<QueryCategory, QueryType[]>;
     } finally {
@@ -101,13 +97,11 @@ export function useQueryTypes() {
 
       if (!result.success || !result.data) {
         // Silently fail or log error, as this is often for UI badges
-        console.error(result.error || 'Erro ao contar consultas');
         return {} as Record<QueryCategory, number>;
       }
 
       return result.data;
     } catch (error) {
-      console.error('Error counting query types:', error);
       return {} as Record<QueryCategory, number>;
     } finally {
       setIsLoading(false);

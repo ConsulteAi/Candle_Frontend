@@ -72,12 +72,12 @@ export function RealtimePremiumScorePfStrategy({ data }: QueryStrategyProps<Real
                <InfoBox 
                  label="Documento" 
                  value={data.person.document}
-                 icon={<User className="w-4 h-4 text-blue-500" />}
+                 icon={<User className="w-4 h-4 text-primary" />}
                />
                <InfoBox 
                  label="Nascimento" 
                  value={formatDisplayDate(data.person.birthDate)}
-                 icon={<Calendar className="w-4 h-4 text-blue-500" />}
+                 icon={<Calendar className="w-4 h-4 text-primary" />}
                />
                {data.person.motherName && (
                  <div className="col-span-2">

@@ -91,8 +91,8 @@ export function ScoreGauge({ value, max = 1000, band, riskText, label = "SCORE",
   }
 
   return (
-    <Card className="h-full relative overflow-hidden border-2 border-blue-100 dark:border-blue-900 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-800 p-0">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl" />
+    <Card className="h-full relative overflow-hidden border-2 border-primary/20 dark:border-primary/80 bg-gradient-to-br from-white to-primary/10 dark:from-gray-900 dark:to-gray-800 p-0">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/50/10 rounded-full blur-3xl" />
       {Content}
     </Card>
   );

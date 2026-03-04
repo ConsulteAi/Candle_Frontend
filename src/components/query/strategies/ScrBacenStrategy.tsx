@@ -35,8 +35,8 @@ export function ScrBacenStrategy({ data }: QueryStrategyProps<ScrBacenResult>) {
       <div className="grid md:grid-cols-12 gap-6">
         {/* Score Card */}
         <div className="md:col-span-4">
-          <Card className="h-full relative overflow-hidden border-2 border-blue-100 dark:border-blue-900 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-800">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl" />
+          <Card className="h-full relative overflow-hidden border-2 border-primary/20 dark:border-primary/80 bg-gradient-to-br from-white to-primary/10 dark:from-gray-900 dark:to-gray-800">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/50/10 rounded-full blur-3xl" />
             
             <div className="relative z-10 flex flex-col items-center justify-center py-8">
               <div className="relative mb-4">
@@ -107,7 +107,7 @@ export function ScrBacenStrategy({ data }: QueryStrategyProps<ScrBacenResult>) {
               <InfoBox 
                 label="Início Relac." 
                 value={formatDisplayDate(data.relationshipStartDate)} 
-                icon={<Clock className="w-4 h-4 text-blue-500" />} 
+                icon={<Clock className="w-4 h-4 text-primary" />} 
               />
               <InfoBox 
                 label="Instituições" 
@@ -168,7 +168,7 @@ export function ScrBacenStrategy({ data }: QueryStrategyProps<ScrBacenResult>) {
       {/* Operations Details */}
       <StrategySectionWrapper
         title="Detalhamento de Operações"
-        icon={<DollarSign className="w-5 h-5 text-blue-600" />}
+        icon={<DollarSign className="w-5 h-5 text-primary" />}
         isEmpty={data.operations.length === 0}
       >
         <div className="divide-y divide-gray-100">

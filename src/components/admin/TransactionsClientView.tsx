@@ -78,7 +78,7 @@ export function TransactionsClientView({ initialData }: TransactionsClientViewPr
   const getBillingIcon = (type: string) => {
     switch (type) {
       case 'PIX': return <QrCode className="w-4 h-4 text-emerald-600" />;
-      case 'CREDIT_CARD': return <CreditCard className="w-4 h-4 text-blue-600" />;
+      case 'CREDIT_CARD': return <CreditCard className="w-4 h-4 text-primary" />;
       case 'BOLETO': return <FileText className="w-4 h-4 text-orange-600" />;
       default: return <CreditCard className="w-4 h-4 text-slate-500" />;
     }
@@ -91,7 +91,7 @@ export function TransactionsClientView({ initialData }: TransactionsClientViewPr
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Transações Financeiras</h1>
           <p className="text-slate-500">Histórico completo de entradas e saídas.</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20">
+        <Button className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
            Exportar Relatório
         </Button>
       </div>

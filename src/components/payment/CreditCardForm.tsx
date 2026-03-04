@@ -104,12 +104,12 @@ export function CreditCardForm({ onSubmit, isLoading, onCancel, amount }: Credit
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
 
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 mb-8 flex justify-between items-center shadow-sm">
+      <div className="bg-gradient-to-r from-primary/10 to-indigo-50 border border-primary/20 rounded-2xl p-6 mb-8 flex justify-between items-center shadow-sm">
         <div>
-          <p className="text-sm text-blue-600 font-bold uppercase tracking-wider mb-1">Valor a Pagar</p>
-          <p className="text-3xl font-display font-extrabold text-blue-900">R$ {amount.toFixed(2)}</p>
+          <p className="text-sm text-primary font-bold uppercase tracking-wider mb-1">Valor a Pagar</p>
+          <p className="text-3xl font-display font-extrabold text-primary/80">R$ {amount.toFixed(2)}</p>
         </div>
-        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm">
+        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary shadow-sm">
           <CreditCard className="w-6 h-6" />
         </div>
       </div>
@@ -118,7 +118,7 @@ export function CreditCardForm({ onSubmit, isLoading, onCancel, amount }: Credit
         {/* Left Column: Card Data */}
         <div className="space-y-4">
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-blue-600" />
+            <CreditCard className="w-4 h-4 text-primary" />
             Dados do Cartão
           </h3>
 
@@ -201,7 +201,7 @@ export function CreditCardForm({ onSubmit, isLoading, onCancel, amount }: Credit
         {/* Right Column: Holder Data */}
         <div className="space-y-4">
           <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-            <User className="w-4 h-4 text-blue-600" />
+            <User className="w-4 h-4 text-primary" />
             Dados do Titular
           </h3>
 

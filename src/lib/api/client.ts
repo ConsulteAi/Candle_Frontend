@@ -5,11 +5,7 @@
  */
 
 import { env } from "@/lib/env";
-import {
-  ApiError,
-  NetworkError,
-  createErrorFromResponse,
-} from "./errors";
+import { ApiError, NetworkError, createErrorFromResponse } from "./errors";
 
 /**
  * HTTP Client Interface (Abstraction)
@@ -19,6 +15,7 @@ export interface IHttpClient {
   get<T>(url: string, config?: RequestConfig): Promise<T>;
   post<T>(url: string, data?: unknown, config?: RequestConfig): Promise<T>;
   put<T>(url: string, data?: unknown, config?: RequestConfig): Promise<T>;
+  patch<T>(url: string, data?: unknown, config?: RequestConfig): Promise<T>;
   delete<T>(url: string, config?: RequestConfig): Promise<T>;
 }
 
@@ -51,7 +48,7 @@ export class FetchHttpClient implements IHttpClient {
   async post<T>(
     url: string,
     data?: unknown,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<T> {
     return this.request<T>("POST", url, data, config);
   }
@@ -62,9 +59,20 @@ export class FetchHttpClient implements IHttpClient {
   async put<T>(
     url: string,
     data?: unknown,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<T> {
     return this.request<T>("PUT", url, data, config);
+  }
+
+  /**
+   * PATCH request
+   */
+  async patch<T>(
+    url: string,
+    data?: unknown,
+    config?: RequestConfig,
+  ): Promise<T> {
+    return this.request<T>("PATCH", url, data, config);
   }
 
   /**
@@ -81,7 +89,7 @@ export class FetchHttpClient implements IHttpClient {
     method: string,
     url: string,
     data?: unknown,
-    config?: RequestConfig
+    config?: RequestConfig,
   ): Promise<T> {
     const fullUrl = this.buildUrl(url, config?.params);
     const headers = this.buildHeaders(config?.headers);
@@ -113,7 +121,10 @@ export class FetchHttpClient implements IHttpClient {
       }
 
       // Network errors (no internet, CORS, etc)
-      if (error instanceof TypeError || error instanceof Error && error.name === "AbortError") {
+      if (
+        error instanceof TypeError ||
+        (error instanceof Error && error.name === "AbortError")
+      ) {
         throw new NetworkError();
       }
 
@@ -160,7 +171,7 @@ export class FetchHttpClient implements IHttpClient {
    * Build request headers
    */
   private buildHeaders(
-    customHeaders?: Record<string, string>
+    customHeaders?: Record<string, string>,
   ): Record<string, string> {
     return {
       "Content-Type": "application/json",
