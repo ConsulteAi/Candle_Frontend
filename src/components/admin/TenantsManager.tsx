@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import {
   Plus,
   Search,
@@ -30,8 +29,6 @@ import {
   Users,
   Database,
   Activity,
-  Eye,
-  EyeOff,
   Crown,
   Globe,
 } from 'lucide-react';
@@ -39,6 +36,7 @@ import { httpClient } from '@/lib/api/httpClient';
 import type { Tenant, CreateTenantDto, UpdateTenantDto } from '@/types/admin';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
+import { UserSearchComboBox } from './UserSearchComboBox';
 
 export function TenantsManager() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
@@ -46,7 +44,6 @@ export function TenantsManager() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Tenant | null>(null);
-  const [showSecrets, setShowSecrets] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState<Partial<CreateTenantDto>>({
@@ -82,7 +79,8 @@ export function TenantsManager() {
   const handleSave = async () => {
     try {
       const payloadDomain = formData.domain?.trim() || undefined;
-      const payloadOwnerId = formData.ownerId?.trim() || null;
+      const isDefaultTenant = editingItem?.slug === 'default' || formData.slug === 'default';
+      const payloadOwnerId = isDefaultTenant ? null : (formData.ownerId?.trim() || null);
 
       if (editingItem) {
         const updateData: UpdateTenantDto = {
@@ -133,7 +131,6 @@ export function TenantsManager() {
 
   const openModal = (item: Tenant | null = null) => {
     setEditingItem(item);
-    setShowSecrets(false);
     if (item) {
       setFormData({
         slug: item.slug,
@@ -339,43 +336,25 @@ export function TenantsManager() {
               </div>
             )}
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right text-xs leading-tight">Owner ID</Label>
-              <Input
-                className="col-span-3 font-mono text-sm"
-                placeholder="UUID do reseller (opcional)"
-                value={formData.ownerId}
-                onChange={(e) =>
-                  setFormData({ ...formData, ownerId: e.target.value })
-                }
-              />
+              <Label className="text-right text-xs leading-tight">Dono</Label>
+              <div className="col-span-3">
+                <UserSearchComboBox
+                  ownerId={formData.ownerId}
+                  onSelect={(id) => setFormData({ ...formData, ownerId: id || '' })}
+                  disabled={editingItem?.slug === 'default' || formData.slug === 'default'}
+                />
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right text-xs leading-tight">Asaas API Key</Label>
-              <div className="col-span-3 flex items-center gap-2">
-                <Input
-                  className="flex-1 font-mono text-sm"
-                  type={showSecrets ? 'text' : 'password'}
-                  placeholder="$aact_..."
-                  value={formData.asaasApiKey}
-                  onChange={(e) =>
-                    setFormData({ ...formData, asaasApiKey: e.target.value })
-                  }
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10 shrink-0"
-                  onClick={() => setShowSecrets(!showSecrets)}
-                  title={showSecrets ? 'Ocultar secrets' : 'Mostrar secrets'}
-                >
-                  {showSecrets ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
+              <Input
+                className="col-span-3 font-mono text-sm"
+                placeholder="$aact_..."
+                value={formData.asaasApiKey}
+                onChange={(e) =>
+                  setFormData({ ...formData, asaasApiKey: e.target.value })
+                }
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right text-xs leading-tight">Asaas API URL</Label>
@@ -390,34 +369,17 @@ export function TenantsManager() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right text-xs leading-tight">Webhook Secret</Label>
-              <div className="col-span-3 flex items-center gap-2">
-                <Input
-                  className="flex-1 font-mono text-sm"
-                  type={showSecrets ? 'text' : 'password'}
-                  placeholder="whsec_..."
-                  value={formData.asaasWebhookSecret}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      asaasWebhookSecret: e.target.value,
-                    })
-                  }
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10 shrink-0"
-                  onClick={() => setShowSecrets(!showSecrets)}
-                  title={showSecrets ? 'Ocultar secrets' : 'Mostrar secrets'}
-                >
-                  {showSecrets ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
+              <Input
+                className="col-span-3 font-mono text-sm"
+                placeholder="whsec_..."
+                value={formData.asaasWebhookSecret}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    asaasWebhookSecret: e.target.value,
+                  })
+                }
+              />
             </div>
           </div>
           <div className="flex justify-end gap-2">
