@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Inter, Outfit, DM_Sans } from "next/font/google";
 import "../globals.css";
 import { Providers } from "./providers";
-import { getTenantById } from "@/lib/tenant/config";
+import { getTenantByHost } from "@/lib/tenant/config";
 import { TenantThemeProvider } from "@/components/layout/TenantThemeProvider";
+import { headers } from "next/headers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,11 +24,16 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+async function resolveTenant() {
+  const headersList = await headers();
+  const host = (headersList.get("host") || "localhost").split(":")[0];
+  return getTenantByHost(host);
+}
+
 export async function generateMetadata(
   props: { params: Promise<{ tenant: string }> }
 ): Promise<Metadata> {
-  const resolvedParams = await props.params;
-  const tenant = await getTenantById(resolvedParams.tenant || 'candle');
+  const tenant = await resolveTenant();
 
   return {
     title: {
@@ -44,10 +50,8 @@ export async function generateMetadata(
 
 export default async function RootLayout(props: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ tenant: string }>;
 }>) {
-  const resolvedParams = await props.params;
-  const tenant = await getTenantById(resolvedParams.tenant || 'candle');
+  const tenant = await resolveTenant();
 
   return (
     <html lang="pt-BR" className={`${outfit.variable} ${dmSans.variable} ${inter.variable}`} suppressHydrationWarning>
