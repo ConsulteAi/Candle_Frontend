@@ -59,7 +59,12 @@ export function StrategyHeader({
                        setIsDownloading(true);
                        await downloadPdf(pdfUrl, `relatorio-${protocol || 'documento'}.pdf`);
                      } catch (e) {
-                       window.open(pdfUrl, '_blank');
+                       console.error('PDF download failed:', e);
+                       // Don't open raw API URLs that return JSON instead of PDF
+                       // Only open URLs that point directly to .pdf files
+                       if (pdfUrl.match(/\.pdf(\?|$)/i)) {
+                         window.open(pdfUrl, '_blank');
+                       }
                      } finally {
                        setIsDownloading(false);
                      }
