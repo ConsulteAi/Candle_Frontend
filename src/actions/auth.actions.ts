@@ -268,6 +268,26 @@ export async function updateProfileAction(
 }
 
 /**
+ * Action para redefinir senha via token de reset
+ */
+export async function resetPasswordAction(
+  token: string,
+  newPassword: string,
+  confirmPassword: string
+): Promise<ActionState<void>> {
+  try {
+    await AuthService.resetPassword(token, newPassword, confirmPassword);
+    return { success: true };
+  } catch (error: any) {
+    const msg = error.response?.data?.message;
+    return {
+      success: false,
+      error: Array.isArray(msg) ? msg[0] : (msg || 'Erro ao redefinir senha. Tente novamente.'),
+    };
+  }
+}
+
+/**
  * Action para refresh de token
  * Atualiza os tokens e os cookies httpOnly
  */
