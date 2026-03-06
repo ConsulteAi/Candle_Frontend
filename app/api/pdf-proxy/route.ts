@@ -1,6 +1,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+// Edge Runtime has 30s timeout on Vercel Hobby (vs 10s for serverless)
+export const runtime = 'edge';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

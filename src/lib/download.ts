@@ -35,15 +35,9 @@ export const downloadPdf = async (url: string, fileName: string = 'documento.pdf
       const data = await response.json();
       
       // Common patterns for PDF in JSON response
-      if (data.url || data.link || data.pdf_url) {
-        const nextUrl = data.url || data.link || data.pdf_url;
-        // Recursively try to download the next URL, starting with direct fetch again
-        await downloadPdf(nextUrl, fileName);
-        return;
-      }
-
-      if (data.base64 || data.content || data.file) {
-        const base64 = data.base64 || data.content || data.file;
+      // Check for base64 content FIRST to avoid unnecessary extra requests
+      if (data.pdfBase64 || data.base64 || data.content || data.file) {
+        const base64 = data.pdfBase64 || data.base64 || data.content || data.file;
         const binaryString = window.atob(base64);
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
@@ -53,7 +47,14 @@ export const downloadPdf = async (url: string, fileName: string = 'documento.pdf
         downloadBlob(blob, fileName);
         return;
       }
-      
+
+      if (data.url || data.link || data.pdf_url) {
+        const nextUrl = data.url || data.link || data.pdf_url;
+        // Recursively try to download the next URL, starting with direct fetch again
+        await downloadPdf(nextUrl, fileName);
+        return;
+      }
+
       throw new Error('Formato de resposta desconhecido');
     } else if (contentType?.includes('text/xml') || contentType?.includes('application/xml')) {
         const text = await response.text();
