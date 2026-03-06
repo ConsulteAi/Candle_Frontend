@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Lock, Loader2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Lock, Loader2, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { loginSchema } from '@/validators/auth.schemas';
@@ -20,9 +21,12 @@ import { TenantLogo } from '@/components/ui/TenantLogo';
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const passwordResetSuccess = searchParams.get('message') === 'senha-alterada';
 
   const {
     register,
@@ -128,6 +132,19 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {passwordResetSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Alert className="bg-emerald-50 text-emerald-900 border-emerald-200">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <AlertDescription className="text-emerald-800 ml-2 font-medium">
+                      Senha redefinida com sucesso. Faça login com sua nova senha.
+                    </AlertDescription>
+                  </Alert>
+                </motion.div>
+              )}
               {loginError && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -181,12 +198,12 @@ export default function LoginPage() {
                   <Label htmlFor="password" className={`text-sm font-semibold transition-colors ${focusedField === 'password' ? 'text-primary' : 'text-gray-700'}`}>
                     Senha
                   </Label>
-                  <Link
+                  {/* <Link
                     href="/forgot-password"
                     className="text-sm font-semibold text-primary hover:text-primary/90 relative inline-block after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-primary after:transition-all hover:after:w-full"
                   >
                     Esqueceu?
-                  </Link>
+                  </Link> */}
                 </div>
                 <div className="relative">
                   {focusedField === 'password' && (
@@ -198,10 +215,10 @@ export default function LoginPage() {
                   )}
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     {...register('password')}
-                    className={`relative z-10 h-12 bg-white/60 backdrop-blur-sm border-2 rounded-xl transition-all duration-200 ${
+                    className={`relative z-10 h-12 bg-white/60 backdrop-blur-sm border-2 rounded-xl pr-10 transition-all duration-200 ${
                       focusedField === 'password'
                         ? 'border-primary bg-white shadow-lg shadow-primary/20 focus-visible:ring-0 focus-visible:ring-offset-0'
                         : 'border-primary/20 hover:border-primary/30'
@@ -210,6 +227,14 @@ export default function LoginPage() {
                     onBlur={() => setFocusedField(null)}
                     disabled={isLoading}
                   />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-20 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
                  {errors.password && (
                   <p className="text-red-500 text-xs mt-1 font-medium">{errors.password.message}</p>

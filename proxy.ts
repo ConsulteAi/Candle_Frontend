@@ -8,6 +8,7 @@ const publicRoutes = [
   "/login",
   "/register",
   "/forgot-password",
+  "/reset-password",
   "/termos",
   "/politica-de-privacidade",
   "/lgpd",

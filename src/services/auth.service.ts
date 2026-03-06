@@ -74,4 +74,11 @@ export class AuthService {
     const response = await serverHttpClient.patch<User>('/users/me', data);
     return response.data;
   }
+
+  /**
+   * Redefinir senha via token de reset
+   */
+  static async resetPassword(token: string, newPassword: string, confirmPassword: string): Promise<void> {
+    await serverHttpClient.post('/auth/reset-password', { token, newPassword, confirmPassword });
+  }
 }

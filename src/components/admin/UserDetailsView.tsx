@@ -2,17 +2,20 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  ArrowLeft, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  Shield, 
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  Calendar,
+  Shield,
   CreditCard,
   Ban,
   CheckCircle,
   Activity,
-  DollarSign
+  DollarSign,
+  KeyRound,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -69,6 +72,12 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
+
+  // Reset Password Modal State
+  const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
+  const [isGeneratingReset, setIsGeneratingReset] = useState(false);
+  const [resetPasswordLink, setResetPasswordLink] = useState<{ resetUrl: string; expiresAt: string } | null>(null);
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
 
   const handleAdjustBalance = async () => {
     const amount = parseFloat(balanceAmount.replace(',', '.'));
@@ -146,6 +155,29 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
     }
   };
 
+  const handleGeneratePasswordReset = async () => {
+    setIsGeneratingReset(true);
+    try {
+      const { data } = await httpClient.post<{ token: string; expiresAt: string; resetUrl: string }>(
+        `/admin/users/${user.id}/generate-password-reset`
+      );
+      setResetPasswordLink({ resetUrl: data.resetUrl, expiresAt: data.expiresAt });
+    } catch {
+      toast.error('Erro ao gerar link de reset');
+    } finally {
+      setIsGeneratingReset(false);
+    }
+  };
+
+  const handleCopyResetLink = () => {
+    if (resetPasswordLink?.resetUrl) {
+      navigator.clipboard.writeText(resetPasswordLink.resetUrl);
+      setIsLinkCopied(true);
+      toast.success('Link copiado!');
+      setTimeout(() => setIsLinkCopied(false), 2000);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -212,14 +244,21 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
         </div>
         <div className="flex items-center gap-2">
            {canEditRole && (
-             <Button 
-               variant="outline" 
+             <Button
+               variant="outline"
                onClick={() => { setSelectedRole(user.role); setIsRoleModalOpen(true); }}
                disabled={isLoading}
              >
                <Shield className="w-4 h-4 mr-2" /> Alterar Papel
              </Button>
            )}
+           <Button
+             variant="outline"
+             onClick={() => { setResetPasswordLink(null); setIsResetPasswordModalOpen(true); }}
+             disabled={isLoading}
+           >
+             <KeyRound className="w-4 h-4 mr-2" /> Resetar Senha
+           </Button>
            {user.status === 'ACTIVE' ? (
              <Button variant="destructive" onClick={() => handleStatusChange('SUSPENDED')} disabled={isLoading}>
                <Ban className="w-4 h-4 mr-2" /> Suspender Usuário
@@ -416,6 +455,83 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
                {isUpdatingRole ? 'Processando...' : 'Confirmar'}
              </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Reset Password Modal */}
+      <Dialog
+        open={isResetPasswordModalOpen}
+        onOpenChange={(open) => {
+          setIsResetPasswordModalOpen(open);
+          if (!open) setResetPasswordLink(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resetar Senha</DialogTitle>
+            <DialogDescription>
+              {resetPasswordLink
+                ? 'Link gerado com sucesso. Copie e envie ao usuário.'
+                : `Gere um link de redefinição de senha para ${user.name}.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {!resetPasswordLink ? (
+            <>
+              <div className="py-4 space-y-3">
+                <p className="text-sm text-slate-600">
+                  Um link seguro será gerado com validade de <strong>60 minutos</strong>.
+                  Após o uso, todas as sessões ativas do usuário serão encerradas.
+                </p>
+                <p className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-md">
+                  Tokens anteriores pendentes serão invalidados ao gerar um novo link.
+                </p>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsResetPasswordModalOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleGeneratePasswordReset} disabled={isGeneratingReset}>
+                  {isGeneratingReset ? 'Gerando...' : 'Gerar Link'}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <div className="py-4 space-y-4">
+                <div className="space-y-2">
+                  <Label>Link de redefinição</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={resetPasswordLink.resetUrl}
+                      className="font-mono text-xs bg-slate-50"
+                    />
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={handleCopyResetLink}
+                      className="shrink-0"
+                    >
+                      {isLinkCopied ? (
+                        <Check className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Expira em:{' '}
+                  <strong>
+                    {format(new Date(resetPasswordLink.expiresAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  </strong>
+                </p>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => setIsResetPasswordModalOpen(false)}>Fechar</Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
