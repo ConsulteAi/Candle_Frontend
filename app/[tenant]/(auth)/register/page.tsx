@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { formatCpf, formatPhone } from '@/lib/formatters';
+import { formatCpfCnpj, formatPhone } from '@/lib/formatters';
 import { TenantBrand } from '@/components/ui/TenantBrand';
 import { TenantLogo } from '@/components/ui/TenantLogo';
 
@@ -31,12 +31,17 @@ export default function RegisterPage() {
     formState: { errors },
     setError,
     control,
+    watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      terms: false
+      terms: false,
+      document: ''
     }
   });
+
+  const documentValue = watch('document');
+  const documentType = (documentValue?.replace(/\D/g, '').length || 0) > 11 ? 'CNPJ' : 'CPF';
 
   const onSubmit = async (data: RegisterFormData) => {
     // Remove confirmPassword and terms before sending to API
@@ -53,7 +58,7 @@ export default function RegisterPage() {
         email: registerData.email,
         password: registerData.password,
         // Backend expects cpfCnpj field, clean formatting
-        cpfCnpj: (registerData.cpf || registerData.cnpj || '').replace(/\D/g, ''),
+        cpfCnpj: (registerData.document || '').replace(/\D/g, ''),
         // Clean phone formatting
         phone: registerData.phone ? registerData.phone.replace(/\D/g, '') : undefined,
       };
@@ -85,7 +90,8 @@ export default function RegisterPage() {
     placeholder: string, 
     type: string = 'text',
     reg: any,
-    maskFunction?: (value: string) => string
+    maskFunction?: (value: string) => string,
+    rightElement?: React.ReactNode
   ) => (
     <div className="space-y-2">
       <Label htmlFor={id} className={`text-sm font-semibold transition-colors ${focusedField === id ? 'text-primary' : 'text-gray-700'}`}>
@@ -110,7 +116,7 @@ export default function RegisterPage() {
              }
              reg.onChange(e);
           }}
-          className={`relative z-10 h-12 bg-white/60 backdrop-blur-sm border-2 rounded-xl transition-all duration-200 ${
+          className={`relative z-10 h-12 bg-white/60 backdrop-blur-sm border-2 rounded-xl transition-all duration-200 ${rightElement ? 'pr-16' : ''} ${
             focusedField === id
               ? 'border-primary bg-white shadow-lg shadow-primary/20 focus-visible:ring-0 focus-visible:ring-offset-0'
               : 'border-primary/20 hover:border-primary/30'
@@ -119,6 +125,11 @@ export default function RegisterPage() {
           onBlur={() => setFocusedField(null)}
           disabled={isLoading}
         />
+        {rightElement && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 z-20 pointer-events-none">
+            {rightElement}
+          </div>
+        )}
       </div>
       {errors[id as keyof RegisterFormData] && (
         <p className="text-red-500 text-xs mt-1 font-medium">{errors[id as keyof RegisterFormData]?.message}</p>
@@ -195,7 +206,23 @@ export default function RegisterPage() {
               {renderInput('name', 'Nome Completo', 'João da Silva', 'text', register('name'))}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 {renderInput('cpf', 'CPF', '000.000.000-00', 'text', register('cpf'), formatCpf)}
+                 {renderInput(
+                   'document', 
+                   'CPF / CNPJ', 
+                   '000.000.000-00', 
+                   'text', 
+                   register('document'), 
+                   formatCpfCnpj,
+                   <motion.div 
+                     layout
+                     initial={{ opacity: 0, scale: 0.8 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                     key={documentType}
+                     className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-md tracking-wider border border-primary/20"
+                   >
+                     {documentType}
+                   </motion.div>
+                 )}
                  {renderInput('phone', 'Telefone', '(00) 00000-0000', 'tel', register('phone'), formatPhone)}
               </div>
 

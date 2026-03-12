@@ -49,29 +49,19 @@ export const registerSchema = z.object({
     .min(10, 'Telefone inválido')
     .max(15, 'Telefone inválido')
     .regex(/^[0-9\s\-\(\)]+$/, 'Telefone deve conter apenas números'),
-  cpf: z
+  document: z
     .string()
-    .optional()
-    .refine(
-      (val) => !val || /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(val) || /^\d{11}$/.test(val),
-      'CPF inválido'
-    ),
-  cnpj: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(val) || /^\d{14}$/.test(val),
-      'CNPJ inválido'
-    ),
+    .min(1, 'CPF ou CNPJ é obrigatório')
+    .refine((val) => {
+      const cleaned = val.replace(/\D/g, '');
+      return cleaned.length === 11 || cleaned.length === 14;
+    }, 'CPF/CNPJ inválido'),
   terms: z.boolean().refine((val) => val === true, {
     message: 'Você precisa concordar com os termos de uso',
   }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'As senhas não coincidem',
   path: ['confirmPassword'],
-}).refine((data) => data.cpf || data.cnpj, {
-  message: 'Informe CPF ou CNPJ',
-  path: ['cpf'],
 });
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
