@@ -50,8 +50,6 @@ export function TenantsManager() {
     slug: '',
     name: '',
     asaasApiKey: '',
-    asaasApiUrl: 'https://api.asaas.com/v3',
-    asaasWebhookSecret: '',
     domain: '',
     ownerId: '',
   });
@@ -85,9 +83,7 @@ export function TenantsManager() {
       if (editingItem) {
         const updateData: UpdateTenantDto = {
           name: formData.name,
-          asaasApiKey: formData.asaasApiKey,
-          asaasApiUrl: formData.asaasApiUrl,
-          asaasWebhookSecret: formData.asaasWebhookSecret,
+          asaasApiKey: formData.asaasApiKey, // keep original behavior for the input that is still visible
           domain: payloadDomain,
           ownerId: payloadOwnerId,
         };
@@ -96,6 +92,7 @@ export function TenantsManager() {
       } else {
         const createData = {
           ...formData,
+          asaasApiKey: formData.asaasApiKey,
           domain: payloadDomain,
           ownerId: payloadOwnerId || undefined, // undefined for POST
         };
@@ -136,8 +133,6 @@ export function TenantsManager() {
         slug: item.slug,
         name: item.name,
         asaasApiKey: item.asaasApiKey,
-        asaasApiUrl: item.asaasApiUrl,
-        asaasWebhookSecret: item.asaasWebhookSecret,
         domain: '',
         ownerId: item.ownerId || '',
       });
@@ -146,8 +141,6 @@ export function TenantsManager() {
         slug: '',
         name: '',
         asaasApiKey: '',
-        asaasApiUrl: 'https://api.asaas.com/v3',
-        asaasWebhookSecret: '',
         domain: '',
         ownerId: '',
       });
@@ -353,31 +346,6 @@ export function TenantsManager() {
                 value={formData.asaasApiKey}
                 onChange={(e) =>
                   setFormData({ ...formData, asaasApiKey: e.target.value })
-                }
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right text-xs leading-tight">Asaas API URL</Label>
-              <Input
-                className="col-span-3"
-                placeholder="https://api.asaas.com/v3"
-                value={formData.asaasApiUrl}
-                onChange={(e) =>
-                  setFormData({ ...formData, asaasApiUrl: e.target.value })
-                }
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right text-xs leading-tight">Webhook Secret</Label>
-              <Input
-                className="col-span-3 font-mono text-sm"
-                placeholder="whsec_..."
-                value={formData.asaasWebhookSecret}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    asaasWebhookSecret: e.target.value,
-                  })
                 }
               />
             </div>
