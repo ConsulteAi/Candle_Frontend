@@ -85,9 +85,9 @@ export function TenantsManager() {
       if (editingItem) {
         const updateData: UpdateTenantDto = {
           name: formData.name,
-          asaasApiKey: formData.asaasApiKey,
-          asaasApiUrl: formData.asaasApiUrl,
-          asaasWebhookSecret: formData.asaasWebhookSecret,
+          asaasApiKey: formData.asaasApiKey || undefined,
+          asaasApiUrl: formData.asaasApiUrl || undefined,
+          asaasWebhookSecret: formData.asaasWebhookSecret || undefined,
           domain: payloadDomain,
           ownerId: payloadOwnerId,
         };
@@ -96,6 +96,9 @@ export function TenantsManager() {
       } else {
         const createData = {
           ...formData,
+          asaasApiKey: formData.asaasApiKey || undefined,
+          asaasApiUrl: formData.asaasApiUrl || undefined,
+          asaasWebhookSecret: formData.asaasWebhookSecret || undefined,
           domain: payloadDomain,
           ownerId: payloadOwnerId || undefined, // undefined for POST
         };
