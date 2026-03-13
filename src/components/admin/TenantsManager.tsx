@@ -356,7 +356,7 @@ export function TenantsManager() {
                 }
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
+            {/* <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right text-xs leading-tight">Asaas API URL</Label>
               <Input
                 className="col-span-3"
@@ -380,7 +380,7 @@ export function TenantsManager() {
                   })
                 }
               />
-            </div>
+            </div> */}
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
