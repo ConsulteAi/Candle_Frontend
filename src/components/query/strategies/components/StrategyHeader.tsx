@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { Button, Badge } from '@/design-system/ComponentsTailwind';
 import { cn } from '@/lib/utils';
-import { downloadPdf } from '@/lib/download';
+import { downloadPdf, downloadBlob } from '@/lib/download';
+import { httpClient } from '@/lib/api/httpClient';
 
 interface StrategyHeaderProps {
   title: string;
@@ -11,6 +12,7 @@ interface StrategyHeaderProps {
   status?: string;
   statusVariant?: 'success' | 'warning' | 'error' | 'info' | 'outline' | 'primary';
   pdfUrl?: string;
+  queryId?: string;
   children?: React.ReactNode;
   className?: string;
 }
@@ -22,6 +24,7 @@ export function StrategyHeader({
   status,
   statusVariant = 'primary',
   pdfUrl,
+  queryId,
   children,
   className
 }: StrategyHeaderProps) {
@@ -52,17 +55,47 @@ export function StrategyHeader({
               )}
             </div>
             
-            {pdfUrl && (
+            {(pdfUrl || queryId) && (
                 <Button 
                    onClick={async () => {
                      try {
                        setIsDownloading(true);
-                       await downloadPdf(pdfUrl, `relatorio-${protocol || 'documento'}.pdf`);
+                       let downloaded = false;
+
+                       if (queryId) {
+                         try {
+                           const response = await httpClient.get(`/queries/${queryId}/pdf`, { responseType: 'blob' });
+                           
+                           let filename = `relatorio-${protocol || 'documento'}.pdf`;
+                           const disposition = response.headers['content-disposition'];
+                           if (disposition && disposition.includes('filename=')) {
+                             const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                             const matches = filenameRegex.exec(disposition);
+                             if (matches != null && matches[1]) { 
+                               filename = matches[1].replace(/['"]/g, '');
+                             }
+                           }
+                           
+                           downloadBlob(response.data, filename);
+                           downloaded = true;
+                         } catch (err) {
+                           console.warn('Failed to download PDF via Query ID, trying fallback', err);
+                         }
+                       }
+
+                       if (!downloaded && pdfUrl) {
+                         await downloadPdf(pdfUrl, `relatorio-${protocol || 'documento'}.pdf`);
+                         downloaded = true;
+                       }
+
+                       if (!downloaded) {
+                         throw new Error('Não foi possível baixar o PDF.');
+                       }
                      } catch (e) {
                        console.error('PDF download failed:', e);
                        // Don't open raw API URLs that return JSON instead of PDF
                        // Only open URLs that point directly to .pdf files
-                       if (pdfUrl.match(/\.pdf(\?|$)/i)) {
+                       if (pdfUrl && pdfUrl.match(/\.pdf(\?|$)/i)) {
                          window.open(pdfUrl, '_blank');
                        }
                      } finally {

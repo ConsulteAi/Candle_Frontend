@@ -29,7 +29,7 @@ import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
 
-export function CreditPremiumStrategy({ data }: QueryStrategyProps<PremiumCreditReportResponse>) {
+export function CreditPremiumStrategy({ data, queryId }: QueryStrategyProps<PremiumCreditReportResponse>) {
   if (!data) return null;
 
   const isRestricted = data.status === 'RESTRICTED';
@@ -82,7 +82,8 @@ export function CreditPremiumStrategy({ data }: QueryStrategyProps<PremiumCredit
                   statusVariant={data.person.revenueStatus === 'REGULAR' ? 'success' : 'warning'}
                   pdfUrl={data.pdf}
                   className="mb-4"
-               />
+                 queryId={queryId}
+         />
 
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                   <InfoBox

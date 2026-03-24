@@ -22,7 +22,7 @@ import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { InfoBox } from './components/InfoBox';
 import { SummaryCard } from './components/SummaryCard';
 
-export function ScrBacenStrategy({ data }: QueryStrategyProps<ScrBacenResult>) {
+export function ScrBacenStrategy({ data, queryId }: QueryStrategyProps<ScrBacenResult>) {
   if (!data) return null;
 
   const formatCurrency = (val: number) => {
@@ -91,7 +91,8 @@ export function ScrBacenStrategy({ data }: QueryStrategyProps<ScrBacenResult>) {
               subtitle={`Documento: ${data.document}`}
               pdfUrl={data.pdf}
               className="mb-6"
-            />
+              queryId={queryId}
+         />
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <InfoBox 

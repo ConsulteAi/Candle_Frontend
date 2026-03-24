@@ -28,7 +28,7 @@ import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
 import { StrategyContacts } from './components/StrategyContacts';
 
-export function CompletaPlusCnpjStrategy({ data }: QueryStrategyProps<CompletaPlusCnpjResult>) {
+export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<CompletaPlusCnpjResult>) {
   if (!data) return null;
 
   return (
@@ -58,7 +58,8 @@ export function CompletaPlusCnpjStrategy({ data }: QueryStrategyProps<CompletaPl
                   statusVariant={data.company.status === 'ATIVA' ? 'success' : 'warning'}
                   pdfUrl={data.pdf}
                   className="mb-4"
-                />
+                  queryId={queryId}
+         />
 
                 <div className="grid grid-cols-2 gap-4">
                   <InfoBox 
