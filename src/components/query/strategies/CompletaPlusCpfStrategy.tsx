@@ -49,7 +49,7 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
              />
              <InfoBox 
                label="Nascimento" 
-               value={`${formatDisplayDate(data.person.birthDate)} (${data.person.gender})`}
+               value={`${formatDisplayDate(data.person.birthDate)} ${data.person.gender ? `(${data.person.gender})` : ''}`}
                icon={<Calendar className="w-4 h-4 text-primary" />}
              />
              {data.person.email && (
