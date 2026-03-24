@@ -65,7 +65,18 @@ export function StrategyHeader({
                        if (queryId) {
                          try {
                            const response = await httpClient.get(`/queries/${queryId}/pdf`, { responseType: 'blob' });
-                           downloadBlob(response.data, `relatorio-${protocol || 'documento'}.pdf`);
+                           
+                           let filename = `relatorio-${protocol || 'documento'}.pdf`;
+                           const disposition = response.headers['content-disposition'];
+                           if (disposition && disposition.includes('filename=')) {
+                             const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                             const matches = filenameRegex.exec(disposition);
+                             if (matches != null && matches[1]) { 
+                               filename = matches[1].replace(/['"]/g, '');
+                             }
+                           }
+                           
+                           downloadBlob(response.data, filename);
                            downloaded = true;
                          } catch (err) {
                            console.warn('Failed to download PDF via Query ID, trying fallback', err);
