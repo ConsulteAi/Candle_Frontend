@@ -27,7 +27,7 @@ import { StrategyContacts } from './components/StrategyContacts';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
 
-export function QuodRestritivoAcoesPfStrategy({ data }: QueryStrategyProps<QuodRestritivoAcoesPfResult>) {
+export function QuodRestritivoAcoesPfStrategy({ data, queryId }: QueryStrategyProps<QuodRestritivoAcoesPfResult>) {
   if (!data) return null;
 
   return (
@@ -42,7 +42,8 @@ export function QuodRestritivoAcoesPfStrategy({ data }: QueryStrategyProps<QuodR
             statusVariant={data.person.status === 'REGULAR' ? 'success' : 'warning'}
             pdfUrl={data.pdf}
             className="mb-6"
-          />
+            queryId={queryId}
+         />
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <InfoBox 
