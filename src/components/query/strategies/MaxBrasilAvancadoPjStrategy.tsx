@@ -28,7 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/glass-table";
 
-export function MaxBrasilAvancadoPjStrategy({ data, queryId }: QueryStrategyProps<MaxBrasilAvancadoPjResult>) {
+export function MaxBrasilAvancadoPjStrategy({ data }: QueryStrategyProps<MaxBrasilAvancadoPjResult>) {
   if (!data) return null;
 
   return (
@@ -60,8 +60,7 @@ export function MaxBrasilAvancadoPjStrategy({ data, queryId }: QueryStrategyProp
                   statusVariant={data.company.status === 'ATIVA' ? 'success' : 'warning'}
                   pdfUrl={data.pdf}
                   className="mb-6"
-                 queryId={queryId}
-         />
+               />
 
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                 <InfoBox 

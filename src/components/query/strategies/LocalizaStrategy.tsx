@@ -15,7 +15,7 @@ import type { QueryStrategyProps, LocalizaResult } from '@/types/query-strategie
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
 
-export function LocalizaStrategy({ data, queryId }: QueryStrategyProps<LocalizaResult>) {
+export function LocalizaStrategy({ data }: QueryStrategyProps<LocalizaResult>) {
   if (!data) return null;
 
   return (
@@ -32,8 +32,7 @@ export function LocalizaStrategy({ data, queryId }: QueryStrategyProps<LocalizaR
                   statusVariant="info"
                   pdfUrl={data.pdf}
                   className="mb-6"
-                 queryId={queryId}
-         />
+               />
 
                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                  <InfoBox 

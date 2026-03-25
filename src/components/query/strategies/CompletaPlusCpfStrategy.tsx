@@ -25,7 +25,7 @@ import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
 import { StrategyContacts } from './components/StrategyContacts';
 
-export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<CompletaPlusCpfResult>) {
+export function CompletaPlusCpfStrategy({ data }: QueryStrategyProps<CompletaPlusCpfResult>) {
   if (!data) return null;
 
   return (
@@ -39,7 +39,6 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
             status={data.person.revenueStatus}
             statusVariant={data.person.revenueStatus === 'REGULAR' ? 'success' : 'warning'}
             pdfUrl={data.pdf}
-           queryId={queryId}
          />
          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
              <InfoBox 
@@ -49,7 +48,7 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
              />
              <InfoBox 
                label="Nascimento" 
-               value={`${formatDisplayDate(data.person.birthDate)} ${data.person.gender ? `(${data.person.gender})` : ''}`}
+               value={`${formatDisplayDate(data.person.birthDate)} (${data.person.gender})`}
                icon={<Calendar className="w-4 h-4 text-primary" />}
              />
              {data.person.email && (

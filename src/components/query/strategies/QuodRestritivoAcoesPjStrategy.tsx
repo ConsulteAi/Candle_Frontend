@@ -27,7 +27,7 @@ import { StrategyHeader } from './components/StrategyHeader';
 import { StrategyContacts } from './components/StrategyContacts';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 
-export function QuodRestritivoAcoesPjStrategy({ data, queryId }: QueryStrategyProps<QuodRestritivoAcoesPjResult>) {
+export function QuodRestritivoAcoesPjStrategy({ data }: QueryStrategyProps<QuodRestritivoAcoesPjResult>) {
   if (!data) return null;
 
   return (
@@ -43,7 +43,6 @@ export function QuodRestritivoAcoesPjStrategy({ data, queryId }: QueryStrategyPr
             statusVariant={data.company.status === 'ATIVA' ? 'success' : 'warning'}
             pdfUrl={data.pdf}
             className="mb-6"
-           queryId={queryId}
          />
 
          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">

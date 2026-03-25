@@ -25,7 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/glass-table";
 
-export function BvsBasicaPfStrategy({ data, queryId }: QueryStrategyProps<BvsBasicaPfResult>) {
+export function BvsBasicaPfStrategy({ data }: QueryStrategyProps<BvsBasicaPfResult>) {
   if (!data) return null;
 
   return (
@@ -39,8 +39,7 @@ export function BvsBasicaPfStrategy({ data, queryId }: QueryStrategyProps<BvsBas
            status={data.person.status}
            statusVariant={data.person.status === 'REGULAR' ? 'success' : 'warning'}
            pdfUrl={data.pdf}
-          queryId={queryId}
-         />
+        />
         <div className="grid grid-cols-2 gap-4 mt-2">
            <InfoBox 
              label="Documento" 

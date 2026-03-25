@@ -27,7 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/glass-table";
 
-export function RealtimePremiumScorePfStrategy({ data, queryId }: QueryStrategyProps<RealtimePremiumScorePfResult>) {
+export function RealtimePremiumScorePfStrategy({ data }: QueryStrategyProps<RealtimePremiumScorePfResult>) {
   if (!data) return null;
 
   return (
@@ -55,7 +55,6 @@ export function RealtimePremiumScorePfStrategy({ data, queryId }: QueryStrategyP
                status={data.person.status}
                statusVariant={data.person.status === 'REGULAR' ? 'success' : 'warning'}
                pdfUrl={data.pdf}
-               queryId={queryId}
                className="mb-6"
              >
                 {/* Extra Badge for Probability */}
