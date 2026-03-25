@@ -138,28 +138,28 @@ export function ScrBacenStrategy({ data, queryId }: QueryStrategyProps<ScrBacenR
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <SummaryCard 
           title="A Vencer"
-          value={data.creditSummary.creditToExpire.value}
+          value={formatCurrency(data.creditSummary.creditToExpire.value)}
           subtitle={`${data.creditSummary.creditToExpire.percentage}% do total`}
           color="blue"
           icon={<Clock className="w-5 h-5" />}
         />
         <SummaryCard 
           title="Vencido"
-          value={data.creditSummary.expiredCredit.value}
+          value={formatCurrency(data.creditSummary.expiredCredit.value)}
           subtitle={`${data.creditSummary.expiredCredit.percentage}% do total`}
           color="red"
           icon={<AlertTriangle className="w-5 h-5" />}
         />
         <SummaryCard 
           title="Limite"
-          value={data.creditSummary.creditLimit.value}
+          value={formatCurrency(data.creditSummary.creditLimit.value)}
           subtitle={`${data.creditSummary.creditLimit.percentage}% do total`}
           color="green"
           icon={<CheckCircle2 className="w-5 h-5" />}
         />
         <SummaryCard 
           title="Prejuízo"
-          value={data.creditSummary.loss.value}
+          value={formatCurrency(data.creditSummary.loss.value)}
           subtitle={`${data.creditSummary.loss.percentage}% do total`}
           color="gray"
           icon={<TrendingDown className="w-5 h-5" />}
