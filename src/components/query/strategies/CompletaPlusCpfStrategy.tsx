@@ -9,6 +9,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
+import { formatDisplayDate } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 import type { QueryStrategyProps, CompletaPlusCpfResult } from '@/types/query-strategies';
 import {
   Table,
@@ -22,7 +24,6 @@ import { InfoBox } from './components/InfoBox';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
-import { formatDisplayDate } from '@/lib/utils';
 import { StrategyContacts } from './components/StrategyContacts';
 
 export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<CompletaPlusCpfResult>) {
@@ -124,7 +125,7 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
                 <TableCell>{debt.date}</TableCell>
                 <TableCell className="font-medium">{debt.origin}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
-                <TableCell className="text-right font-bold text-red-600">R$ {debt.value}</TableCell>
+                <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>

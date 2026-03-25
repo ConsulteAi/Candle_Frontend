@@ -10,6 +10,7 @@ import { QueryCategory } from '@/types/query';
 import { ValidationService } from '@/lib/consultas/services/ValidationService';
 import { useQueryExecution } from '@/hooks/useQueryExecution';
 import { useBalance } from '@/hooks/useBalance';
+import { formatCurrency } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -246,7 +247,7 @@ export function QueryExecutionForm({
           <span className="text-sm font-medium text-gray-700">Valor da consulta:</span>
           <div className="text-right">
             <span className="text-2xl font-bold text-primary">
-              R$ {currentPrice.toFixed(2)}
+              {formatCurrency(currentPrice.toString())}
             </span>
             {queryType.cachedPrice < queryType.price && (
               <p className="text-xs text-green-600 font-medium">
@@ -263,7 +264,7 @@ export function QueryExecutionForm({
         <div className="p-4 rounded-lg bg-red-50 border border-red-200">
           <p className="text-sm text-red-700 flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
-            Saldo insuficiente. Seu saldo atual: R$ {formattedBalance}
+            Saldo insuficiente. Seu saldo atual: {formatCurrency(String(formattedBalance))}
           </p>
         </div>
       )}
@@ -305,7 +306,7 @@ export function QueryExecutionForm({
       {showConfirmation && !executionError && (
         <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200">
           <p className="text-sm text-yellow-800 font-medium">
-            Confirma a execução desta consulta? O valor de R$ {currentPrice.toFixed(2)} será
+            Confirma a execução desta consulta? O valor de {formatCurrency(currentPrice.toString())} será
             debitado do seu saldo.
           </p>
         </div>

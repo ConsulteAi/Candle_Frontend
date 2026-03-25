@@ -10,6 +10,7 @@ import {
   Phone
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
+import { formatCurrency } from '@/lib/formatters';
 import type { QueryStrategyProps, MaxBrasilAvancadoPfResult } from '@/types/query-strategies';
 import { AlertsGrid } from './components/AlertsGrid';
 import { ScoreGauge } from './components/ScoreGauge';
@@ -140,7 +141,7 @@ export function MaxBrasilAvancadoPfStrategy({ data, queryId }: QueryStrategyProp
                 <TableCell>{debt.date}</TableCell>
                 <TableCell className="font-medium">{debt.origin}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
-                <TableCell className="text-right font-bold text-red-600">R$ {debt.value}</TableCell>
+                <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -170,7 +171,7 @@ export function MaxBrasilAvancadoPfStrategy({ data, queryId }: QueryStrategyProp
                 <TableCell>{protest.date}</TableCell>
                 <TableCell className="font-medium">{protest.origin}</TableCell>
                 <TableCell className="text-xs text-gray-500">{protest.type}</TableCell>
-                <TableCell className="text-right font-bold text-orange-600">R$ {protest.value}</TableCell>
+                <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(protest.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>

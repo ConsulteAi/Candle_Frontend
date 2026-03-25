@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import { formatDisplayDate } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 import type { QueryStrategyProps, RealtimePremiumScorePjResult } from '@/types/query-strategies';
 import { AlertsGrid } from './components/AlertsGrid';
 import { ScoreGauge } from './components/ScoreGauge';
@@ -165,7 +166,7 @@ export function RealtimePremiumScorePjStrategy({ data, queryId }: QueryStrategyP
                 <TableCell>{debt.date}</TableCell>
                 <TableCell className="font-medium">{debt.origin}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
-                <TableCell className="text-right font-bold text-red-600">R$ {debt.value}</TableCell>
+                <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -193,7 +194,7 @@ export function RealtimePremiumScorePjStrategy({ data, queryId }: QueryStrategyP
               <TableRow key={idx}>
                 <TableCell>{protest.date}</TableCell>
                 <TableCell className="font-medium">{protest.notary || protest.origin}</TableCell>
-                <TableCell className="text-right font-bold text-orange-600">R$ {protest.value}</TableCell>
+                <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(protest.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>

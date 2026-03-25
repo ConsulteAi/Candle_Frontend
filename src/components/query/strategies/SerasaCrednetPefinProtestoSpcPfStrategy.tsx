@@ -27,6 +27,7 @@ import { StrategyHeader } from './components/StrategyHeader';
 import { StrategyContacts } from './components/StrategyContacts';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 export function SerasaCrednetPefinProtestoSpcPfStrategy({ data, queryId }: QueryStrategyProps<SerasaCrednetPefinProtestoSpcPfResult>) {
   if (!data) return null;
@@ -152,7 +153,7 @@ export function SerasaCrednetPefinProtestoSpcPfStrategy({ data, queryId }: Query
                 <TableCell>{debt.date}</TableCell>
                 <TableCell className="font-medium">{debt.origin}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
-                <TableCell className="text-right font-bold text-red-600">R$ {debt.value}</TableCell>
+                <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -182,7 +183,7 @@ export function SerasaCrednetPefinProtestoSpcPfStrategy({ data, queryId }: Query
                 <TableCell>{protest.date}</TableCell>
                 <TableCell className="font-medium">{protest.origin}</TableCell>
                 <TableCell>{protest.type}</TableCell>
-                <TableCell className="text-right font-bold text-orange-600">R$ {protest.value}</TableCell>
+                <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(protest.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
