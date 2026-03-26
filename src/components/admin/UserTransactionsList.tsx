@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import useSWR from 'swr';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -24,34 +25,22 @@ interface UserTransactionsListProps {
   userId: string;
 }
 
+const fetcher = (url: string, params: Record<string, unknown>) =>
+  httpClient.get<PaginatedResponse<AdminTransaction>>(url, { params }).then((r) => r.data);
+
 export function UserTransactionsList({ userId }: UserTransactionsListProps) {
-  const [data, setData] = useState<PaginatedResponse<AdminTransaction> | null>(null);
   const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  const fetchTransactions = useCallback(async (targetPage: number) => {
-    try {
-      setIsLoading(true);
-      setError('');
-      const response = await httpClient.get<PaginatedResponse<AdminTransaction>>(`/admin/users/${userId}/transactions`, {
-        params: { limit: PAGE_SIZE, page: targetPage },
-      });
-      setData(response.data);
-    } catch {
-      setError('Não foi possível carregar as transações.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    fetchTransactions(page);
-  }, [fetchTransactions, page]);
+  const { data, isLoading, error } = useSWR(
+    [`/admin/users/${userId}/transactions`, { limit: PAGE_SIZE, page }],
+    ([url, params]) => fetcher(url, params as Record<string, unknown>),
+    { keepPreviousData: true }
+  );
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 0;
+  const isFetching = isLoading && !data;
 
-  if (isLoading) {
+  if (isFetching) {
     return (
       <div className="flex justify-center items-center py-8 text-slate-500">
         <Loader2 className="h-6 w-6 animate-spin mr-2" />
@@ -64,7 +53,7 @@ export function UserTransactionsList({ userId }: UserTransactionsListProps) {
     return (
       <div className="flex justify-center items-center py-8 text-red-500">
         <AlertCircle className="h-5 w-5 mr-2" />
-        {error}
+        Não foi possível carregar as transações.
       </div>
     );
   }
@@ -79,7 +68,7 @@ export function UserTransactionsList({ userId }: UserTransactionsListProps) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-md border border-slate-200">
+      <div className={`rounded-md border border-slate-200 transition-opacity duration-150 ${isLoading ? 'opacity-60' : 'opacity-100'}`}>
         <Table>
           <TableHeader>
             <TableRow>
@@ -129,7 +118,7 @@ export function UserTransactionsList({ userId }: UserTransactionsListProps) {
               variant="outline"
               size="sm"
               onClick={() => setPage((p) => p - 1)}
-              disabled={page === 1}
+              disabled={page === 1 || isLoading}
               className="h-8 w-8 p-0"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -141,7 +130,7 @@ export function UserTransactionsList({ userId }: UserTransactionsListProps) {
               variant="outline"
               size="sm"
               onClick={() => setPage((p) => p + 1)}
-              disabled={page === totalPages}
+              disabled={page === totalPages || isLoading}
               className="h-8 w-8 p-0"
             >
               <ChevronRight className="h-4 w-4" />
