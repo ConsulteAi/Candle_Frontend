@@ -209,6 +209,7 @@ export default function HistoricoPage() {
                   {filteredQueries.map((query) => {
                     const mainCategory = getPriorityCategory(query.queryType.category);
                     const categoryConfig = getCategoryConfig(mainCategory);
+                    const isSuccess = query.status === 'SUCCESS';
 
                     return (
                       <TableRow key={query.id} className="border-b border-gray-100/50 hover:bg-white/40 transition-colors group">
@@ -241,27 +242,27 @@ export default function HistoricoPage() {
                           <div className="flex items-center gap-2">
                              <div className={`
                                 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-sm
-                                ${query.status === 'SUCCESS' 
+                                ${isSuccess 
                                   ? 'bg-green-50 text-green-700 border-green-200' 
                                   : 'bg-red-50 text-red-700 border-red-200'}
                              `}>
-                                <div className={`w-1.5 h-1.5 rounded-full ${query.status === 'SUCCESS' ? 'bg-green-500' : 'bg-red-500'}`} />
-                                {query.status === 'SUCCESS' ? 'Concluída' : 'Erro'}
+                                <div className={`w-1.5 h-1.5 rounded-full ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`} />
+                                {isSuccess ? 'Concluída' : 'Erro'}
                              </div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right font-display font-bold text-gray-900">
-                          R$ {query.status === 'SUCCESS' ? query.price.toFixed(2) : '0.00'}
+                        <TableCell className={`text-right font-display font-bold ${isSuccess ? 'text-gray-900' : 'text-gray-400'}`}>
+                          R$ {isSuccess ? query.price.toFixed(2) : '0.00'}
                         </TableCell>
                         <TableCell className="text-center">
                                <div className="flex items-center justify-center">
                                  <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => query.status === 'SUCCESS' && handleViewQuery(query)}
-                                  disabled={query.status !== 'SUCCESS'}
+                                  onClick={() => isSuccess && handleViewQuery(query)}
+                                  disabled={!isSuccess}
                                   className="bg-white hover:bg-primary/10 text-primary border border-primary/20 hover:border-primary/30 shadow-sm transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                                  title={query.status === 'SUCCESS' ? 'Ver Detalhes' : 'Indisponível para consultas com erro'}
+                                  title={isSuccess ? 'Ver Detalhes' : 'Indisponível para consultas com erro'}
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>

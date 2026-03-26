@@ -105,11 +105,17 @@ export function UserQueriesList({ userId }: UserQueriesListProps) {
                   )}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link href={`/consulta/${query.id}`} target="_blank">
-                    <Button variant="ghost" size="sm">
+                  {query.status === 'FAILED' ? (
+                    <Button variant="ghost" size="sm" disabled={true}>
                       <Eye className="h-4 w-4" />
                     </Button>
-                  </Link>
+                  ) : (
+                    <Link href={`/consulta/${query.id}`} target="_blank">
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
