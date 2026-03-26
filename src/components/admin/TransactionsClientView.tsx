@@ -70,6 +70,8 @@ export function TransactionsClientView({ initialData }: TransactionsClientViewPr
       case 'FAILED':
       case 'CANCELED':
         return <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-none">Falhou</Badge>;
+      case 'OVERDUE':
+        return <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-none">Vencido</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -111,6 +113,7 @@ export function TransactionsClientView({ initialData }: TransactionsClientViewPr
               <SelectItem value="CONFIRMED">Confirmado</SelectItem>
               <SelectItem value="PENDING">Pendente</SelectItem>
               <SelectItem value="FAILED">Falhou</SelectItem>
+              <SelectItem value="OVERDUE">Vencido</SelectItem>
             </SelectContent>
           </Select>
         </div>
