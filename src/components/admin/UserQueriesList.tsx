@@ -107,7 +107,9 @@ export function UserQueriesList({ userId }: UserQueriesListProps) {
                   <StatusBadge status={query.status} />
                 </TableCell>
                 <TableCell className="text-right font-medium text-slate-700">
-                  {query.price > 0 ? (
+                  {query.status === 'FAILED' ? (
+                    <span className="text-slate-400">{(0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                  ) : query.price > 0 ? (
                     query.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
                   ) : (
                     <span className="text-slate-400">Gratuito</span>
