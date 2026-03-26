@@ -62,7 +62,6 @@ export default function HistoricoPage() {
   };
 
   const totalSpent = filteredQueries.reduce((sum, q) => sum + q.price, 0);
-  const cachedQueries = filteredQueries.filter((q) => q.isCached).length;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -249,25 +248,20 @@ export default function HistoricoPage() {
                                 <div className={`w-1.5 h-1.5 rounded-full ${query.status === 'SUCCESS' ? 'bg-green-500' : 'bg-red-500'}`} />
                                 {query.status === 'SUCCESS' ? 'Concluída' : 'Erro'}
                              </div>
-                            
-                            {query.isCached && (
-                              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-yellow-50 border border-yellow-200 text-yellow-600" title="Cache">
-                                <Zap className="w-3 h-3 fill-yellow-500" />
-                              </div>
-                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-display font-bold text-gray-900">
-                          R$ {query.price.toFixed(2)}
+                          R$ {query.status === 'SUCCESS' ? query.price.toFixed(2) : '0.00'}
                         </TableCell>
                         <TableCell className="text-center">
                                <div className="flex items-center justify-center">
                                  <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => handleViewQuery(query)}
-                                  className="bg-white hover:bg-primary/10 text-primary border border-primary/20 hover:border-primary/30 shadow-sm transition-all active:scale-95"
-                                  title="Ver Detalhes"
+                                  onClick={() => query.status === 'SUCCESS' && handleViewQuery(query)}
+                                  disabled={query.status !== 'SUCCESS'}
+                                  className="bg-white hover:bg-primary/10 text-primary border border-primary/20 hover:border-primary/30 shadow-sm transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+                                  title={query.status === 'SUCCESS' ? 'Ver Detalhes' : 'Indisponível para consultas com erro'}
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
