@@ -11,6 +11,7 @@ import {
   FileWarning
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
+import { formatCurrency } from '@/lib/formatters';
 import type { QueryStrategyProps, CompletaPlusCnpjResult } from '@/types/query-strategies';
 import {
   Table,
@@ -150,7 +151,7 @@ export function CompletaPlusCnpjStrategy({ data }: QueryStrategyProps<CompletaPl
                 <TableCell>{debt.date}</TableCell>
                 <TableCell className="font-medium">{debt.origin}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
-                <TableCell className="text-right font-bold text-red-600">R$ {debt.value}</TableCell>
+                <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -179,7 +180,7 @@ export function CompletaPlusCnpjStrategy({ data }: QueryStrategyProps<CompletaPl
                    <TableCell>{p.date}</TableCell>
                    <TableCell className="font-medium">{p.notary}</TableCell>
                    <TableCell>{p.origin}</TableCell>
-                   <TableCell className="text-right font-bold text-orange-600">R$ {p.value}</TableCell>
+                   <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(p.value))}</TableCell>
                 </TableRow>
               ))}
            </TableBody>

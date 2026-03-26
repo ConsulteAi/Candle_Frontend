@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { getStrategyComponent } from './strategies';
 import type { QueryHistoryEntry } from '@/types/query';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 import { Card } from '@/design-system/ComponentsTailwind';
 import { Button } from '@/components/ui/button';
 import { Hash, Calendar, DollarSign, Copy, Check } from 'lucide-react';
@@ -85,7 +86,7 @@ export function QueryResultDisplay({ query, className }: QueryResultDisplayProps
                   <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Valor Cobrado</span>
                </div>
                <p className="text-sm font-bold text-gray-900 dark:text-white pl-1">
-                  R$ {query.price?.toFixed(2) || '0.00'}
+                  {formatCurrency(String(query.price || 0))}
                </p>
             </div>
 

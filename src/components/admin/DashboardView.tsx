@@ -1,19 +1,19 @@
 'use client';
 
-// Imports removed
-import { motion } from 'framer-motion';
+import { useCallback } from 'react';
+import useSWR from 'swr';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { motion, type Variants } from 'framer-motion';
 import { 
   Users, 
   DollarSign, 
   TrendingUp, 
   Activity,
   Zap,
-  CheckCircle2,
-  XCircle,
-  AlertCircle
+  LucideIcon,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import type { DashboardOverview, DashboardQueries } from '@/types/admin';
+import type { DashboardOverview, DashboardQueries, RevenueStats } from '@/types/admin';
 import { 
   AreaChart, 
   Area, 
@@ -24,38 +24,23 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { useAuth } from '@/hooks/useAuth';
+import { getRevenueStatsAction } from '@/actions/admin.actions';
 
-interface DashboardViewProps {
-  overview: DashboardOverview | null;
-  revenueData: any; 
-  providerStats: any;
-  queriesStats: DashboardQueries | null;
-  isLoading?: boolean;
+// --- StatCard (must be defined outside DashboardView to keep stable identity across re-renders)
+
+interface StatCardProps {
+  title: string;
+  value: React.ReactNode;
+  subtext?: string;
+  icon: LucideIcon;
+  colorClass: string;
+  highlight?: boolean;
+  variants: Variants;
 }
 
-export function DashboardView({ overview, revenueData, providerStats, queriesStats, isLoading }: DashboardViewProps) {
-  const { user } = useAuth();
-
-  if (!overview && !isLoading) return null;
-
-  // Animation variants
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
-
-  const StatCard = ({ title, value, subtext, icon: Icon, colorClass, highlight = false }: any) => (
-    <motion.div variants={item}>
+function StatCard({ title, value, subtext, icon: Icon, colorClass, highlight = false, variants }: StatCardProps) {
+  return (
+    <motion.div variants={variants}>
       <Card className={`border-none shadow-glass hover:shadow-glass-strong transition-all duration-300 overflow-hidden relative group h-full ${highlight ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl shadow-emerald-500/20' : ''}`}>
         <div className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity ${colorClass}`}>
            <Icon className="w-24 h-24 -mr-4 -mt-4 transform rotate-12" />
@@ -77,6 +62,73 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
       </Card>
     </motion.div>
   );
+}
+
+// --- Period Presets ---
+
+const PERIOD_PRESETS = [
+  { label: 'Hoje', days: 1 },
+  { label: '7d', days: 7 },
+  { label: '15d', days: 15 },
+  { label: '30d', days: 30 },
+  { label: '90d', days: 90 },
+  { label: '180d', days: 180 },
+  { label: '365d', days: 365 },
+] as const;
+
+// --- Props ---
+
+interface DashboardViewProps {
+  overview: DashboardOverview | null;
+  providerStats: any;
+  queriesStats: DashboardQueries | null;
+  initialPeriod?: number;
+}
+
+// --- Fetcher (wraps server action) ---
+
+const fetchRevenue = (days: number) =>
+  getRevenueStatsAction({ days }).then((res) => {
+    if (res.success) return res.data as RevenueStats;
+    throw new Error('Erro ao carregar receita');
+  });
+
+// --- Component ---
+
+// Animation variants (module-level = stable references)
+const container: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const item: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
+
+export function DashboardView({ overview, providerStats, queriesStats, initialPeriod = 30 }: DashboardViewProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const period = Number(searchParams.get('period')) || initialPeriod;
+
+  const { data: revenueData, isLoading: revenueLoading } = useSWR(
+    ['revenue-stats', period],
+    () => fetchRevenue(period),
+    { keepPreviousData: true, revalidateOnFocus: false }
+  );
+
+  const setPeriod = useCallback((days: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('period', String(days));
+    router.push(`${pathname}?${params.toString()}`);
+  }, [router, pathname, searchParams]);
+
+  if (!overview) return null;
+
+  const periodLabel = PERIOD_PRESETS.find((p) => p.days === period)?.label ?? `${period}d`;
 
   return (
     <motion.div 
@@ -85,6 +137,7 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
       initial="hidden"
       animate="show"
     >
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between text-slate-900 gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-display font-bold tracking-tight mb-2">
@@ -92,25 +145,36 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
           </h1>
           <p className="text-slate-500 text-lg">Aqui está o resumo financeiro e operacional de hoje.</p>
         </div>
-        <div className="text-right hidden md:block">
-           <div className="text-sm text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full inline-block">
-             {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-           </div>
+
+        {/* Period Selector */}
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+          {PERIOD_PRESETS.map((preset) => (
+            <button
+              key={preset.days}
+              onClick={() => setPeriod(preset.days)}
+              className={`
+                px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200
+                ${period === preset.days
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'}
+              `}
+            >
+              {preset.label}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Primary Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* REVENUE */}
         <StatCard 
           title="Receita Mensal" 
-          value={overview?.revenueThisMonth.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) ?? 'R$ 0,00'}
-          subtext={`+${overview?.revenueToday.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} hoje`}
+          value={overview?.revenueThisMonth?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) ?? 'R$ 0,00'}
+          subtext={`+${overview?.revenueToday?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} hoje`}
           icon={TrendingUp}
           colorClass="text-primary bg-primary"
+          variants={item}
         />
-
-        {/* PROFIT - HIGHLIGHTED */}
         <StatCard 
           title="Lucro Líquido" 
           value={overview?.profitThisMonth?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) ?? 'R$ 0,00'}
@@ -118,30 +182,29 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
           icon={DollarSign}
           colorClass="text-white"
           highlight={true}
+          variants={item}
         />
-
-        {/* QUERIES - VOLUME & SUCCESS */}
         <StatCard 
           title="Consultas Totais" 
           value={overview?.totalQueries}
           subtext={`${overview?.querySuccessRate}% de taxa de sucesso`}
           icon={Zap}
           colorClass="text-amber-600 bg-amber-600"
+          variants={item}
         />
-
-        {/* ACTIVE USERS */}
         <StatCard 
           title="Usuários Ativos" 
           value={overview?.usersByStatus?.ACTIVE ?? 0}
           subtext={`${overview?.newUsersThisMonth} novos cadastros este mês`}
           icon={Users}
           colorClass="text-purple-600 bg-purple-600"
+          variants={item}
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Left Column: Charts & Tables */}
+        {/* Left Column */}
         <div className="lg:col-span-2 space-y-8">
           
           {/* Revenue Chart */}
@@ -149,9 +212,11 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
             <Card className="shadow-lg border-none">
               <CardHeader>
                 <CardTitle>Evolução de Receita</CardTitle>
-                <CardDescription>Acompanhamento diário dos últimos 30 dias</CardDescription>
+                <CardDescription>
+                  Acompanhamento diário — últimos {periodLabel}
+                </CardDescription>
               </CardHeader>
-              <CardContent className="h-[350px]">
+              <CardContent className={`h-[350px] transition-opacity duration-200 ${revenueLoading ? 'opacity-50' : 'opacity-100'}`}>
                 {(!revenueData?.revenueByDay || revenueData.revenueByDay.length === 0) ? (
                    <div className="flex flex-col items-center justify-center h-full text-slate-400">
                       <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
@@ -215,7 +280,7 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
             </Card>
           </motion.div>
 
-          {/* Top Queries Table - NEW Section */}
+          {/* Top Queries Table */}
           <motion.div variants={item}>
             <Card className="shadow-lg border-none overflow-hidden">
                <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -282,7 +347,7 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
           </motion.div>
         </div>
 
-        {/* Right Column: Status & Health */}
+        {/* Right Column */}
         <motion.div variants={item} className="lg:col-span-1 space-y-8">
            
            {/* Providers Status */}
@@ -300,7 +365,6 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
                         provider.healthStatus === 'degraded' ? 'bg-amber-500 shadow-amber-500/50' :
                         'bg-red-500 shadow-red-500/50'
                       } ${provider.isActive ? 'animate-pulse' : ''}`} />
-                      
                       <div>
                         <div className="font-bold text-sm text-slate-800 leading-none mb-1.5">{provider.name}</div>
                         <div className="text-xs text-slate-500 flex flex-col gap-1">
@@ -314,7 +378,6 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
                         </div>
                       </div>
                     </div>
-
                     <div className="text-right">
                        <span className={`text-xs font-bold px-2 py-1 rounded-md block mb-1 ${
                           provider.healthStatus === 'healthy' ? 'text-emerald-700 bg-emerald-100' : 
@@ -329,7 +392,7 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
              </CardContent>
            </Card>
 
-           {/* Quick Actions or Summary */}
+           {/* Operational Summary */}
            <Card className="bg-gradient-to-br from-primary to-primary/80 text-white border-none shadow-xl">
              <CardHeader>
                <CardTitle className="text-white">Resumo Operacional</CardTitle>
@@ -351,7 +414,6 @@ export function DashboardView({ overview, revenueData, providerStats, queriesSta
                  <div className="flex items-center gap-2 text-sm text-white/80 mb-2">
                    <Activity className="w-4 h-4" /> Margem de Lucro Atual
                  </div>
-                 {/* Profit Margin Calculation (Avoid division by zero) */}
                  <div className="w-full bg-black/20 rounded-full h-2 mb-1">
                    <div 
                      className="bg-emerald-400 h-2 rounded-full" 

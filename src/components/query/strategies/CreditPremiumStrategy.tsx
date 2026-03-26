@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils';
 import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
+import { formatCurrency } from '@/lib/formatters';
 
 export function CreditPremiumStrategy({ data }: QueryStrategyProps<PremiumCreditReportResponse>) {
   if (!data) return null;
@@ -179,7 +180,7 @@ export function CreditPremiumStrategy({ data }: QueryStrategyProps<PremiumCredit
                 <TableCell>{debt.date}</TableCell>
                 <TableCell className="font-medium">{debt.origin}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
-                <TableCell className="text-right font-bold text-red-600">R$ {debt.value}</TableCell>
+                <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -206,7 +207,7 @@ export function CreditPremiumStrategy({ data }: QueryStrategyProps<PremiumCredit
               <TableRow key={idx}>
                 <TableCell>{protest.date}</TableCell>
                 <TableCell className="font-medium">{protest.notary}</TableCell>
-                <TableCell className="text-right font-bold text-orange-600">R$ {protest.value}</TableCell>
+                <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(protest.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -233,7 +234,7 @@ export function CreditPremiumStrategy({ data }: QueryStrategyProps<PremiumCredit
               <TableRow key={idx}>
                 <TableCell>{entry.date}</TableCell>
                 <TableCell className="font-medium">{entry.literal}</TableCell>
-                <TableCell className="text-right font-bold text-purple-600">R$ {entry.value}</TableCell>
+                <TableCell className="text-right font-bold text-purple-600">{formatCurrency(String(entry.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>

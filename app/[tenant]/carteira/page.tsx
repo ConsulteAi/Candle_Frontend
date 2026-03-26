@@ -52,6 +52,7 @@ export default function CarteiraPage() {
   // Load transactions
   const loadTransactions = async () => {
     setIsLoading(true);
+    // todo: add pagination
     const result = await getTransactions(1, 20);
     if (result.success && result.data) {
       setTransactions(result.data.transactions);
@@ -202,6 +203,7 @@ export default function CarteiraPage() {
                             transaction.type === 'RECHARGE' ||
                             transaction.type === 'REFUND';
                           const statusConfig = STATUS_CONFIG[transaction.status];
+                          const isOverdue = transaction.status === 'OVERDUE';
 
                           return (
                             <TableRow key={transaction.id} className="border-b border-primary/5 hover:bg-white/60 transition-colors group">
@@ -247,13 +249,17 @@ export default function CarteiraPage() {
                                 </Badge>
                               </TableCell>
                               <TableCell className="text-right pr-8 py-5">
-                                <span
+                                {isOverdue ? (
+                                  <span className="font-display font-bold text-lg text-gray-400">-</span>
+                                ) : (
+                                <span 
                                   className={`font-display font-bold text-lg ${
                                     isPositive ? 'text-green-600' : 'text-gray-900'
                                   }`}
                                 >
                                   {isPositive ? '+' : '-'} R$ {transaction.amount.toFixed(2)}
                                 </span>
+                                )}
                               </TableCell>
                             </TableRow>
                           );

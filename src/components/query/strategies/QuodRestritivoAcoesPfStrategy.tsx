@@ -9,7 +9,8 @@ import {
   Gavel,
   Calendar
 } from 'lucide-react';
-import { Card } from '@/design-system/ComponentsTailwind';
+import { Card, Badge } from '@/design-system/ComponentsTailwind';
+import { formatCurrency } from '@/lib/formatters';
 import type { QueryStrategyProps, QuodRestritivoAcoesPfResult } from '@/types/query-strategies';
 import {
   Table,
@@ -132,7 +133,7 @@ export function QuodRestritivoAcoesPfStrategy({ data }: QueryStrategyProps<QuodR
                 <TableCell className="font-medium">{action.type}</TableCell>
                 <TableCell>{action.details}</TableCell>
                 <TableCell>{action.origin}</TableCell>
-                <TableCell className="text-right font-bold text-purple-600">R$ {action.value}</TableCell>
+                <TableCell className="text-right font-bold text-purple-600">{formatCurrency(String(action.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -162,7 +163,7 @@ export function QuodRestritivoAcoesPfStrategy({ data }: QueryStrategyProps<QuodR
                 <TableCell>{debt.date}</TableCell>
                 <TableCell className="font-medium">{debt.origin}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
-                <TableCell className="text-right font-bold text-red-600">R$ {debt.value}</TableCell>
+                <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -192,7 +193,7 @@ export function QuodRestritivoAcoesPfStrategy({ data }: QueryStrategyProps<QuodR
                 <TableCell>{protest.date}</TableCell>
                 <TableCell className="font-medium">{protest.origin}</TableCell>
                 <TableCell>{protest.type}</TableCell>
-                <TableCell className="text-right font-bold text-orange-600">R$ {protest.value}</TableCell>
+                <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(protest.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -1,21 +1,24 @@
 import { getTransactionsAction } from '@/actions/admin.actions';
 import { TransactionsClientView } from '@/components/admin/TransactionsClientView';
-import { TransactionFilters } from '@/types/admin';
+import type { TransactionFilters } from '@/types/admin';
 
 export default async function TransactionsPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const resolvedParams = await searchParams;
-  const page = typeof resolvedParams.page === 'string' ? parseInt(resolvedParams.page) : 1;
-  const limit = 20;
-  const status = typeof resolvedParams.status === 'string' ? resolvedParams.status : undefined;
+  const p = await searchParams;
+
+  const getString = (key: string) =>
+    typeof p[key] === 'string' ? (p[key] as string) : undefined;
 
   const filters: TransactionFilters = {
-    page,
-    limit,
-    status
+    page: p.page ? parseInt(p.page as string) : 1,
+    limit: 10,
+    status: getString('status'),
+    billingType: getString('billingType'),
+    startDate: getString('startDate'),
+    endDate: getString('endDate'),
   };
 
   const result = await getTransactionsAction(filters);

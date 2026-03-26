@@ -11,6 +11,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
+import { formatCurrency } from '@/lib/formatters';
 import type { QueryStrategyProps, ProtestoNacionalResult } from '@/types/query-strategies';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategyHeader } from './components/StrategyHeader';
@@ -69,7 +70,7 @@ export function ProtestoNacionalStrategy({ data }: QueryStrategyProps<ProtestoNa
                 <div className="space-y-4">
                   <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-100 dark:border-red-900/20">
                     <p className="text-xs text-red-600 dark:text-red-400 uppercase font-bold mb-1">Valor do Protesto</p>
-                    <p className="text-xl font-bold text-red-600 dark:text-red-400">R$ {protest.value}</p>
+                    <p className="text-xl font-bold text-red-600 dark:text-red-400">{formatCurrency(String(protest.value))}</p>
                   </div>
                   <InfoBox 
                     label="Data do Protesto" 
