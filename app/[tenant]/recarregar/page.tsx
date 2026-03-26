@@ -45,19 +45,34 @@ export default function RechargePage() {
   };
 
   const handleCustomAmountChange = (value: string) => {
-    const numValue = parseFloat(value.replace(/[^\d.,]/g, '').replace(',', '.'));
-    
-    // Check limit
-    if (!isNaN(numValue) && numValue > 10000) {
+    // Strip everything except digits
+    const digits = value.replace(/\D/g, '');
+
+    if (!digits) {
+      setCustomAmount('');
+      setAmount(50); // reset to first preset when cleared
+      return;
+    }
+
+    // Treat digits as cents: 1234 → 12.34
+    const cents = parseInt(digits, 10);
+    const numeric = cents / 100;
+
+    // Enforce limit
+    if (numeric > 10000) {
       setLimitError(true);
       setTimeout(() => setLimitError(false), 2000);
       return;
     }
 
-    if (!isNaN(numValue)) {
-      setAmount(numValue);
-    }
-    setCustomAmount(value);
+    // Format as BRL display (e.g. "1.234,56")
+    const formatted = new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(numeric);
+
+    setAmount(numeric);
+    setCustomAmount(formatted);
   };
 
   const handlePixPayment = async () => {
@@ -188,6 +203,7 @@ export default function RechargePage() {
                            <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-display text-xl font-bold transition-colors ${limitError ? 'text-red-500' : (isCustomSelected ? 'text-emerald-600' : 'text-slate-400')}`}>R$</span>
                            <input
                             type="text"
+                            inputMode="numeric"
                             value={customAmount}
                             onChange={(e) => handleCustomAmountChange(e.target.value)}
                             placeholder="0,00"
