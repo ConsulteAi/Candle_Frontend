@@ -43,13 +43,16 @@ function AlertCard({ alert }: { alert: Alert }) {
   // Example: "DATA:19/11/2025/QUANTIDADE:1/SEGMENTO:O"
   const isStructured = description.includes(':') && description.includes('/');
 
-  // Function to parse structured data
+  // Split only when a slash starts the next KEY:VALUE token (keeps date slashes intact)
   const parseStructuredData = (desc: string) => {
-    return desc.split('/').map(part => {
+    return desc
+    .split(/\/(?=[A-Z0-9_ ]+:)/)
+    .map(part => {
       const [key, ...values] = part.split(':');
       if (!key || values.length === 0) return null;
       return { key: key.trim(), value: values.join(':').trim() };
-    }).filter(Boolean);
+    })
+    .filter(Boolean);
   };
 
   const structuredData = isStructured ? parseStructuredData(description) : null;
