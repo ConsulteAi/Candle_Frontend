@@ -27,7 +27,7 @@ import { formatDisplayDate } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
 import type { QueryStrategyProps, BoaVistaAcertaCpfResult } from '@/types/query-strategies';
 
-export function BoaVistaAcertaCpfStrategy({ data }: QueryStrategyProps<BoaVistaAcertaCpfResult>) {
+export function BoaVistaAcertaCpfStrategy({ data, queryId }: QueryStrategyProps<BoaVistaAcertaCpfResult>) {
   if (!data) return null;
 
   return (
@@ -55,6 +55,7 @@ export function BoaVistaAcertaCpfStrategy({ data }: QueryStrategyProps<BoaVistaA
                   status={data.person.status}
                   statusVariant={data.person.status === 'REGULAR' ? 'success' : 'warning'}
                   pdfUrl={data.pdf}
+                  queryId={queryId}
                   className="mb-6"
                 />
 
