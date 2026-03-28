@@ -29,7 +29,7 @@ import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
 
-export function SerasaCrednetPefinProtestoSpcPfStrategy({ data }: QueryStrategyProps<SerasaCrednetPefinProtestoSpcPfResult>) {
+export function SerasaCrednetPefinProtestoSpcPfStrategy({ data, queryId }: QueryStrategyProps<SerasaCrednetPefinProtestoSpcPfResult>) {
   if (!data) return null;
 
   return (
@@ -43,6 +43,7 @@ export function SerasaCrednetPefinProtestoSpcPfStrategy({ data }: QueryStrategyP
            status={data.person.status}
            statusVariant={data.person.status === 'REGULAR' ? 'success' : 'warning'}
            pdfUrl={data.pdf}
+                  queryId={queryId}
            className="mb-6"
          />
 

@@ -29,7 +29,7 @@ import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
 import { StrategyContacts } from './components/StrategyContacts';
 
-export function CompletaPlusCnpjStrategy({ data }: QueryStrategyProps<CompletaPlusCnpjResult>) {
+export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<CompletaPlusCnpjResult>) {
   if (!data) return null;
 
   return (
@@ -58,6 +58,7 @@ export function CompletaPlusCnpjStrategy({ data }: QueryStrategyProps<CompletaPl
                   status={data.company.status}
                   statusVariant={data.company.status === 'ATIVA' ? 'success' : 'warning'}
                   pdfUrl={data.pdf}
+                  queryId={queryId}
                   className="mb-4"
                 />
 

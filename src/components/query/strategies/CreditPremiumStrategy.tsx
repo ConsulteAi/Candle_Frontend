@@ -30,7 +30,7 @@ import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
 
-export function CreditPremiumStrategy({ data }: QueryStrategyProps<PremiumCreditReportResponse>) {
+export function CreditPremiumStrategy({ data, queryId }: QueryStrategyProps<PremiumCreditReportResponse>) {
   if (!data) return null;
 
   const isRestricted = data.status === 'RESTRICTED';
@@ -82,6 +82,7 @@ export function CreditPremiumStrategy({ data }: QueryStrategyProps<PremiumCredit
                   status={data.person.revenueStatus}
                   statusVariant={data.person.revenueStatus === 'REGULAR' ? 'success' : 'warning'}
                   pdfUrl={data.pdf}
+                  queryId={queryId}
                   className="mb-4"
                />
 

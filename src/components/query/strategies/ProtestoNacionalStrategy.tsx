@@ -18,7 +18,7 @@ import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { InfoBox } from './components/InfoBox';
 
-export function ProtestoNacionalStrategy({ data }: QueryStrategyProps<ProtestoNacionalResult>) {
+export function ProtestoNacionalStrategy({ data, queryId }: QueryStrategyProps<ProtestoNacionalResult>) {
   if (!data) return null;
 
   return (
@@ -33,6 +33,7 @@ export function ProtestoNacionalStrategy({ data }: QueryStrategyProps<ProtestoNa
           status="CONSULTA"
           statusVariant="warning"
           pdfUrl={data.pdf}
+                  queryId={queryId}
         />
       </Card>
 
