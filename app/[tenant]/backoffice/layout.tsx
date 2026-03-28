@@ -1,14 +1,31 @@
 import { AdminSidebar } from '@/components/layout/AdminSidebar';
 import { AdminGuard } from '@/components/auth/AdminGuard';
+import { AuthService } from '@/services/auth.service';
+import { UserRole } from '@/types/auth';
+import { redirect } from 'next/navigation';
 
 
 export const dynamic = 'force-dynamic';
 
-export default function BackofficeLayout({
+export default async function BackofficeLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  try {
+    const user = await AuthService.getMe();
+
+    if (!user) {
+      redirect('/login');
+    }
+
+    if (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER) {
+      redirect('/');
+    }
+  } catch {
+    redirect('/login');
+  }
+
   return (
     <AdminGuard>
       <div className="flex h-screen bg-slate-50 overflow-hidden font-display">

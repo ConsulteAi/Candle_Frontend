@@ -371,3 +371,28 @@ export interface UpdateTenantDto {
   domain?: string | null;
   ownerId?: string | null;
 }
+
+// --- API Tokens ---
+
+export interface ApiToken {
+  id: string;
+  userId: string;
+  userName: string;
+  name: string;
+  prefix: string;
+  isActive: boolean;
+  lastUsedAt: string | null;
+  expiresAt: string | null;
+  deletedAt: string | null;
+  createdAt: string;
+}
+
+export interface CreatedApiToken extends ApiToken {
+  token: string;
+}
+
+export interface CreateApiTokenDto {
+  userId: string;
+  name: string;
+  expiresAt?: string;
+}

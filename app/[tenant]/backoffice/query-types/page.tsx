@@ -1,30 +1,16 @@
-'use client';
-
 import { QueryTypesManager } from '@/components/admin/QueryTypesManager';
-import { useAuth } from '@/hooks/useAuth';
+import { AuthService } from '@/services/auth.service';
 import { UserRole } from '@/types/auth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
-export default function QueryTypesPage() {
-  const { user } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    // If user is loaded and not MASTER or ADMIN, redirect
-    if (user && user.role !== UserRole.MASTER && user.role !== UserRole.ADMIN) {
-      router.push('/backoffice');
+export default async function QueryTypesPage() {
+  try {
+    const user = await AuthService.getMe();
+    if (!user || (user.role !== UserRole.MASTER && user.role !== UserRole.ADMIN)) {
+      redirect('/backoffice');
     }
-  }, [user, router]);
-
-  // If user is not yet loaded or not MASTER/ADMIN, show loading
-  if (!user || (user.role !== UserRole.MASTER && user.role !== UserRole.ADMIN)) {
-    return (
-       <div className="flex h-screen items-center justify-center">
-         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-       </div>
-    );
+  } catch {
+    redirect('/backoffice');
   }
 
   return (

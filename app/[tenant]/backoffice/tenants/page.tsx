@@ -1,28 +1,16 @@
-'use client';
-
 import { TenantsManager } from '@/components/admin/TenantsManager';
-import { useAuth } from '@/hooks/useAuth';
+import { AuthService } from '@/services/auth.service';
 import { UserRole } from '@/types/auth';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
-export default function TenantsPage() {
-  const { user } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (user && user.role !== UserRole.MASTER) {
-      router.push('/backoffice');
+export default async function TenantsPage() {
+  try {
+    const user = await AuthService.getMe();
+    if (!user || user.role !== UserRole.MASTER) {
+      redirect('/backoffice');
     }
-  }, [user, router]);
-
-  if (!user || user.role !== UserRole.MASTER) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+  } catch {
+    redirect('/backoffice');
   }
 
   return (
