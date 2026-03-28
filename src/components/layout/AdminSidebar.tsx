@@ -36,6 +36,7 @@ const menuItems = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const userRole = user?.role?.toUpperCase();
 
   return (
     <div className="h-screen w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 shadow-xl flex-shrink-0">
@@ -55,7 +56,7 @@ export function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
-          if (item.role && user?.role !== item.role) return null;
+          if (item.role && userRole !== item.role) return null;
           const isActive = pathname === item.href;
           return (
             <Link key={item.href} href={item.href}>

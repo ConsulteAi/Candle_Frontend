@@ -1,6 +1,7 @@
 "use server";
 
 import { AdminService } from "@/services/admin.service";
+import { AuthService } from "@/services/auth.service";
 import type {
   AdminUser,
   DashboardOverview,
@@ -14,6 +15,7 @@ import type {
   QueryTypeFilters,
   DashboardQueries,
 } from "@/types/admin";
+import { UserRole } from "@/types/auth";
 import type { ActionState } from "./auth.actions";
 
 export async function getDashboardOverviewAction(): Promise<
@@ -30,10 +32,23 @@ export async function getDashboardOverviewAction(): Promise<
 import { redirect } from "next/navigation";
 import { isAxiosError } from "axios";
 
+async function hasBackofficeAccess(): Promise<boolean> {
+  try {
+    const user = await AuthService.getMe();
+    return !!user && (user.role === UserRole.ADMIN || user.role === UserRole.MASTER);
+  } catch {
+    return false;
+  }
+}
+
 export async function getUsersAction(
   filters: UserFilters,
 ): Promise<ActionState<PaginatedResponse<AdminUser>>> {
   try {
+    if (!(await hasBackofficeAccess())) {
+      return { success: false, error: "Acesso negado" };
+    }
+
     const data = await AdminService.getUsers(filters);
     return { success: true, data };
   } catch (error: any) {
@@ -49,6 +64,10 @@ export async function getRevenueStatsAction(params?: {
   days?: number;
 }): Promise<ActionState<RevenueStats>> {
   try {
+    if (!(await hasBackofficeAccess())) {
+      return { success: false, error: "Acesso negado" };
+    }
+
     const data = await AdminService.getRevenueStats(params);
     return { success: true, data };
   } catch (error: any) {
@@ -60,6 +79,10 @@ export async function getProviderStatsAction(): Promise<
   ActionState<ProviderStats>
 > {
   try {
+    if (!(await hasBackofficeAccess())) {
+      return { success: false, error: "Acesso negado" };
+    }
+
     const data = await AdminService.getProviderStats();
     return { success: true, data };
   } catch (error: any) {
@@ -71,6 +94,10 @@ export async function getDashboardQueriesAction(): Promise<
   ActionState<DashboardQueries>
 > {
   try {
+    if (!(await hasBackofficeAccess())) {
+      return { success: false, error: "Acesso negado" };
+    }
+
     const data = await AdminService.getDashboardQueries();
     return { success: true, data };
   } catch (error: any) {
@@ -85,6 +112,10 @@ export async function getTransactionsAction(
   filters: TransactionFilters,
 ): Promise<ActionState<PaginatedResponse<AdminTransaction>>> {
   try {
+    if (!(await hasBackofficeAccess())) {
+      return { success: false, error: "Acesso negado" };
+    }
+
     const data = await AdminService.getTransactions(filters);
     return { success: true, data };
   } catch (error: any) {
@@ -96,6 +127,10 @@ export async function getQueryTypesAction(
   filters: QueryTypeFilters,
 ): Promise<ActionState<PaginatedResponse<QueryType>>> {
   try {
+    if (!(await hasBackofficeAccess())) {
+      return { success: false, error: "Acesso negado" };
+    }
+
     const data = await AdminService.getQueryTypes(filters);
     return { success: true, data };
   } catch (error: any) {
@@ -107,6 +142,10 @@ export async function toggleQueryTypeAction(
   id: string,
 ): Promise<ActionState<void>> {
   try {
+    if (!(await hasBackofficeAccess())) {
+      return { success: false, error: "Acesso negado" };
+    }
+
     await AdminService.toggleQueryType(id);
     return { success: true };
   } catch (error: any) {
