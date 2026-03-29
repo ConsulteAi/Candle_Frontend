@@ -562,8 +562,22 @@ export default function DocsPage() {
             <Card className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Braces className="w-5 h-5 text-primary" />
-                <h2 className="font-display text-2xl font-bold text-gray-900">Exemplo de Requisicao</h2>
+                <h2 className="font-display text-2xl font-bold text-gray-900">Endpoint principal: POST /queries/execute</h2>
               </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Este endpoint executa a consulta em tempo real. Voce envia o tipo de consulta e o documento de entrada, e recebe
+                o <span className="font-mono">queryId</span>, o <span className="font-mono">result</span> e o valor cobrado em <span className="font-mono">price</span>.
+              </p>
+              <div className="rounded-xl border border-gray-200 p-4 bg-white mb-4">
+                <p className="font-semibold text-gray-900 text-sm mb-2">O que enviar</p>
+                <ul className="space-y-1 text-xs text-gray-700 list-disc list-inside">
+                  <li><span className="font-mono">Authorization: Bearer SEU_TOKEN</span> (obrigatorio)</li>
+                  <li><span className="font-mono">Content-Type: application/json</span></li>
+                  <li><span className="font-mono">queryTypeCode</span>: codigo do tipo de consulta (ex.: <span className="font-mono">CREDIT_PREMIUM</span>)</li>
+                  <li><span className="font-mono">input</span>: valor de entrada conforme o tipo (CPF, CNPJ, etc.)</li>
+                </ul>
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Requisicao</h3>
               <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto mb-4">
                 <pre className="text-xs leading-relaxed">{executeRequestExample}</pre>
               </div>
@@ -571,20 +585,32 @@ export default function DocsPage() {
               <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto">
                 <pre className="text-xs leading-relaxed">{executeResponseExample}</pre>
               </div>
+              <div className="rounded-xl border border-gray-200 p-4 bg-white mt-4">
+                <p className="font-semibold text-gray-900 text-sm mb-2">Como interpretar o retorno</p>
+                <ul className="space-y-1 text-xs text-gray-700 list-disc list-inside">
+                  <li><span className="font-mono">queryId</span>: identificador unico para consultar depois por <span className="font-mono">GET /queries/:id</span>.</li>
+                  <li><span className="font-mono">result</span>: dados completos da consulta (estrutura varia por tipo).</li>
+                  <li><span className="font-mono">price</span>: valor cobrado na execucao.</li>
+                </ul>
+              </div>
             </Card>
 
             <div className="grid lg:grid-cols-2 gap-6">
               <Card className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <FileSearch className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-2xl font-bold text-gray-900">Buscar consulta por ID</h2>
+                  <h2 className="font-display text-2xl font-bold text-gray-900">Endpoint de consulta: GET /queries/:id</h2>
                 </div>
                 <p className="text-sm text-gray-600 mb-4">
-                  Endpoint para recuperar uma consulta ja executada pelo <span className="font-mono">queryId</span>.
+                  Use este endpoint para recuperar os detalhes de uma consulta ja executada pelo <span className="font-mono">queryId</span>,
+                  sem precisar executar novamente.
                 </p>
                 <div className="rounded-xl border border-gray-200 p-4 bg-white mb-4">
-                  <p className="font-mono text-sm text-gray-900">GET /queries/:id</p>
-                  <p className="font-mono text-sm text-gray-900">Authorization: Bearer SEU_TOKEN</p>
+                  <p className="font-semibold text-gray-900 text-sm mb-2">O que enviar</p>
+                  <ul className="space-y-1 text-xs text-gray-700 list-disc list-inside">
+                    <li><span className="font-mono">GET /queries/:id</span> (substitua <span className="font-mono">:id</span> pelo <span className="font-mono">queryId</span>)</li>
+                    <li><span className="font-mono">Authorization: Bearer SEU_TOKEN</span> (obrigatorio)</li>
+                  </ul>
                   <p className="text-xs text-gray-500 mt-2">Retornos comuns: 200 (sucesso), 404 (consulta nao encontrada).</p>
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Requisicao</h3>
@@ -595,20 +621,31 @@ export default function DocsPage() {
                 <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto">
                   <pre className="text-xs leading-relaxed">{queryByIdResponseExample}</pre>
                 </div>
+                <div className="rounded-xl border border-gray-200 p-4 bg-white mt-4">
+                  <p className="font-semibold text-gray-900 text-sm mb-2">Como interpretar o retorno</p>
+                  <ul className="space-y-1 text-xs text-gray-700 list-disc list-inside">
+                    <li><span className="font-mono">query</span>: metadados da consulta (status, tipo, datas e preco).</li>
+                    <li><span className="font-mono">result</span>: payload completo retornado pelo provedor.</li>
+                    <li>Quando o status for <span className="font-mono">SUCCESS</span>, voce pode usar o mesmo <span className="font-mono">queryId</span> para baixar o PDF.</li>
+                  </ul>
+                </div>
               </Card>
 
               <Card className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <FileDown className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-2xl font-bold text-gray-900">Baixar PDF da consulta</h2>
+                  <h2 className="font-display text-2xl font-bold text-gray-900">Endpoint de download: GET /queries/:id/pdf</h2>
                 </div>
                 <p className="text-sm text-gray-600 mb-4">
-                  Endpoint para gerar e baixar o PDF da consulta com nome de arquivo dinamico.
+                  Use este endpoint para gerar e baixar o relatorio em PDF de uma consulta ja executada.
                 </p>
                 <div className="rounded-xl border border-gray-200 p-4 bg-white mb-4">
-                  <p className="font-mono text-sm text-gray-900">GET /queries/:id/pdf</p>
-                  <p className="font-mono text-sm text-gray-900">Authorization: Bearer SEU_TOKEN</p>
-                  <p className="font-mono text-sm text-gray-900">Response: application/pdf</p>
+                  <p className="font-semibold text-gray-900 text-sm mb-2">O que enviar</p>
+                  <ul className="space-y-1 text-xs text-gray-700 list-disc list-inside">
+                    <li><span className="font-mono">GET /queries/:id/pdf</span> (substitua <span className="font-mono">:id</span> pelo <span className="font-mono">queryId</span>)</li>
+                    <li><span className="font-mono">Authorization: Bearer SEU_TOKEN</span> (obrigatorio)</li>
+                  </ul>
+                  <p className="font-mono text-xs text-gray-700 mt-2">Response: application/pdf</p>
                   <p className="text-xs text-gray-500 mt-2">Retornos comuns: 200 (PDF gerado), 404 (consulta nao encontrada / sem resultado).</p>
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Requisicao</h3>
@@ -618,6 +655,14 @@ export default function DocsPage() {
                 <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Headers de Resposta</h3>
                 <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto">
                   <pre className="text-xs leading-relaxed">{queryPdfResponseHeadersExample}</pre>
+                </div>
+                <div className="rounded-xl border border-gray-200 p-4 bg-white mt-4">
+                  <p className="font-semibold text-gray-900 text-sm mb-2">Como interpretar a resposta</p>
+                  <ul className="space-y-1 text-xs text-gray-700 list-disc list-inside">
+                    <li><span className="font-mono">Content-Type: application/pdf</span> confirma o tipo do arquivo.</li>
+                    <li><span className="font-mono">Content-Disposition</span> define o nome do arquivo para download.</li>
+                    <li>Se retornar 404, valide se o <span className="font-mono">queryId</span> existe e se a consulta possui resultado.</li>
+                  </ul>
                 </div>
               </Card>
             </div>
