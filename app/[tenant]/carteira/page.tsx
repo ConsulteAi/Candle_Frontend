@@ -34,6 +34,11 @@ const STATUS_CONFIG: Record<
   REFUNDED: { label: 'Reembolsado', variant: 'info' },
 };
 
+const DEFAULT_STATUS_CONFIG: { label: string; variant: 'info' } = {
+  label: 'Desconhecido',
+  variant: 'info',
+};
+
 const TRANSACTION_TYPE_LABELS = {
   RECHARGE: 'Recarga',
   QUERY: 'Consulta',
@@ -202,7 +207,8 @@ export default function CarteiraPage() {
                           const isPositive =
                             transaction.type === 'RECHARGE' ||
                             transaction.type === 'REFUND';
-                          const statusConfig = STATUS_CONFIG[transaction.status];
+                          const statusConfig =
+                            STATUS_CONFIG[transaction.status] ?? DEFAULT_STATUS_CONFIG;
                           const isOverdue = transaction.status === 'OVERDUE';
 
                           return (
