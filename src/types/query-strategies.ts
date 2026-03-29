@@ -49,6 +49,7 @@ export interface BaseDebt {
   contract: string;
   origin: string;
   date: string;
+  informant?: string;
   created_at?: string;
 }
 
@@ -64,6 +65,17 @@ export interface BaseBadCheck {
   bankNumber: string;
   quantity: string;
   lastOccurrence: string;
+}
+
+export interface BaseSyntheticProtest {
+  value: string;
+  date: string;
+  cartorio?: string;
+  comarca?: string;
+  uf?: string;
+  credor?: string;
+  cedente?: string;
+  anuencia?: string | null;
 }
 
 export interface BasePartner {
@@ -287,4 +299,30 @@ export interface SerasaCrednetPefinProtestoSpcPfResult extends BaseStandardResul
     socialReason: string;
     participation: string;
   }>;
+}
+
+// Realtime MAX + Protesto
+export interface RealtimeMaxSpcSerasaBvsProtestoPfResult extends BaseStandardResult {
+  person: Omit<BasePerson, 'status'> & {
+    status?: string;
+    revenueStatus?: string;
+  };
+  syntheticProtests?: BaseSyntheticProtest[];
+}
+
+export interface RealtimeMaxSpcSerasaBvsProtestoPjResult extends BaseStandardResult {
+  company: BaseCompany;
+  syntheticProtests?: BaseSyntheticProtest[];
+}
+
+// Realtime MAX sem Protesto Sintetico
+export interface MaxBrasilScoreBvsBasicaPfResult extends BaseStandardResult {
+  person: Omit<BasePerson, 'status'> & {
+    status?: string;
+    revenueStatus?: string;
+  };
+}
+
+export interface MaxBrasilScoreBvsBasicaPjResult extends BaseStandardResult {
+  company: BaseCompany;
 }

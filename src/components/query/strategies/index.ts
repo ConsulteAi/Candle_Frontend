@@ -16,6 +16,10 @@ import { QuodRestritivoAcoesPjStrategy } from './QuodRestritivoAcoesPjStrategy';
 import { RealtimePremiumScorePfStrategy } from './RealtimePremiumScorePfStrategy';
 import { RealtimePremiumScorePjStrategy } from './RealtimePremiumScorePjStrategy';
 import { SerasaCrednetPefinProtestoSpcPfStrategy } from './SerasaCrednetPefinProtestoSpcPfStrategy';
+import { RealtimeMaxSpcSerasaBvsProtestoPfStrategy } from './RealtimeMaxSpcSerasaBvsProtestoPfStrategy';
+import { RealtimeMaxSpcSerasaBvsProtestoPjStrategy } from './RealtimeMaxSpcSerasaBvsProtestoPjStrategy';
+import { MaxBrasilScoreBvsBasicaPfStrategy } from './MaxBrasilScoreBvsBasicaPfStrategy';
+import { MaxBrasilScoreBvsBasicaPjStrategy } from './MaxBrasilScoreBvsBasicaPjStrategy';
 import type { QueryStrategyProps } from '@/types/query-strategies';
 import React from 'react';
 
@@ -36,6 +40,10 @@ export const STRATEGIES: Record<string, React.ComponentType<QueryStrategyProps>>
   'REALTIME_PREMIUM_SCORE_PF': RealtimePremiumScorePfStrategy,
   'REALTIME_PREMIUM_SCORE_PJ': RealtimePremiumScorePjStrategy,
   'SERASA_CREDNET_PEFIN_PROTESTO_SPC_PF': SerasaCrednetPefinProtestoSpcPfStrategy,
+  'REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PF': RealtimeMaxSpcSerasaBvsProtestoPfStrategy,
+  'REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PJ': RealtimeMaxSpcSerasaBvsProtestoPjStrategy,
+  'MAX_BRASIL_SCORE_BVS_BASICA_PF': MaxBrasilScoreBvsBasicaPfStrategy,
+  'MAX_BRASIL_SCORE_BVS_BASICA_PJ': MaxBrasilScoreBvsBasicaPjStrategy,
 };
 
 export const getStrategyComponent = (code: string): React.ComponentType<QueryStrategyProps> => {
@@ -60,3 +68,7 @@ export * from './QuodRestritivoAcoesPjStrategy';
 export * from './RealtimePremiumScorePfStrategy';
 export * from './RealtimePremiumScorePjStrategy';
 export * from './SerasaCrednetPefinProtestoSpcPfStrategy';
+export * from './RealtimeMaxSpcSerasaBvsProtestoPfStrategy';
+export * from './RealtimeMaxSpcSerasaBvsProtestoPjStrategy';
+export * from './MaxBrasilScoreBvsBasicaPfStrategy';
+export * from './MaxBrasilScoreBvsBasicaPjStrategy';

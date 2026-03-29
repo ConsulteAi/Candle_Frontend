@@ -35,23 +35,25 @@ function ConsultaPageContent() {
     }
   }, [searchParams]);
 
-  const filteredQueries = queries.filter((query) => {
-    let matchType = false;
-    
-    if (filter === "ALL") {
-      matchType = true;
-    } else {
-      // Verifica se a categoria selecionada está presente no array de categorias da consulta
-      matchType = query.category.includes(filter as QueryCategory);
-    }
+  const filteredQueries = queries
+    .filter((query) => {
+      let matchType = false;
 
-    const matchSearch =
-      search === "" ||
-      query.name.toLowerCase().includes(search.toLowerCase()) ||
-      (query.description && query.description.toLowerCase().includes(search.toLowerCase()));
+      if (filter === "ALL") {
+        matchType = true;
+      } else {
+        // Verifica se a categoria selecionada está presente no array de categorias da consulta
+        matchType = query.category.includes(filter as QueryCategory);
+      }
 
-    return matchType && matchSearch;
-  });
+      const matchSearch =
+        search === "" ||
+        query.name.toLowerCase().includes(search.toLowerCase()) ||
+        (query.description && query.description.toLowerCase().includes(search.toLowerCase()));
+
+      return matchType && matchSearch;
+    })
+    .sort((a, b) => a.price - b.price);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50/50">

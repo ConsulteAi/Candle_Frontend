@@ -3,7 +3,6 @@
 
 import { motion } from 'framer-motion';
 import { 
-  FileText, 
   Calendar, 
   Building2, 
   TrendingDown, 
@@ -21,6 +20,7 @@ import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { InfoBox } from './components/InfoBox';
 import { SummaryCard } from './components/SummaryCard';
+import { formatCpfCnpj } from '@/lib/formatters';
 
 export function ScrBacenStrategy({ data, queryId }: QueryStrategyProps<ScrBacenResult>) {
   if (!data) return null;
@@ -88,7 +88,7 @@ export function ScrBacenStrategy({ data, queryId }: QueryStrategyProps<ScrBacenR
           <Card className="h-full p-6 bg-white dark:bg-gray-900">
             <StrategyHeader 
               title="Dados da Consulta"
-              subtitle={`Documento: ${data.document}`}
+              subtitle={`Documento: ${formatCpfCnpj(data.document)}`}
               pdfUrl={data.pdf}
                   queryId={queryId}
               className="mb-6"
