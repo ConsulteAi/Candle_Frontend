@@ -11,6 +11,8 @@ import {
   Send,
   Braces,
   Database,
+  FileSearch,
+  FileDown,
   ChevronRight,
 } from 'lucide-react';
 
@@ -399,6 +401,37 @@ const executeResponseExample = `{
   \"price\": 10.9
 }`;
 
+const queryByIdRequestExample = `curl -X GET \"https://{{ _baseURL }}/queries/9c2f4d35-0a6c-4f47-9c15-bf9f5d73f80b\" \\
+  -H \"Authorization: Bearer SEU_TOKEN\"`;
+
+const queryByIdResponseExample = `{
+  \"query\": {
+    \"id\": \"9c2f4d35-0a6c-4f47-9c15-bf9f5d73f80b\",
+    \"input\": \"12345678900\",
+    \"status\": \"SUCCESS\",
+    \"price\": 10.9,
+    \"queryType\": {
+      \"code\": \"REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PF\",
+      \"name\": \"Realtime MAX SPC Serasa BVS Protesto PF\",
+      \"category\": [\"PERSON\", \"CREDIT\"]
+    },
+    \"createdAt\": \"2026-03-29T16:22:44.000Z\",
+    \"completedAt\": \"2026-03-29T16:22:46.000Z\"
+  },
+  \"result\": {
+    \"protocol\": \"1022687\"
+  }
+}`;
+
+const queryPdfRequestExample = `curl -X GET \"https://{{ _baseURL }}/queries/9c2f4d35-0a6c-4f47-9c15-bf9f5d73f80b/pdf\" \\
+  -H \"Authorization: Bearer SEU_TOKEN\" \\
+  --output consulta.pdf`;
+
+const queryPdfResponseHeadersExample = `HTTP/1.1 200 OK
+Content-Type: application/pdf
+Content-Disposition: attachment; filename=\"Consulta_REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PF_NOME_2026-03-29.pdf\"
+Content-Length: 123456`;
+
 function getSampleInput(inputType: string): string {
   if (inputType === 'CPF') return '12345678900';
   if (inputType === 'CNPJ') return '12345678000199';
@@ -515,11 +548,13 @@ export default function DocsPage() {
               <Card className="p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Send className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-2xl font-bold text-gray-900">Como usar em 2 passos</h2>
+                  <h2 className="font-display text-2xl font-bold text-gray-900">Como usar em 4 passos</h2>
                 </div>
                 <ol className="space-y-2 text-sm text-gray-700 list-decimal list-inside">
                   <li>Envie POST em /queries/execute com tipo de consulta e input.</li>
                   <li>Receba queryId, result e price.</li>
+                  <li>Use GET /queries/:id para consultar novamente pelo queryId.</li>
+                  <li>Use GET /queries/:id/pdf para baixar o PDF da consulta.</li>
                 </ol>
               </Card>
             </div>
@@ -537,6 +572,55 @@ export default function DocsPage() {
                 <pre className="text-xs leading-relaxed">{executeResponseExample}</pre>
               </div>
             </Card>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+              <Card className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <FileSearch className="w-5 h-5 text-primary" />
+                  <h2 className="font-display text-2xl font-bold text-gray-900">Buscar consulta por ID</h2>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Endpoint para recuperar uma consulta ja executada pelo <span className="font-mono">queryId</span>.
+                </p>
+                <div className="rounded-xl border border-gray-200 p-4 bg-white mb-4">
+                  <p className="font-mono text-sm text-gray-900">GET /queries/:id</p>
+                  <p className="font-mono text-sm text-gray-900">Authorization: Bearer SEU_TOKEN</p>
+                  <p className="text-xs text-gray-500 mt-2">Retornos comuns: 200 (sucesso), 404 (consulta nao encontrada).</p>
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Requisicao</h3>
+                <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto mb-4">
+                  <pre className="text-xs leading-relaxed">{queryByIdRequestExample}</pre>
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Retorno</h3>
+                <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto">
+                  <pre className="text-xs leading-relaxed">{queryByIdResponseExample}</pre>
+                </div>
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <FileDown className="w-5 h-5 text-primary" />
+                  <h2 className="font-display text-2xl font-bold text-gray-900">Baixar PDF da consulta</h2>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Endpoint para gerar e baixar o PDF da consulta com nome de arquivo dinamico.
+                </p>
+                <div className="rounded-xl border border-gray-200 p-4 bg-white mb-4">
+                  <p className="font-mono text-sm text-gray-900">GET /queries/:id/pdf</p>
+                  <p className="font-mono text-sm text-gray-900">Authorization: Bearer SEU_TOKEN</p>
+                  <p className="font-mono text-sm text-gray-900">Response: application/pdf</p>
+                  <p className="text-xs text-gray-500 mt-2">Retornos comuns: 200 (PDF gerado), 404 (consulta nao encontrada / sem resultado).</p>
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Requisicao</h3>
+                <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto mb-4">
+                  <pre className="text-xs leading-relaxed">{queryPdfRequestExample}</pre>
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Headers de Resposta</h3>
+                <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto">
+                  <pre className="text-xs leading-relaxed">{queryPdfResponseHeadersExample}</pre>
+                </div>
+              </Card>
+            </div>
 
             <Card className="p-6">
               <div className="flex items-center gap-2 mb-4">
