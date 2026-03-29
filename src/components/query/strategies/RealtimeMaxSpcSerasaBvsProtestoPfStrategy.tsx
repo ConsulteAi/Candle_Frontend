@@ -122,7 +122,7 @@ export function RealtimeMaxSpcSerasaBvsProtestoPfStrategy({
               <TableHead>Data</TableHead>
               <TableHead>Origem</TableHead>
               <TableHead>Contrato</TableHead>
-              <TableHead>Base</TableHead>
+              <TableHead className="whitespace-nowrap">Base (I, II, III e IV)</TableHead>
               <TableHead className="text-right">Valor</TableHead>
             </TableRow>
           </TableHeader>

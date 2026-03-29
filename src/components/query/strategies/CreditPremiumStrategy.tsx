@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils';
 import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCpf, formatCpfCnpj, formatCurrency } from '@/lib/formatters';
 
 export function CreditPremiumStrategy({ data, queryId }: QueryStrategyProps<PremiumCreditReportResponse>) {
   if (!data) return null;
@@ -89,7 +89,7 @@ export function CreditPremiumStrategy({ data, queryId }: QueryStrategyProps<Prem
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                   <InfoBox
                     label="CPF"
-                    value={data.person.document}
+                    value={formatCpfCnpj(data.person.document)}
                     icon={<Fingerprint className="w-4 h-4 text-purple-500" />}
                   />
                   <InfoBox
