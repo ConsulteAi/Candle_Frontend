@@ -11,8 +11,6 @@ interface AuthStore {
   // State
   user: User | null;
   balance: number; // Saldo mantido separado do User
-  accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
 
   // Actions
@@ -20,7 +18,6 @@ interface AuthStore {
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
   updateBalance: (balance: number) => void;
-  setTokens: (accessToken: string, refreshToken: string) => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -29,16 +26,12 @@ export const useAuthStore = create<AuthStore>()(
       // Initial state
       user: null,
       balance: 0,
-      accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
 
       // Login - salva usuário e tokens
       login: (authResponse: AuthResponse) => {
         set({
           user: authResponse.user || null,
-          accessToken: authResponse.accessToken,
-          refreshToken: authResponse.refreshToken,
           isAuthenticated: true,
         });
       },
@@ -48,8 +41,6 @@ export const useAuthStore = create<AuthStore>()(
         set({
           user: null,
           balance: 0,
-          accessToken: null,
-          refreshToken: null,
           isAuthenticated: false,
         });
       },
@@ -69,13 +60,6 @@ export const useAuthStore = create<AuthStore>()(
         set({ balance });
       },
 
-      // Atualizar tokens (usado no refresh)
-      setTokens: (accessToken: string, refreshToken: string) => {
-        set({
-          accessToken,
-          refreshToken,
-        });
-      },
     }),
     {
       name: 'candle-auth-storage', // nome da chave no localStorage
@@ -84,8 +68,6 @@ export const useAuthStore = create<AuthStore>()(
         // Só persiste o necessário
         user: state.user,
         balance: state.balance,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
     }
@@ -96,4 +78,3 @@ export const useAuthStore = create<AuthStore>()(
 export const useUser = () => useAuthStore((state) => state.user);
 export const useBalance = () => useAuthStore((state) => state.balance);
 export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
-export const useAccessToken = () => useAuthStore((state) => state.accessToken);

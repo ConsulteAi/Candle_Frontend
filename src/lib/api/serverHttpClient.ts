@@ -16,6 +16,11 @@ const serverAxios = axios.create({
   },
 });
 
+const isRefreshRequest = (url?: string) => {
+  if (!url) return false;
+  return url.includes("/auth/refresh");
+};
+
 // Request Interceptor: Add Access Token from Cookies & User-Agent & Tenant Domain
 serverAxios.interceptors.request.use(async (config) => {
   try {
@@ -33,7 +38,7 @@ serverAxios.interceptors.request.use(async (config) => {
     }
 
     if (config.headers) {
-      if (token) {
+      if (token && !isRefreshRequest(config.url)) {
         config.headers.Authorization = `Bearer ${token}`;
       }
       if (userAgent) {
@@ -63,7 +68,11 @@ serverAxios.interceptors.response.use(
     const originalRequest = error.config as any;
 
     // If 401 Unauthorized and not already retried
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isRefreshRequest(originalRequest?.url)
+    ) {
       originalRequest._retry = true;
 
       try {
@@ -101,6 +110,8 @@ serverAxios.interceptors.response.use(
           httpOnly: true,
           secure: isProduction,
           sameSite: "lax" as const,
+          path: "/",
+          priority: "high" as const,
         };
 
         try {
