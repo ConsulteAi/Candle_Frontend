@@ -511,44 +511,44 @@ export default function DocsPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
 
-      <main className="flex-1 pt-28 pb-20">
-        <div className="container mx-auto px-4">
+      <main className="flex-1 pt-24 md:pt-28 pb-14 md:pb-20">
+        <div className="container mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-6xl mx-auto space-y-10"
+            className="max-w-6xl mx-auto space-y-8 md:space-y-10"
           >
             <div className="text-center space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] md:text-xs font-bold uppercase tracking-wider">
                 <BookOpen className="w-4 h-4" />
                 Documentacao para Desenvolvedores
               </div>
-              <h1 className="font-display text-4xl md:text-5xl font-bold text-gray-900">
+              <h1 className="font-display text-3xl md:text-5xl font-bold text-gray-900 leading-tight">
                 API de Consultas - Guia de Integracao
               </h1>
-              <p className="text-gray-600 max-w-3xl mx-auto">
+              <p className="text-sm md:text-base text-gray-600 max-w-3xl mx-auto">
                 Guia simples para integrar do zero: token, requisicao, resposta e o significado de cada campo.
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-6">
-              <Card className="p-6">
+            <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
+              <Card className="p-4 md:p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <KeyRound className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-2xl font-bold text-gray-900">Token Bearer (obrigatorio)</h2>
+                  <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">Token Bearer (obrigatorio)</h2>
                 </div>
                 <p className="text-gray-600 mb-4">
                   Em toda chamada da API, envie o token no header Authorization.
                 </p>
                 <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto">
-                  <pre className="text-xs leading-relaxed">Authorization: Bearer SEU_TOKEN</pre>
+                  <pre className="text-[11px] md:text-xs leading-relaxed">Authorization: Bearer SEU_TOKEN</pre>
                 </div>
               </Card>
 
-              <Card className="p-6">
+              <Card className="p-4 md:p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Send className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-2xl font-bold text-gray-900">Como usar em 4 passos</h2>
+                  <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">Como usar em 4 passos</h2>
                 </div>
                 <ol className="space-y-2 text-sm text-gray-700 list-decimal list-inside">
                   <li>Envie POST em /queries/execute com tipo de consulta e input.</li>
@@ -559,10 +559,10 @@ export default function DocsPage() {
               </Card>
             </div>
 
-            <Card className="p-6">
+            <Card className="p-4 md:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Braces className="w-5 h-5 text-primary" />
-                <h2 className="font-display text-2xl font-bold text-gray-900">Endpoint principal: POST /queries/execute</h2>
+                <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">Endpoint principal: POST /queries/execute</h2>
               </div>
               <p className="text-sm text-gray-600 mb-4">
                 Este endpoint executa a consulta em tempo real. Voce envia o tipo de consulta e o documento de entrada, e recebe
@@ -579,11 +579,11 @@ export default function DocsPage() {
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Requisicao</h3>
               <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto mb-4">
-                <pre className="text-xs leading-relaxed">{executeRequestExample}</pre>
+                <pre className="text-[11px] md:text-xs leading-relaxed">{executeRequestExample}</pre>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Retorno</h3>
               <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto">
-                <pre className="text-xs leading-relaxed">{executeResponseExample}</pre>
+                <pre className="text-[11px] md:text-xs leading-relaxed">{executeResponseExample}</pre>
               </div>
               <div className="rounded-xl border border-gray-200 p-4 bg-white mt-4">
                 <p className="font-semibold text-gray-900 text-sm mb-2">Como interpretar o retorno</p>
@@ -595,11 +595,11 @@ export default function DocsPage() {
               </div>
             </Card>
 
-            <div className="grid lg:grid-cols-2 gap-6">
-              <Card className="p-6">
+            <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
+              <Card className="p-4 md:p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <FileSearch className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-2xl font-bold text-gray-900">Endpoint de consulta: GET /queries/:id</h2>
+                  <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">Endpoint de consulta: GET /queries/:id</h2>
                 </div>
                 <p className="text-sm text-gray-600 mb-4">
                   Use este endpoint para recuperar os detalhes de uma consulta ja executada pelo <span className="font-mono">queryId</span>,
@@ -615,11 +615,11 @@ export default function DocsPage() {
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Requisicao</h3>
                 <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto mb-4">
-                  <pre className="text-xs leading-relaxed">{queryByIdRequestExample}</pre>
+                  <pre className="text-[11px] md:text-xs leading-relaxed">{queryByIdRequestExample}</pre>
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Retorno</h3>
                 <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto">
-                  <pre className="text-xs leading-relaxed">{queryByIdResponseExample}</pre>
+                  <pre className="text-[11px] md:text-xs leading-relaxed">{queryByIdResponseExample}</pre>
                 </div>
                 <div className="rounded-xl border border-gray-200 p-4 bg-white mt-4">
                   <p className="font-semibold text-gray-900 text-sm mb-2">Como interpretar o retorno</p>
@@ -631,10 +631,10 @@ export default function DocsPage() {
                 </div>
               </Card>
 
-              <Card className="p-6">
+              <Card className="p-4 md:p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <FileDown className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-2xl font-bold text-gray-900">Endpoint de download: GET /queries/:id/pdf</h2>
+                  <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">Endpoint de download: GET /queries/:id/pdf</h2>
                 </div>
                 <p className="text-sm text-gray-600 mb-4">
                   Use este endpoint para gerar e baixar o relatorio em PDF de uma consulta ja executada.
@@ -650,11 +650,11 @@ export default function DocsPage() {
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Requisicao</h3>
                 <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto mb-4">
-                  <pre className="text-xs leading-relaxed">{queryPdfRequestExample}</pre>
+                  <pre className="text-[11px] md:text-xs leading-relaxed">{queryPdfRequestExample}</pre>
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">Exemplo de Headers de Resposta</h3>
                 <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto">
-                  <pre className="text-xs leading-relaxed">{queryPdfResponseHeadersExample}</pre>
+                  <pre className="text-[11px] md:text-xs leading-relaxed">{queryPdfResponseHeadersExample}</pre>
                 </div>
                 <div className="rounded-xl border border-gray-200 p-4 bg-white mt-4">
                   <p className="font-semibold text-gray-900 text-sm mb-2">Como interpretar a resposta</p>
@@ -667,10 +667,10 @@ export default function DocsPage() {
               </Card>
             </div>
 
-            <Card className="p-6">
+            <Card className="p-4 md:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Database className="w-5 h-5 text-primary" />
-                <h2 className="font-display text-2xl font-bold text-gray-900">Tipos Primitivos e Convencoes</h2>
+                <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">Tipos Primitivos e Convencoes</h2>
               </div>
               <p className="text-sm text-gray-600 mb-4">
                 Campo <span className="font-mono">informant</span>: indica qual base originou o registro (Bases I, II, III e IV).
@@ -693,20 +693,20 @@ export default function DocsPage() {
               </div>
             </Card>
 
-            <div className="grid lg:grid-cols-[320px,1fr] gap-6">
+            <div className="grid lg:grid-cols-[320px,1fr] gap-4 md:gap-6">
               <Card className="p-4 h-fit lg:sticky lg:top-28">
                 <h2 className="font-display text-xl font-bold text-gray-900 mb-3">Tipos de Consultas</h2>
                 <p className="text-xs text-gray-500 mb-4">
                   Selecione um tipo de consulta para ver request e response completos.
                 </p>
-                <div className="space-y-1 max-h-[65vh] overflow-y-auto pr-1">
+                <div className="flex lg:block gap-2 lg:space-y-1 overflow-x-auto lg:overflow-y-auto max-h-none lg:max-h-[65vh] pr-0 lg:pr-1 pb-1">
                   {queryTypeDocs.map((qt) => {
                     const active = qt.code === selectedCode;
                     return (
                       <button
                         key={qt.code}
                         onClick={() => setSelectedCode(qt.code)}
-                        className={`w-full text-left rounded-xl border px-3 py-2 transition-all ${
+                        className={`w-[240px] shrink-0 lg:w-full text-left rounded-xl border px-3 py-2 transition-all ${
                           active
                             ? 'border-primary bg-primary/10 text-primary'
                             : 'border-gray-200 bg-white hover:border-primary/40 hover:bg-primary/5 text-gray-700'
@@ -725,10 +725,10 @@ export default function DocsPage() {
                 </div>
               </Card>
 
-              <Card className="p-6">
-                <div className="flex items-center justify-between gap-3 mb-3">
+              <Card className="p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
                   <div>
-                    <h2 className="font-display text-2xl font-bold text-gray-900">{selectedDoc.title}</h2>
+                    <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">{selectedDoc.title}</h2>
                     <p className="font-mono text-xs text-gray-500 mt-1 break-all">{selectedDoc.code}</p>
                   </div>
                   <Badge variant="info">Input: {selectedDoc.input}</Badge>
@@ -737,32 +737,32 @@ export default function DocsPage() {
                 <p className="text-gray-700 mb-6">{selectedDoc.summary}</p>
 
                 <section className="mb-8">
-                  <h3 className="font-display text-xl font-bold text-gray-900 mb-3">Exemplo de Request deste tipo de consulta</h3>
+                  <h3 className="font-display text-lg md:text-xl font-bold text-gray-900 mb-3">Exemplo de Request deste tipo de consulta</h3>
                   <div className="rounded-xl border border-gray-200 p-4 bg-white space-y-2">
                     <p className="font-mono text-sm text-gray-900">POST /queries/execute</p>
                     <p className="font-mono text-sm text-gray-900">Authorization: Bearer SEU_TOKEN</p>
                     <p className="font-mono text-sm text-gray-900">Content-Type: application/json</p>
                     <div className="rounded-lg bg-gray-900 text-gray-100 p-3 overflow-x-auto">
-                      <pre className="text-xs leading-relaxed">{selectedRequestExample}</pre>
+                      <pre className="text-[11px] md:text-xs leading-relaxed whitespace-pre-wrap break-words">{selectedRequestExample}</pre>
                     </div>
                   </div>
                 </section>
 
                 <section className="mb-8">
-                  <h3 className="font-display text-xl font-bold text-gray-900 mb-3">Exemplo de Response deste tipo de consulta</h3>
+                  <h3 className="font-display text-lg md:text-xl font-bold text-gray-900 mb-3">Exemplo de Response deste tipo de consulta</h3>
                   <div className="rounded-xl border border-gray-200 p-4 bg-white">
                     <div className="rounded-lg bg-gray-900 text-gray-100 p-3 overflow-x-auto">
-                      <pre className="text-xs leading-relaxed">{selectedResponseExample}</pre>
+                      <pre className="text-[11px] md:text-xs leading-relaxed whitespace-pre-wrap break-words">{selectedResponseExample}</pre>
                     </div>
                   </div>
                 </section>
 
                 <section className="mb-8">
-                  <h3 className="font-display text-xl font-bold text-gray-900 mb-3">Response - Campos Raiz</h3>
+                  <h3 className="font-display text-lg md:text-xl font-bold text-gray-900 mb-3">Response - Campos Raiz</h3>
                   <div className="space-y-3">
                     {selectedDoc.rootFields.map((field) => (
                       <div key={field.name} className="rounded-xl border border-gray-200 p-4 bg-white">
-                        <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
                           <p className="font-mono text-sm font-semibold text-gray-900">{field.name}</p>
                           <Badge variant="outline" size="sm">{field.type}</Badge>
                         </div>
@@ -773,7 +773,7 @@ export default function DocsPage() {
                 </section>
 
                 <section>
-                  <h3 className="font-display text-xl font-bold text-gray-900 mb-3">Response - Blocos de Retorno</h3>
+                  <h3 className="font-display text-lg md:text-xl font-bold text-gray-900 mb-3">Response - Blocos de Retorno</h3>
                   <div className="space-y-4">
                     {selectedDoc.blocks.map((block) => (
                       <div key={block.name} className="rounded-xl border border-gray-200 p-4 bg-white">
@@ -782,7 +782,7 @@ export default function DocsPage() {
                         <div className="space-y-2">
                           {block.fields.map((field) => (
                             <div key={`${block.name}-${field.name}`} className="rounded-lg border border-gray-100 p-3 bg-gray-50/70">
-                              <div className="flex items-center justify-between gap-2 mb-1">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
                                 <p className="font-mono text-xs font-semibold text-gray-900">{field.name}</p>
                                 <Badge variant="outline" size="sm">{field.type}</Badge>
                               </div>
