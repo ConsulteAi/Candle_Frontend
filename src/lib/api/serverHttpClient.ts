@@ -93,11 +93,13 @@ serverAxios.interceptors.response.use(
           return Promise.reject(error);
         }
 
-        // Call refresh endpoint directly (bypass interceptors to avoid loops)
-        const refreshResponse = await axios.post(
-          `${env.baseApiUrl}/auth/refresh`,
+        // Use the same axios instance so tenant and request-context headers are preserved.
+        const refreshResponse = await serverAxios.post<{
+          accessToken: string;
+          refreshToken: string;
+        }>(
+          "/auth/refresh",
           { refreshToken },
-          { headers: { "Content-Type": "application/json" } },
         );
 
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
