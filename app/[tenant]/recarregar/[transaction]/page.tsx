@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
 
 export default function TransactionPage() {
+  const SERVICE_FEE = 1.99;
   const router = useRouter();
   const params = useParams();
   const transactionId = params.transaction as string;
@@ -295,12 +296,12 @@ export default function TransactionPage() {
                    </div>
                    <div className="flex justify-between text-gray-600 items-center">
                      <span>Taxa de serviço</span>
-                     <span className="text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full text-xs">GRÁTIS</span>
+                     <span className="font-medium text-gray-900">R$ {SERVICE_FEE.toFixed(2)}</span>
                    </div>
                    <div className="h-px bg-gradient-to-r from-gray-200 to-transparent my-2" />
                    <div className="flex justify-between text-xl font-display font-bold text-primary pt-2">
                      <span>Total</span>
-                     <span>R$ {paymentData.amount.toFixed(2)}</span>
+                     <span>R$ {(paymentData.amount + SERVICE_FEE).toFixed(2)}</span>
                    </div>
                  </div>
 
