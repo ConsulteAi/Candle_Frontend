@@ -3,9 +3,7 @@
  * Serviço de autenticação - comunicação com backend
  */
 
-import axios from 'axios';
 import { serverHttpClient } from '@/lib/api/serverHttpClient';
-import { env } from '@/lib/env';
 import type {
   AuthResponse,
   TokensResponse,
@@ -45,14 +43,9 @@ export class AuthService {
    * Refresh token
    */
   static async refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
-    const response = await axios.post<{ accessToken: string; refreshToken: string }>(
-      `${env.baseApiUrl}/auth/refresh`,
-      { refreshToken },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+    const response = await serverHttpClient.post<{ accessToken: string; refreshToken: string }>(
+      '/auth/refresh',
+      { refreshToken }
     );
     return response.data;
   }

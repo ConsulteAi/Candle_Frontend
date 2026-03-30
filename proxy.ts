@@ -56,9 +56,9 @@ export async function proxy(request: NextRequest) {
   const refreshToken = request.cookies.get("refreshToken")?.value;
   const isAuthenticated = !!accessToken || !!refreshToken;
 
-  // Se tentar acessar auth pages (ex: /login) estando logado, manda pro dashboard
+  // Se tentar acessar auth pages (ex: /login) estando logado, manda pra home
   if (isAuthRoute && isAuthenticated) {
-    url.pathname = "/dashboard";
+    url.pathname = "/";
     return withCsrfCookie(request, NextResponse.redirect(url));
   }
 
@@ -70,7 +70,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // 3. Rewrite request to the tenant folder
-  // Ex: /dashboard -> /[tenant]/dashboard
+  // Ex: /home -> /[tenant]/home
   if (tenant) {
     url.pathname = `/${tenant.id}${pathname}`;
     return withCsrfCookie(request, NextResponse.rewrite(url));

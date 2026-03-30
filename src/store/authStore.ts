@@ -1,8 +1,3 @@
-/**
- * Auth Store (Zustand)
- * Gerenciamento de estado de autenticação
- */
-
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User, AuthResponse } from '@/types';
@@ -28,7 +23,7 @@ export const useAuthStore = create<AuthStore>()(
       balance: 0,
       isAuthenticated: false,
 
-      // Login - salva usuário e tokens
+      // Login - armazena usuário e estado de autenticação (tokens ficam em cookies)
       login: (authResponse: AuthResponse) => {
         set({
           user: authResponse.user || null,

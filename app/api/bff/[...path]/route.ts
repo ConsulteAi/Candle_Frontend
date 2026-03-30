@@ -209,7 +209,13 @@ async function forward(request: NextRequest, context: RouteContext, method: Meth
       }
 
       if (Array.isArray(value)) {
-        responseHeaders.set(key, value.join(", "));
+        if (normalizedKey === "set-cookie") {
+          for (const cookieValue of value) {
+            responseHeaders.append(key, cookieValue);
+          }
+        } else {
+          responseHeaders.set(key, value.join(", "));
+        }
       } else if (typeof value === "string") {
         responseHeaders.set(key, value);
       }
