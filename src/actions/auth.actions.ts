@@ -124,7 +124,7 @@ export async function loginAction(
     // Erro genérico
     return {
       success: false,
-      error: error.response?.data?.message || 'Erro ao fazer login. Tente novamente.',
+      error: error.response?.data?.message || error.message || 'Erro ao fazer login. Tente novamente.',
     };
   }
 }

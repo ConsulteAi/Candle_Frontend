@@ -68,6 +68,13 @@ const forwardedRequestHeaders = [
   "range",
 ] as const;
 
+class InvalidJsonBodyError extends Error {
+  constructor() {
+    super("Invalid JSON body");
+    this.name = "InvalidJsonBodyError";
+  }
+}
+
 function pickRequestHeaders(request: NextRequest): Record<string, string> {
   const headers: Record<string, string> = {};
 
@@ -88,8 +95,8 @@ function isTrustedOrigin(request: NextRequest): boolean {
   }
 
   try {
-    const originHost = new URL(origin).host;
-    return originHost === request.nextUrl.host;
+    const normalizedOrigin = new URL(origin).origin;
+    return normalizedOrigin === request.nextUrl.origin;
   } catch {
     return false;
   }
@@ -153,7 +160,7 @@ async function parseRequestBody(request: NextRequest, method: Method): Promise<u
     try {
       return JSON.parse(rawBuffer.toString("utf-8"));
     } catch {
-      return undefined;
+      throw new InvalidJsonBodyError();
     }
   }
 
@@ -243,6 +250,13 @@ async function forward(request: NextRequest, context: RouteContext, method: Meth
       headers: responseHeaders,
     });
   } catch (error) {
+    if (error instanceof InvalidJsonBodyError) {
+      return NextResponse.json(
+        { error: "Invalid JSON body" },
+        { status: 400 },
+      );
+    }
+
     if (error instanceof AxiosError && error.response) {
       return NextResponse.json(
         {

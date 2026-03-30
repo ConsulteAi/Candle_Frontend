@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
+const isVercelPreview = process.env.VERCEL_ENV === "preview";
+const allowVercelLiveFeedback = isDev || isVercelPreview;
+
+// Next.js runtime currently relies on inline scripts unless a full nonce/hash CSP strategy is implemented.
+const scriptSrc = ["'self'", "'unsafe-inline'"];
+
+if (isDev) {
+  scriptSrc.push("'unsafe-eval'");
+}
+
+if (allowVercelLiveFeedback) {
+  scriptSrc.push("https://vercel.live");
+}
 
 const apiOrigin = (() => {
   const apiUrl = process.env.NEXT_PUBLIC_BASE_API_URL;
@@ -33,7 +46,8 @@ const cspDirectives = [
   "form-action 'self'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data: https:",
-  `script-src 'self'${isDev ? " 'unsafe-inline' 'unsafe-eval'" : ""}`,
+  `script-src ${scriptSrc.join(" ")}`,
+  `script-src-elem ${scriptSrc.join(" ")}`,
   "style-src 'self' 'unsafe-inline' https:",
   `connect-src ${connectSrc.join(" ")}`,
   "worker-src 'self' blob:",

@@ -21,6 +21,8 @@ const isRefreshRequest = (url?: string) => {
   return url.includes("/auth/refresh");
 };
 
+const generateCsrfToken = () => crypto.randomUUID().replace(/-/g, "");
+
 // Request Interceptor: Add Access Token from Cookies & User-Agent & Tenant Domain
 serverAxios.interceptors.request.use(async (config) => {
   try {
@@ -84,6 +86,7 @@ serverAxios.interceptors.response.use(
           try {
             cookieStore.delete("accessToken");
             cookieStore.delete("refreshToken");
+            cookieStore.delete("csrfToken");
           } catch (e) {
             // Ignore cookie errors (e.g. inside Server Component)
           }
@@ -114,6 +117,14 @@ serverAxios.interceptors.response.use(
           priority: "high" as const,
         };
 
+        const csrfCookieOptions = {
+          httpOnly: false,
+          secure: isProduction,
+          sameSite: "lax" as const,
+          path: "/",
+          priority: "high" as const,
+        };
+
         try {
           // Access Token (24 hours)
           cookieStore.set("accessToken", newAccessToken, {
@@ -124,6 +135,11 @@ serverAxios.interceptors.response.use(
           // Refresh Token (7 days)
           cookieStore.set("refreshToken", newRefreshToken, {
             ...cookieOptions,
+            maxAge: 60 * 60 * 24 * 7,
+          });
+
+          cookieStore.set("csrfToken", generateCsrfToken(), {
+            ...csrfCookieOptions,
             maxAge: 60 * 60 * 24 * 7,
           });
         } catch (e) {
@@ -143,6 +159,7 @@ serverAxios.interceptors.response.use(
           const cookieStore = await cookies();
           cookieStore.delete("accessToken");
           cookieStore.delete("refreshToken");
+          cookieStore.delete("csrfToken");
         } catch (e) {
           // ignore
         }
