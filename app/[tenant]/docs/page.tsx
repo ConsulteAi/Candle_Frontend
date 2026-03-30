@@ -374,7 +374,9 @@ const queryTypeDocs: QueryTypeDoc[] = [
   ], blocks: getBlocks(['person', 'financialSummary', 'debts', 'protests', 'queries', 'ccf', 'cadin']) },
 ];
 
-const executeRequestExample = `curl -X POST \"https://{{ _baseURL }}/queries/execute\" \\
+const _baseUrl = 'web-production-028ac.up.railway.app';
+
+const executeRequestExample = `curl -X POST \"https://${_baseUrl}/queries/execute\" \\
   -H \"Authorization: Bearer SEU_TOKEN\" \\
   -H \"Content-Type: application/json\" \\
   -d '{
@@ -401,7 +403,7 @@ const executeResponseExample = `{
   \"price\": 10.9
 }`;
 
-const queryByIdRequestExample = `curl -X GET \"https://{{ _baseURL }}/queries/9c2f4d35-0a6c-4f47-9c15-bf9f5d73f80b\" \\
+const queryByIdRequestExample = `curl -X GET \"https://${_baseUrl}/queries/9c2f4d35-0a6c-4f47-9c15-bf9f5d73f80b\" \\
   -H \"Authorization: Bearer SEU_TOKEN\"`;
 
 const queryByIdResponseExample = `{
@@ -423,7 +425,7 @@ const queryByIdResponseExample = `{
   }
 }`;
 
-const queryPdfRequestExample = `curl -X GET \"https://{{ _baseURL }}/queries/9c2f4d35-0a6c-4f47-9c15-bf9f5d73f80b/pdf\" \\
+const queryPdfRequestExample = `curl -X GET \"https://${_baseUrl}/queries/9c2f4d35-0a6c-4f47-9c15-bf9f5d73f80b/pdf\" \\
   -H \"Authorization: Bearer SEU_TOKEN\" \\
   --output consulta.pdf`;
 
