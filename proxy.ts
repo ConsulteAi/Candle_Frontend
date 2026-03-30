@@ -2,6 +2,22 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getTenantByHost } from "./src/lib/tenant/config";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const withCsrfCookie = (request: NextRequest, response: NextResponse) => {
+  if (!request.cookies.get("csrfToken")?.value) {
+    response.cookies.set("csrfToken", crypto.randomUUID().replace(/-/g, ""), {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+  }
+
+  return response;
+};
+
 // Public routes that don't require authentication
 const publicRoutes = [
   "/",
@@ -37,29 +53,30 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
   const accessToken = request.cookies.get("accessToken")?.value;
-  const isAuthenticated = !!accessToken;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
+  const isAuthenticated = !!accessToken || !!refreshToken;
 
-  // Se tentar acessar auth pages (ex: /login) estando logado, manda pro dashboard
+  // Se tentar acessar auth pages (ex: /login) estando logado, manda pra home
   if (isAuthRoute && isAuthenticated) {
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+    url.pathname = "/";
+    return withCsrfCookie(request, NextResponse.redirect(url));
   }
 
   // Se tentar acessar protected route sem estar logado
   if (!isPublicRoute && !isAuthenticated) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+    return withCsrfCookie(request, NextResponse.redirect(loginUrl));
   }
 
   // 3. Rewrite request to the tenant folder
-  // Ex: /dashboard -> /[tenant]/dashboard
+  // Ex: /home -> /[tenant]/home
   if (tenant) {
     url.pathname = `/${tenant.id}${pathname}`;
-    return NextResponse.rewrite(url);
+    return withCsrfCookie(request, NextResponse.rewrite(url));
   }
 
-  return NextResponse.next();
+  return withCsrfCookie(request, NextResponse.next());
 }
 
 export const config = {

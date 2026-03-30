@@ -10,6 +10,25 @@ import { AuthService } from '@/services/auth.service';
 import type { LoginDTO, RegisterDTO, AuthResponse, User } from '@/types';
 import { sanitizeUser } from '@/lib/utils';
 
+const isProduction = process.env.NODE_ENV === 'production';
+const authCookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: 'lax' as const,
+  path: '/',
+  priority: 'high' as const,
+};
+
+const csrfCookieOptions = {
+  httpOnly: false,
+  secure: isProduction,
+  sameSite: 'lax' as const,
+  path: '/',
+  priority: 'high' as const,
+};
+
+const generateCsrfToken = () => crypto.randomUUID().replace(/-/g, '');
+
 // Estado de retorno genérico
 export interface ActionState<T = unknown> {
   success: boolean;
@@ -27,10 +46,20 @@ export async function loginAction(
   try {
     const data = await AuthService.login(credentials);
 
+    if (!data.accessToken) {
+      throw new Error('Access token ausente na resposta de login');
+    }
+
+    if (!data.refreshToken) {
+      throw new Error('Refresh token ausente na resposta de login');
+    }
+
+    const accessToken = data.accessToken;
+
     // Se o login retornou token mas não user, buscamos o user
-    if (data.accessToken && !data.user) {
+    if (accessToken && !data.user) {
         try {
-            const user = await AuthService.getMe(data.accessToken);
+        const user = await AuthService.getMe(accessToken);
             data.user = user;
         } catch (error) {
             // ignore error
@@ -44,22 +73,26 @@ export async function loginAction(
 
     // Set httpOnly cookies for authentication
     const cookieStore = await cookies();
-    cookieStore.set('accessToken', data.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+    cookieStore.set('accessToken', accessToken, {
+      ...authCookieOptions,
       maxAge: 60 * 60 * 24, // 24 hours (access token expiry)
     });
     cookieStore.set('refreshToken', data.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      ...authCookieOptions,
       maxAge: 60 * 60 * 24 * 7, // 7 days (refresh token expiry)
+    });
+    cookieStore.set('csrfToken', generateCsrfToken(), {
+      ...csrfCookieOptions,
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return {
       success: true,
-      data,
+      data: {
+        user: data.user,
+        tokenType: data.tokenType,
+        expiresIn: data.expiresIn,
+      },
     };
   } catch (error: any) {
 
@@ -91,7 +124,7 @@ export async function loginAction(
     // Erro genérico
     return {
       success: false,
-      error: error.response?.data?.message || 'Erro ao fazer login. Tente novamente.',
+      error: error.response?.data?.message || error.message || 'Erro ao fazer login. Tente novamente.',
     };
   }
 }
@@ -110,7 +143,6 @@ export async function registerAction(
     // 2. Build AuthResponse with tokens
     const data: AuthResponse = {
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
       tokenType: tokens.tokenType,
       expiresIn: tokens.expiresIn,
     };
@@ -125,22 +157,26 @@ export async function registerAction(
 
     // 4. Set httpOnly cookies for authentication
     const cookieStore = await cookies();
-    cookieStore.set('accessToken', data.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+    cookieStore.set('accessToken', tokens.accessToken, {
+      ...authCookieOptions,
       maxAge: tokens.expiresIn || 60 * 60 * 24, // Use backend expiry or default 24 hours
     });
-    cookieStore.set('refreshToken', data.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+    cookieStore.set('refreshToken', tokens.refreshToken, {
+      ...authCookieOptions,
       maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+    cookieStore.set('csrfToken', generateCsrfToken(), {
+      ...csrfCookieOptions,
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return {
       success: true,
-      data,
+      data: {
+        user: data.user,
+        tokenType: data.tokenType,
+        expiresIn: data.expiresIn,
+      },
     };
   } catch (error: any) {
     // Erros de validação do backend
@@ -196,6 +232,7 @@ export async function logoutAction(): Promise<ActionState<void>> {
     const cookieStore = await cookies();
     cookieStore.delete('accessToken');
     cookieStore.delete('refreshToken');
+    cookieStore.delete('csrfToken');
 
     return {
       success: true,
@@ -205,6 +242,7 @@ export async function logoutAction(): Promise<ActionState<void>> {
     const cookieStore = await cookies();
     cookieStore.delete('accessToken');
     cookieStore.delete('refreshToken');
+    cookieStore.delete('csrfToken');
 
     // Mesmo com erro, consideramos logout bem-sucedido no cliente
     return {
@@ -292,35 +330,49 @@ export async function resetPasswordAction(
  * Atualiza os tokens e os cookies httpOnly
  */
 export async function refreshTokenAction(
-  refreshToken: string
-): Promise<ActionState<{ accessToken: string; refreshToken: string }>> {
+): Promise<ActionState<{ accessToken: string }>> {
   try {
+    const cookieStore = await cookies();
+    const refreshToken = cookieStore.get('refreshToken')?.value;
+
+    if (!refreshToken) {
+      cookieStore.delete('accessToken');
+      cookieStore.delete('refreshToken');
+      cookieStore.delete('csrfToken');
+      return {
+        success: false,
+        error: 'Sessão expirada',
+      };
+    }
+
     const tokens = await AuthService.refreshToken(refreshToken);
 
     // Update httpOnly cookies
-    const cookieStore = await cookies();
     cookieStore.set('accessToken', tokens.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      ...authCookieOptions,
       maxAge: 60 * 60 * 24, // 24 hours
     });
     cookieStore.set('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      ...authCookieOptions,
       maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+    cookieStore.set('csrfToken', generateCsrfToken(), {
+      ...csrfCookieOptions,
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return {
       success: true,
-      data: tokens,
+      data: {
+        accessToken: tokens.accessToken,
+      },
     };
   } catch (error: any) {
     // Clear cookies on refresh failure
     const cookieStore = await cookies();
     cookieStore.delete('accessToken');
     cookieStore.delete('refreshToken');
+    cookieStore.delete('csrfToken');
 
     return {
       success: false,

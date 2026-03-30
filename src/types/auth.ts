@@ -37,8 +37,8 @@ export interface TokensResponse {
  */
 export interface AuthResponse {
   user?: User;
-  accessToken: string;
-  refreshToken: string;
+  accessToken?: string;
+  refreshToken?: string;
   tokenType?: string;
   expiresIn?: number;
 }
@@ -62,7 +62,5 @@ export interface RefreshTokenDTO {
 
 export interface AuthState {
   user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
 }
