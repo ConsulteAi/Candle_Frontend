@@ -197,6 +197,98 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'participation', type: 'string', description: 'Tipo/descricao da participacao.' },
     ],
   },
+  raioXPerson: {
+    name: 'person',
+    description: 'Dados cadastrais retornados para documento PF (com fallback de email da lista de emails).',
+    fields: [
+      { name: 'name', type: 'string', description: 'Nome completo.' },
+      { name: 'document', type: 'string', description: 'CPF consultado.' },
+      { name: 'birthDate', type: 'string', description: 'Data de nascimento.' },
+      { name: 'motherName', type: 'string | undefined', description: 'Nome da mae.' },
+      { name: 'status', type: 'string | undefined', description: 'Status cadastral.' },
+      { name: 'revenueStatus', type: 'string | undefined', description: 'Situacao fiscal/cadastral.' },
+      { name: 'gender', type: 'string | undefined', description: 'Genero quando disponivel.' },
+      { name: 'email', type: 'string | undefined', description: 'Email cadastral com fallback para EMAILS.INFOEMAILS[0].' },
+    ],
+  },
+  raioXCompany: {
+    name: 'company',
+    description: 'Dados cadastrais retornados para documento PJ.',
+    fields: [
+      { name: 'cnpj', type: 'string', description: 'CNPJ consultado.' },
+      { name: 'socialReason', type: 'string', description: 'Razao social.' },
+      { name: 'fantasyName', type: 'string | undefined', description: 'Nome fantasia.' },
+      { name: 'foundationDate', type: 'string | undefined', description: 'Data de fundacao.' },
+      { name: 'status', type: 'string | undefined', description: 'Situacao cadastral.' },
+    ],
+  },
+  contacts: {
+    name: 'contacts[]',
+    description: 'Contatos relacionados vindos de CONTATOS.INFOCONTATOS (itens totalmente vazios sao descartados).',
+    fields: [
+      { name: 'name', type: 'string', description: 'Nome do contato.' },
+      { name: 'relation', type: 'string', description: 'Relacao com o consultado.' },
+      { name: 'document', type: 'string', description: 'Documento do contato.' },
+      { name: 'city', type: 'string', description: 'Cidade.' },
+      { name: 'state', type: 'string', description: 'Estado (UF).' },
+    ],
+  },
+  emails: {
+    name: 'emails[]',
+    description: 'Lista de emails vindos de EMAILS.INFOEMAILS.',
+    fields: [
+      { name: 'value', type: 'string', description: 'Email encontrado.' },
+    ],
+  },
+  estimatedIncome: {
+    name: 'estimatedIncome',
+    description: 'Faixa de renda presumida (RENDA_PRESUMIDA).',
+    fields: [
+      { name: 'range', type: 'string', description: 'Faixa de renda.' },
+      { name: 'annualIncome', type: 'number', description: 'Renda anual estimada.' },
+      { name: 'message', type: 'string', description: 'Mensagem explicativa.' },
+      { name: 'description', type: 'string', description: 'Descricao complementar.' },
+    ],
+  },
+  financialRestrictions: {
+    name: 'financialRestrictions',
+    description: 'Consolidado de RESTRICOES_FINANCEIRAS.',
+    fields: [
+      { name: 'count', type: 'number', description: 'Quantidade de restricoes.' },
+      { name: 'totalValue', type: 'number', description: 'Valor total das restricoes.' },
+      { name: 'firstDueDate', type: 'string', description: 'Primeira data de vencimento.' },
+      { name: 'lastDueDate', type: 'string', description: 'Ultima data de vencimento.' },
+    ],
+  },
+  creditEngine: {
+    name: 'creditEngine',
+    description: 'Resultado do motor de credito (MOTOR_CREDITO.OCORRENCIAS[0]).',
+    fields: [
+      { name: 'situation', type: 'string', description: 'Situacao do motor de credito.' },
+      { name: 'message', type: 'string', description: 'Mensagem de retorno.' },
+      { name: 'suggestedInstallment', type: 'number', description: 'Parcela sugerida.' },
+      { name: 'suggestedCredit', type: 'number', description: 'Valor de credito sugerido.' },
+      { name: 'interestRate', type: 'number', description: 'Taxa de juros sugerida.' },
+      { name: 'bacenRating', type: 'string', description: 'Rating BACEN.' },
+      { name: 'installmentsRange', type: 'string', description: 'Faixa de parcelas sugerida.' },
+      { name: 'score', type: 'number', description: 'Score interno do motor.' },
+      { name: 'businessDecision', type: 'string', description: 'Decisao de negocio sugerida.' },
+    ],
+  },
+  additionalDetails: {
+    name: 'additionalDetails',
+    description: 'Metricas adicionais processadas de RELATORIO_SCR.',
+    fields: [
+      { name: 'coobligationsValue', type: 'number', description: 'Valor de coobrigacoes.' },
+      { name: 'coobligationsPercentage', type: 'number', description: 'Percentual de coobrigacoes.' },
+      { name: 'disagreementsValue', type: 'number', description: 'Valor de discordancias.' },
+      { name: 'disagreementsPercentage', type: 'number', description: 'Percentual de discordancias.' },
+      { name: 'subJudiceValue', type: 'number', description: 'Valor em sub judice.' },
+      { name: 'subJudicePercentage', type: 'number', description: 'Percentual em sub judice.' },
+      { name: 'indirectRiskValue', type: 'number', description: 'Valor de risco indireto.' },
+      { name: 'indirectRiskPercentage', type: 'number', description: 'Percentual de risco indireto.' },
+    ],
+  },
   financialSummary: {
     name: 'financialSummary',
     description: 'Resumo consolidado de totais financeiros.',
@@ -270,10 +362,10 @@ const sharedBlocks: Record<string, BlockDoc> = {
     name: 'creditSummary',
     description: 'Resumo de exposicao de credito no SCR.',
     fields: [
-      { name: 'creditToExpire', type: '{ description, value, percentage }', description: 'Credito a vencer.' },
-      { name: 'expiredCredit', type: '{ description, value, percentage }', description: 'Credito vencido.' },
-      { name: 'creditLimit', type: '{ description, value, percentage }', description: 'Limite de credito.' },
-      { name: 'loss', type: '{ description, value, percentage }', description: 'Prejuizo.' },
+      { name: 'creditToExpire', type: '{ description, value, percentage }', description: 'Credito a vencer (dividas ativas nao vencidas). Descricao: "Credito a Vencer".' },
+      { name: 'expiredCredit', type: '{ description, value, percentage }', description: 'Credito vencido (em atraso). Descricao: "Credito Vencido".' },
+      { name: 'creditLimit', type: '{ description, value, percentage }', description: 'Limites de credito disponiveis. Descricao: "Limite de Credito".' },
+      { name: 'loss', type: '{ description, value, percentage }', description: 'Prejuizo baixado como perda irrecuperavel no BACEN. Descricao: "Prejuizo".' },
     ],
   },
   operations: {
@@ -286,7 +378,8 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'subModalityDescription', type: 'string', description: 'Descricao da submodalidade.' },
       { name: 'totalValue', type: 'number', description: 'Valor total na modalidade.' },
       { name: 'percentage', type: 'number', description: 'Percentual da modalidade no total.' },
-      { name: 'maturities', type: 'Array<{ code, description, value, percentage, isRestrictive }>', description: 'Faixas de vencimento.' },
+      { name: 'exchangeVariation', type: 'number', description: 'Variacao cambial aplicada a operacao, quando houver.' },
+      { name: 'maturities', type: 'Array<{ code, description, value, percentage, isRestrictive, months }>', description: 'Faixas de vencimento.' },
     ],
   },
 };
@@ -296,6 +389,20 @@ const commonRoot: FieldDoc[] = [
   { name: 'totalDebts', type: 'number', description: 'Total de pendencias financeiras.' },
   { name: 'totalProtests', type: 'number', description: 'Total de protestos.' },
   { name: 'totalBadChecks', type: 'number', description: 'Total de cheques sem fundos, quando aplicavel.' },
+];
+
+const raioXScrRoot: FieldDoc[] = [
+  { name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' },
+  { name: 'document', type: 'string', description: 'CPF/CNPJ consultado (HEADER.PARAMETROS.CPFCNPJ).' },
+  { name: 'documentType', type: 'string', description: 'Tipo do documento (HEADER.RELATORIO_SCR.TIPO_DOCUMENTO): FISICA ou JURIDICA.' },
+  { name: 'consultationDateTime', type: 'string', description: 'Data e hora da consulta (HEADER.INFORMACOES_RETORNO.DATA_HORA_CONSULTA).' },
+  { name: 'databaseDate', type: 'string', description: 'Competencia da base consultada (ex.: 08/2022).' },
+  { name: 'relationshipStartDate', type: 'string', description: 'Data de inicio do relacionamento bancario.' },
+  { name: 'institutionsCount', type: 'number', description: 'Quantidade de instituicoes financeiras com operacoes ativas.' },
+  { name: 'operationsCount', type: 'number', description: 'Quantidade total de operacoes.' },
+  { name: 'hasRestrictions', type: 'boolean', description: 'true quando expiredCredit.value + loss.value > 0.' },
+  { name: 'totalRestrictiveValue', type: 'number', description: 'Soma de expiredCredit.value + loss.value.' },
+  { name: 'product', type: 'string | undefined', description: 'Nome completo do produto retornado (HEADER.INFORMACOES_RETORNO.PRODUTO).' },
 ];
 
 const scrRoot: FieldDoc[] = [
@@ -352,8 +459,8 @@ const queryTypeDocs: QueryTypeDoc[] = [
   { code: 'REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PJ', title: 'Realtime MAX SPC Serasa BVS Protesto PJ', input: 'CNPJ', summary: 'Consulta PJ com bloco de syntheticProtests.', rootFields: commonRoot, blocks: getBlocks(['company', 'alerts', 'debts', 'syntheticProtests', 'protests', 'badChecks']) },
   { code: 'MAX_BRASIL_SCORE_BVS_BASICA_PF', title: 'MAX Brasil Score BVS Basica PF', input: 'CPF', summary: 'Consulta PF sem score, com restricoes basicas completas.', rootFields: commonRoot, blocks: getBlocks(['person', 'alerts', 'debts', 'protests', 'badChecks']) },
   { code: 'MAX_BRASIL_SCORE_BVS_BASICA_PJ', title: 'MAX Brasil Score BVS Basica PJ', input: 'CNPJ', summary: 'Consulta PJ sem score; campo protests[].type e relevante.', rootFields: commonRoot, blocks: getBlocks(['company', 'alerts', 'debts', 'protests', 'badChecks']) },
-  { code: 'RAIO_X_CREDITO_RATING_SCR_PF', title: 'Raio X Credito Rating SCR PF', input: 'CPF', summary: 'Consulta SCR detalhada para pessoa fisica.', rootFields: scrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations']) },
-  { code: 'RAIO_X_CREDITO_RATING_SCR_PJ', title: 'Raio X Credito Rating SCR PJ', input: 'CNPJ', summary: 'Consulta SCR detalhada para pessoa juridica.', rootFields: scrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations']) },
+  { code: 'RAIO_X_CREDITO_RATING_SCR_PF', title: 'Raio X Credito Rating SCR PF', input: 'CPF', summary: 'Consulta SCR detalhada PF com score, resumo de carteiras, operacoes e blocos opcionais de enriquecimento.', rootFields: raioXScrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXPerson', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails']) },
+  { code: 'RAIO_X_CREDITO_RATING_SCR_PJ', title: 'Raio X Credito Rating SCR PJ', input: 'CNPJ', summary: 'Consulta SCR detalhada PJ com score, resumo de carteiras, operacoes e blocos opcionais de enriquecimento.', rootFields: raioXScrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails']) },
   { code: 'LOCALIZA_CPF_CNPJ', title: 'Localiza CPF CNPJ', input: 'CPF/CNPJ', summary: 'Consulta de enriquecimento cadastral e relacional.', rootFields: [{ name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' }], blocks: getBlocks(['basicInfo', 'contact', 'addresses', 'relations']) },
   { code: 'SCR_BACEN_PREMIUM_SCORE', title: 'SCR Bacen Premium Score', input: 'CPF/CNPJ', summary: 'Consulta SCR padrao com score e operacoes.', rootFields: scrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations']) },
   { code: 'COMPLETA_PLUS_BVS_ACOES_CPF', title: 'Completa Plus BVS Acoes CPF', input: 'CPF', summary: 'Consulta CPF com dividas e passagens comerciais.', rootFields: [
@@ -445,14 +552,31 @@ function getSampleValue(type: string, fieldName: string): unknown {
   const field = fieldName.toLowerCase();
 
   if (field === 'anuencia') return null;
+  if (field === 'documenttype') return 'FISICA';
+  if (field === 'consultationdatetime') return '2026-03-31T10:00:00.000Z';
+  if (field === 'databasedate') return '08/2022';
+  if (field === 'relationshipstartdate') return '11/07/2012';
+  if (field === 'product') return 'Raio X Credito Rating SCR';
+  if (field === 'band') return 'REGULAR';
   if (field.includes('date')) return '01/01/2026';
   if (field.includes('email')) return 'contato@empresa.com';
   if (field === 'document') return '12345678900';
   if (field === 'cnpj') return '12345678000199';
   if (field === 'protocol') return '1022687';
+  if (field === 'hasrestrictions') return false;
+  if (field === 'totalrestrictivevalue') return 0;
+
+  if (normalized.includes('{ description, value, percentage }')) {
+    return {
+      description: 'Descricao',
+      value: 0,
+      percentage: 0,
+    };
+  }
 
   if (normalized.includes('boolean')) return false;
   if (normalized.includes('number')) return 0;
+  if (normalized.includes('[]')) return [];
   if (normalized.includes('array')) return [];
   if (normalized.includes('object')) return {};
 
@@ -460,6 +584,8 @@ function getSampleValue(type: string, fieldName: string): unknown {
 }
 
 function buildBlockExample(block: BlockDoc): unknown {
+  if (block.name === 'emails[]') return ['contato@empresa.com'];
+
   const item = block.fields.reduce<Record<string, unknown>>((acc, field) => {
     acc[field.name] = getSampleValue(field.type, field.name);
     return acc;
