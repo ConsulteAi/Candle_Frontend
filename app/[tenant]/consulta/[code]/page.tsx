@@ -20,8 +20,7 @@ function QueryExecutionContent() {
   const params = useParams();
   const router = useRouter();
   const code = params.code as string;
-  const tenant = params.tenant as string | undefined;
-  const termsHref = tenant ? `/${tenant}/termos` : '/termos';
+  const termsHref = '/termos';
   
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code);
 
