@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, ShieldCheck, Zap, Info, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldCheck, Zap, Info, CheckCircle2, FileText } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Header, Footer } from '@/components/layout';
 import { QueryExecutionForm } from '@/components/query/QueryExecutionForm';
@@ -20,6 +20,8 @@ function QueryExecutionContent() {
   const params = useParams();
   const router = useRouter();
   const code = params.code as string;
+  const tenant = params.tenant as string | undefined;
+  const termsHref = tenant ? `/${tenant}/termos` : '/termos';
   
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code);
 
@@ -207,6 +209,20 @@ function QueryExecutionContent() {
                    Insira os dados abaixo para buscar as informações nos bureaus.
                  </p>
               </div>
+
+              <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <p className="text-sm text-amber-900 leading-relaxed m-0">
+                  Ao executar esta consulta, você declara que leu e concorda com os{' '}
+                  <Link
+                    href={termsHref}
+                    className="font-semibold underline underline-offset-2 hover:text-amber-700 transition-colors"
+                  >
+                    Termos de Uso
+                  </Link>{' '}
+                  da plataforma, incluindo as regras de confidencialidade e uso permitido das informações.
+                </p>
+              </div>
+
               <QueryExecutionForm queryType={queryType} onSuccess={handleSuccess} />
             </Card>
           </motion.div>
@@ -251,6 +267,22 @@ function QueryExecutionContent() {
                   </li>
                 </ul>
               </Card>
+           </motion.div>
+
+           <motion.div
+             initial={{ opacity: 0, x: 20 }}
+             animate={{ opacity: 1, x: 0 }}
+             transition={{ delay: 0.4 }}
+           >
+             <Card className="bg-amber-50 border-amber-200">
+               <h3 className="font-semibold text-amber-900 mb-2 flex items-center gap-2">
+                 <FileText className="w-5 h-5" />
+                 Aviso Legal
+               </h3>
+               <p className="text-sm text-amber-800 leading-relaxed m-0">
+                 O envio desta consulta representa aceite integral aos Termos de Uso da plataforma.
+               </p>
+             </Card>
            </motion.div>
         </div>
       </div>
