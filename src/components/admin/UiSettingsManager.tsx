@@ -190,7 +190,7 @@ export function UiSettingsManager() {
                 </div>
                 
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <div className="space-y-2 sm:col-span-2">œ
+                  <div className="space-y-2 sm:col-span-2">
                     <Label htmlFor="name" className="text-sm font-medium">Nome do Ambiente (Empresa)</Label>
                     <Input
                       id="name"
@@ -229,16 +229,19 @@ export function UiSettingsManager() {
                   </div>
 
                   <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="contactEmail" className="text-sm font-medium">E-mail de Contato Comercial</Label>
+                    <Label htmlFor="contactEmail" className="text-sm font-medium">E-mail de Contato Comercial (opcional)</Label>
                     <Input
                       id="contactEmail"
                       name="contactEmail"
                       type="email"
-                      placeholder="suporte@suaempresa.com.br"
+                      placeholder="Ex: suporte@suaempresa.com.br"
                       value={formData.contactEmail}
                       onChange={handleChange}
                       className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
                     />
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Se este campo ficar vazio, o e-mail será removido e as seções de contato não aparecerão para os usuários no site.
+                    </p>
                   </div>
                 </div>
               </div>
