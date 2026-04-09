@@ -4,6 +4,7 @@ import "../globals.css";
 import { Providers } from "./providers";
 import { getTenantByHost } from "@/lib/tenant/config";
 import { TenantThemeProvider } from "@/components/layout/TenantThemeProvider";
+import { WhatsAppSupportButton } from "@/components/layout/WhatsAppSupportButton";
 import { headers } from "next/headers";
 
 const inter = Inter({
@@ -57,7 +58,10 @@ export default async function RootLayout(props: Readonly<{
     <html lang="pt-BR" className={`${outfit.variable} ${dmSans.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="font-body antialiased">
         <TenantThemeProvider tenant={tenant}>
-          <Providers>{props.children}</Providers>
+          <Providers>
+            {props.children}
+            <WhatsAppSupportButton />
+          </Providers>
         </TenantThemeProvider>
       </body>
     </html>

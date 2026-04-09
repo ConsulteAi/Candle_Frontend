@@ -325,6 +325,7 @@ export interface TenantUiSettings {
   logoUrl?: string;
   faviconUrl?: string;
   contactEmail?: string;
+  whatsappSupportPhone?: string;
   colors?: {
     primary?: string;
     primaryForeground?: string;
