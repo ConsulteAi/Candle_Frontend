@@ -105,12 +105,14 @@ export function UiSettingsManager() {
 
     setIsSaving(true);
     try {
+      const normalizedContactEmail = formData.contactEmail.trim();
+
       await api.patch(`/admin/tenants/ui-settings`, {
         uiSettings: {
           name: formData.name,
           logoUrl: formData.logoUrl,
           faviconUrl: formData.faviconUrl,
-          contactEmail: formData.contactEmail,
+          contactEmail: normalizedContactEmail.length > 0 ? normalizedContactEmail : null,
           colors: {
             primary: formData.primaryColor,
             primaryForeground: formData.primaryForegroundColor,
@@ -188,7 +190,7 @@ export function UiSettingsManager() {
                 </div>
                 
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <div className="space-y-2 sm:col-span-2">
+                  <div className="space-y-2 sm:col-span-2">œ
                     <Label htmlFor="name" className="text-sm font-medium">Nome do Ambiente (Empresa)</Label>
                     <Input
                       id="name"

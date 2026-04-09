@@ -10,6 +10,7 @@ import { useTenant } from '@/components/layout/TenantThemeProvider';
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const tenant = useTenant();
+  const contactEmail = tenant.contactEmail?.trim();
 
   return (
     <motion.footer
@@ -108,22 +109,24 @@ export function Footer() {
           </div>
 
           {/* Contato */}
-          <div>
-            <h4 className="font-display font-semibold mb-4 text-white">
-              Contato
-            </h4>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3 text-gray-400 text-sm">
-                <Mail className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                <a
-                  href={`mailto:${tenant.contactEmail}`}
-                  className="hover:text-primary transition-colors"
-                >
-                  {tenant.contactEmail}
-                </a>
-              </li>
-            </ul>
-          </div>
+          {contactEmail && (
+            <div>
+              <h4 className="font-display font-semibold mb-4 text-white">
+                Contato
+              </h4>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3 text-gray-400 text-sm">
+                  <Mail className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                  <a
+                    href={`mailto:${contactEmail}`}
+                    className="hover:text-primary transition-colors"
+                  >
+                    {contactEmail}
+                  </a>
+                </li>
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Bottom */}

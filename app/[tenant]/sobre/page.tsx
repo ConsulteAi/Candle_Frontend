@@ -18,6 +18,7 @@ import { useTenant } from '@/components/layout/TenantThemeProvider';
 
 export default function AboutPage() {
   const tenant = useTenant();
+  const contactEmail = tenant.contactEmail?.trim();
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -140,21 +141,23 @@ export default function AboutPage() {
           </div>
 
           {/* Contact */}
-          <Card className="bg-gray-900 text-white p-8 md:p-12 text-center">
-             <h2 className="font-display text-2xl font-bold mb-4">
-              Suporte e Contato
-            </h2>
-            <p className="text-gray-300 mb-8 max-w-xl mx-auto">
-              Em caso de dúvidas, suporte técnico ou solicitações comerciais, entre em contato com nossa equipe especializada.
-            </p>
-            <a 
-              href={`mailto:${tenant.contactEmail}`}
-              className="inline-flex items-center gap-2 bg-white text-gray-900 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-colors"
-            >
-              <Mail className="w-5 h-5" />
-              {tenant.contactEmail}
-            </a>
-          </Card>
+          {contactEmail && (
+            <Card className="bg-gray-900 text-white p-8 md:p-12 text-center">
+              <h2 className="font-display text-2xl font-bold mb-4">
+                Suporte e Contato
+              </h2>
+              <p className="text-gray-300 mb-8 max-w-xl mx-auto">
+                Em caso de dúvidas, suporte técnico ou solicitações comerciais, entre em contato com nossa equipe especializada.
+              </p>
+              <a
+                href={`mailto:${contactEmail}`}
+                className="inline-flex items-center gap-2 bg-white text-gray-900 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-colors"
+              >
+                <Mail className="w-5 h-5" />
+                {contactEmail}
+              </a>
+            </Card>
+          )}
 
         </motion.div>
       </div>
