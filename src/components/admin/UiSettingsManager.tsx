@@ -58,6 +58,34 @@ export function UiSettingsManager() {
   const params = useParams();
   const tenantSlug = params.tenant as string;
 
+  const extractPhoneDigits = (value?: string) => {
+    if (!value) return '';
+    return value.replace(/\D/g, '');
+  };
+
+  const formatWhatsappPhone = (value?: string) => {
+    const digits = extractPhoneDigits(value).slice(0, 13);
+    if (!digits) return '';
+
+    const countryCode = digits.slice(0, 2);
+    const rest = digits.slice(2);
+
+    if (!rest) return `+${countryCode}`;
+
+    const areaCode = rest.slice(0, 2);
+    const localNumber = rest.slice(2);
+
+    if (!localNumber) return `+${countryCode} (${areaCode}`;
+    if (localNumber.length <= 4) {
+      return `+${countryCode} (${areaCode}) ${localNumber}`;
+    }
+    if (localNumber.length <= 8) {
+      return `+${countryCode} (${areaCode}) ${localNumber.slice(0, 4)}-${localNumber.slice(4)}`;
+    }
+
+    return `+${countryCode} (${areaCode}) ${localNumber.slice(0, 5)}-${localNumber.slice(5, 9)}`;
+  };
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -66,6 +94,7 @@ export function UiSettingsManager() {
     logoUrl: '',
     faviconUrl: '',
     contactEmail: '',
+    whatsappSupportPhone: '',
     primaryColor: '221.2 83.2% 53.3%',
     primaryForegroundColor: '210 40% 98%',
   });
@@ -85,6 +114,7 @@ export function UiSettingsManager() {
             logoUrl: ui.logoUrl || '',
             faviconUrl: ui.faviconUrl || '',
             contactEmail: ui.contactEmail || '',
+            whatsappSupportPhone: formatWhatsappPhone(ui.whatsappSupportPhone),
             primaryColor: colors.primary || '221.2 83.2% 53.3%',
             primaryForegroundColor: colors.primaryForeground || '210 40% 98%',
           });
@@ -106,6 +136,7 @@ export function UiSettingsManager() {
     setIsSaving(true);
     try {
       const normalizedContactEmail = formData.contactEmail.trim();
+      const normalizedWhatsappSupportPhone = extractPhoneDigits(formData.whatsappSupportPhone);
 
       await api.patch(`/admin/tenants/ui-settings`, {
         uiSettings: {
@@ -113,6 +144,7 @@ export function UiSettingsManager() {
           logoUrl: formData.logoUrl,
           faviconUrl: formData.faviconUrl,
           contactEmail: normalizedContactEmail.length > 0 ? normalizedContactEmail : null,
+          whatsappSupportPhone: normalizedWhatsappSupportPhone.length > 0 ? normalizedWhatsappSupportPhone : null,
           colors: {
             primary: formData.primaryColor,
             primaryForeground: formData.primaryForegroundColor,
@@ -142,6 +174,12 @@ export function UiSettingsManager() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
+    if (name === 'whatsappSupportPhone') {
+      setFormData((prev) => ({ ...prev, whatsappSupportPhone: formatWhatsappPhone(value) }));
+      return;
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -241,6 +279,23 @@ export function UiSettingsManager() {
                     />
                     <p className="text-xs text-slate-500 leading-relaxed">
                       Se este campo ficar vazio, o e-mail será removido e as seções de contato não aparecerão para os usuários no site.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="whatsappSupportPhone" className="text-sm font-medium">Telefone de Suporte WhatsApp (opcional)</Label>
+                    <Input
+                      id="whatsappSupportPhone"
+                      name="whatsappSupportPhone"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="Ex: +55 (11) 99999-9999"
+                      value={formData.whatsappSupportPhone}
+                      onChange={handleChange}
+                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                    />
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      A formatacao e aplicada automaticamente. Informe DDI + DDD + numero. Se ficar vazio, o botao flutuante de suporte nao aparece.
                     </p>
                   </div>
                 </div>

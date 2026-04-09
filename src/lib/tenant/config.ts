@@ -11,7 +11,13 @@ export interface TenantConfig {
   logoUrl: string; // e.g., '/logo.png'
   faviconUrl: string; // e.g., '/favicon.ico'
   contactEmail?: string; // e.g., 'contato@empresa.com.br'
+  whatsappSupportPhone?: string; // e.g., '5511999999999'
   colors: TenantColors;
+}
+
+function extractPhoneDigits(value?: string): string {
+  if (!value) return "";
+  return value.replace(/\D/g, "").trim();
 }
 
 // Default Configuration for the base product "Candle / ConsultaAi"
@@ -39,6 +45,10 @@ function parseTenantData(t: any, fallbackId: string): TenantConfig {
     typeof uiSettings.contactEmail === "string"
       ? uiSettings.contactEmail.trim()
       : "";
+  const whatsappSupportPhone =
+    typeof uiSettings.whatsappSupportPhone === "string"
+      ? extractPhoneDigits(uiSettings.whatsappSupportPhone)
+      : "";
 
   return {
     id: t.slug || fallbackId, // Frontend ID is the backend SLUG, use fallback if not returned
@@ -48,6 +58,7 @@ function parseTenantData(t: any, fallbackId: string): TenantConfig {
     logoUrl: uiSettings.logoUrl || DEFAULT_TENANT.logoUrl,
     faviconUrl: uiSettings.faviconUrl || DEFAULT_TENANT.faviconUrl,
     contactEmail: contactEmail || undefined,
+    whatsappSupportPhone: whatsappSupportPhone || undefined,
     colors: {
       primary: colors.primary || DEFAULT_TENANT.colors.primary,
       primaryForeground:
