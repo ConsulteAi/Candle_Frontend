@@ -10,7 +10,7 @@ export interface TenantConfig {
   name: string; // e.g., 'ConsultaAi', 'Cliente A'
   logoUrl: string; // e.g., '/logo.png'
   faviconUrl: string; // e.g., '/favicon.ico'
-  contactEmail: string; // e.g., 'contato@empresa.com.br'
+  contactEmail?: string; // e.g., 'contato@empresa.com.br'
   colors: TenantColors;
 }
 
@@ -21,7 +21,6 @@ export const DEFAULT_TENANT: TenantConfig = {
   name: "ConsultaAi",
   logoUrl: "/icon.png", // Fallback, will handle Search icon logic in component
   faviconUrl: "/icon.png",
-  contactEmail: "contato@candle.com.br",
   colors: {
     primary: "221.2 83.2% 53.3%",
     primaryForeground: "210 40% 98%",
@@ -36,6 +35,10 @@ function parseTenantData(t: any, fallbackId: string): TenantConfig {
 
   const uiSettings = t.uiSettings || {};
   const colors = uiSettings.colors || {};
+  const contactEmail =
+    typeof uiSettings.contactEmail === "string"
+      ? uiSettings.contactEmail.trim()
+      : "";
 
   return {
     id: t.slug || fallbackId, // Frontend ID is the backend SLUG, use fallback if not returned
@@ -44,7 +47,7 @@ function parseTenantData(t: any, fallbackId: string): TenantConfig {
     name: uiSettings.name || t.name || DEFAULT_TENANT.name,
     logoUrl: uiSettings.logoUrl || DEFAULT_TENANT.logoUrl,
     faviconUrl: uiSettings.faviconUrl || DEFAULT_TENANT.faviconUrl,
-    contactEmail: uiSettings.contactEmail || DEFAULT_TENANT.contactEmail,
+    contactEmail: contactEmail || undefined,
     colors: {
       primary: colors.primary || DEFAULT_TENANT.colors.primary,
       primaryForeground:

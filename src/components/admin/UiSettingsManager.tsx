@@ -105,12 +105,14 @@ export function UiSettingsManager() {
 
     setIsSaving(true);
     try {
+      const normalizedContactEmail = formData.contactEmail.trim();
+
       await api.patch(`/admin/tenants/ui-settings`, {
         uiSettings: {
           name: formData.name,
           logoUrl: formData.logoUrl,
           faviconUrl: formData.faviconUrl,
-          contactEmail: formData.contactEmail,
+          contactEmail: normalizedContactEmail.length > 0 ? normalizedContactEmail : null,
           colors: {
             primary: formData.primaryColor,
             primaryForeground: formData.primaryForegroundColor,
@@ -227,16 +229,19 @@ export function UiSettingsManager() {
                   </div>
 
                   <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="contactEmail" className="text-sm font-medium">E-mail de Contato Comercial</Label>
+                    <Label htmlFor="contactEmail" className="text-sm font-medium">E-mail de Contato Comercial (opcional)</Label>
                     <Input
                       id="contactEmail"
                       name="contactEmail"
                       type="email"
-                      placeholder="suporte@suaempresa.com.br"
+                      placeholder="Ex: suporte@suaempresa.com.br"
                       value={formData.contactEmail}
                       onChange={handleChange}
                       className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
                     />
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Se este campo ficar vazio, o e-mail será removido e as seções de contato não aparecerão para os usuários no site.
+                    </p>
                   </div>
                 </div>
               </div>
