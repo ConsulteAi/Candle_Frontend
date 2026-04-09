@@ -51,7 +51,7 @@ export function WhatsAppSupportButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Falar com suporte no WhatsApp"
-      className="group fixed right-4 z-50 isolate flex min-h-12 min-w-[220px] items-center justify-between gap-2.5 overflow-hidden rounded-[1.5rem] border border-white/35 bg-[linear-gradient(140deg,#2edd6f_0%,#26d164_45%,#19b955_100%)] px-4 py-2.5 text-white shadow-[0_22px_38px_-22px_rgba(0,0,0,0.85),0_10px_16px_-10px_rgba(15,118,56,0.85)] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700"
+      className="group fixed right-3 z-50 isolate flex min-h-11 min-w-[196px] items-center justify-between gap-2 overflow-hidden rounded-[1.35rem] border border-white/30 bg-[linear-gradient(140deg,#2edd6f_0%,#26d164_45%,#19b955_100%)] px-3.5 py-2 text-white shadow-[0_18px_30px_-22px_rgba(0,0,0,0.85),0_8px_14px_-10px_rgba(15,118,56,0.85)] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/85 focus-visible:ring-offset-2 focus-visible:ring-offset-emerald-700 sm:right-4 sm:min-h-12 sm:min-w-[212px] sm:px-4 sm:py-2.5"
       style={{
         bottom: 'max(1rem, env(safe-area-inset-bottom))',
       }}
@@ -60,16 +60,16 @@ export function WhatsAppSupportButton() {
       <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[linear-gradient(105deg,transparent_26%,rgba(255,255,255,0.28)_44%,transparent_62%)]" />
 
       <span className="relative flex flex-col leading-none">
-        <span className="font-body text-[10px] font-extrabold uppercase tracking-[0.11em] text-white/90">
+        <span className="font-body text-[9px] font-extrabold uppercase tracking-[0.12em] text-white/90 sm:text-[10px]">
           Suporte por
         </span>
-        <span className="font-display text-[1.4rem] font-black tracking-tight text-white [text-shadow:0_1px_0_rgba(0,0,0,0.08)] sm:text-[1.5rem]">
+        <span className="font-display text-[1.15rem] font-black tracking-tight text-white [text-shadow:0_1px_0_rgba(0,0,0,0.08)] sm:text-[1.32rem]">
           WhatsApp
         </span>
       </span>
 
-      <span className="relative flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-full border border-white/70 bg-white/16 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)]">
-        <WhatsAppLogo className="h-5 w-5" />
+      <span className="relative flex h-6.5 w-6.5 shrink-0 items-center justify-center text-white/95 sm:h-7 sm:w-7">
+        <WhatsAppLogo className="h-full w-full" />
       </span>
     </motion.a>
   );
