@@ -13,6 +13,7 @@ import type { QueryStrategyProps, RealtimeMaxSpcSerasaBvsProtestoPjResult } from
 import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
 import { AlertsGrid } from './components/AlertsGrid';
 import { InfoBox } from './components/InfoBox';
+import { ScoreGauge } from './components/ScoreGauge';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
@@ -33,40 +34,57 @@ export function RealtimeMaxSpcSerasaBvsProtestoPjStrategy({
 }: QueryStrategyProps<RealtimeMaxSpcSerasaBvsProtestoPjResult>) {
   if (!data) return null;
 
+  const hasScore = !!data.score?.value;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg">
-        <StrategyHeader
-          title={data.company.socialReason}
-          subtitle={data.company.fantasyName}
-          protocol={data.protocol}
-          status={data.company.status}
-          statusVariant={data.company.status === 'ATIVA' ? 'success' : 'warning'}
-          pdfUrl={data.pdf}
-          queryId={queryId}
-          className="mb-6"
-        >
-          <Badge variant="info">Realtime MAX + Protesto</Badge>
-        </StrategyHeader>
+      <div className="grid md:grid-cols-12 gap-6">
+        {hasScore && (
+          <div className="md:col-span-4">
+            <ScoreGauge
+              value={Number(data.score?.value)}
+              band={data.score?.class ? `Classe ${data.score.class}` : undefined}
+              riskText={data.score?.riskText}
+              label="SCORE"
+            />
+          </div>
+        )}
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <InfoBox
-            label="CNPJ"
-            value={formatCpfCnpj(data.company.cnpj)}
-            icon={<Building2 className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Fundação"
-            value={formatDisplayDate(data.company.foundationDate)}
-            icon={<Calendar className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Status"
-            value={data.company.status || 'N/A'}
-            icon={<Building2 className="w-4 h-4 text-primary" />}
-          />
+        <div className={hasScore ? 'md:col-span-8' : 'md:col-span-12'}>
+          <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg">
+            <StrategyHeader
+              title={data.company.socialReason}
+              subtitle={data.company.fantasyName}
+              protocol={data.protocol}
+              status={data.company.status}
+              statusVariant={data.company.status === 'ATIVA' ? 'success' : 'warning'}
+              pdfUrl={data.pdf}
+              queryId={queryId}
+              className="mb-6"
+            >
+              <Badge variant="info">Realtime MAX + Protesto</Badge>
+            </StrategyHeader>
+
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              <InfoBox
+                label="CNPJ"
+                value={formatCpfCnpj(data.company.cnpj)}
+                icon={<Building2 className="w-4 h-4 text-primary" />}
+              />
+              <InfoBox
+                label="Fundação"
+                value={formatDisplayDate(data.company.foundationDate)}
+                icon={<Calendar className="w-4 h-4 text-primary" />}
+              />
+              <InfoBox
+                label="Status"
+                value={data.company.status || 'N/A'}
+                icon={<Building2 className="w-4 h-4 text-primary" />}
+              />
+            </div>
+          </Card>
         </div>
-      </Card>
+      </div>
 
       <AlertsGrid alerts={data.alerts || []} />
 

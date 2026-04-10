@@ -307,11 +307,23 @@ export interface RealtimeMaxSpcSerasaBvsProtestoPfResult extends BaseStandardRes
     status?: string;
     revenueStatus?: string;
   };
+  score?: {
+    value: string;
+    class?: string;
+    riskText?: string;
+    informant?: string;
+  };
   syntheticProtests?: BaseSyntheticProtest[];
 }
 
 export interface RealtimeMaxSpcSerasaBvsProtestoPjResult extends BaseStandardResult {
   company: BaseCompany;
+  score?: {
+    value: string;
+    class?: string;
+    riskText?: string;
+    informant?: string;
+  };
   syntheticProtests?: BaseSyntheticProtest[];
 }
 

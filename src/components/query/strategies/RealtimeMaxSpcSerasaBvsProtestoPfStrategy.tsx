@@ -13,6 +13,7 @@ import type { QueryStrategyProps, RealtimeMaxSpcSerasaBvsProtestoPfResult } from
 import { formatCurrency } from '@/lib/formatters';
 import { AlertsGrid } from './components/AlertsGrid';
 import { InfoBox } from './components/InfoBox';
+import { ScoreGauge } from './components/ScoreGauge';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
@@ -34,54 +35,70 @@ export function RealtimeMaxSpcSerasaBvsProtestoPfStrategy({
   if (!data) return null;
 
   const status = data.person.revenueStatus || data.person.status || 'N/A';
+  const hasScore = !!data.score?.value;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg">
-        <StrategyHeader
-          title={data.person.name}
-          protocol={data.protocol}
-          status={status}
-          statusVariant={status === 'REGULAR' ? 'success' : 'warning'}
-          pdfUrl={data.pdf}
-          queryId={queryId}
-          className="mb-6"
-        >
-          <Badge variant="info">Realtime MAX + Protesto</Badge>
-        </StrategyHeader>
+      <div className="grid md:grid-cols-12 gap-6">
+        {hasScore && (
+          <div className="md:col-span-4">
+            <ScoreGauge
+              value={Number(data.score?.value)}
+              band={data.score?.class ? `Classe ${data.score.class}` : undefined}
+              riskText={data.score?.riskText}
+              label="SCORE"
+            />
+          </div>
+        )}
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <InfoBox
-            label="Documento"
-            value={data.person.document}
-            icon={<User className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Nascimento"
-            value={formatDisplayDate(data.person.birthDate)}
-            icon={<Calendar className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Gênero"
-            value={data.person.gender || 'N/A'}
-            icon={<User className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Email"
-            value={data.person.email || 'N/A'}
-            icon={<User className="w-4 h-4 text-primary" />}
-          />
-          {data.person.motherName && (
-            <div className="col-span-2 lg:col-span-4">
+        <div className={hasScore ? 'md:col-span-8' : 'md:col-span-12'}>
+          <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg">
+            <StrategyHeader
+              title={data.person.name}
+              protocol={data.protocol}
+              status={status}
+              statusVariant={status === 'REGULAR' ? 'success' : 'warning'}
+              pdfUrl={data.pdf}
+              queryId={queryId}
+              className="mb-6"
+            >
+              <Badge variant="info">Realtime MAX + Protesto</Badge>
+            </StrategyHeader>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <InfoBox
-                label="Nome da Mãe"
-                value={data.person.motherName}
-                icon={<User className="w-4 h-4 text-gray-400" />}
+                label="Documento"
+                value={data.person.document}
+                icon={<User className="w-4 h-4 text-primary" />}
               />
+              <InfoBox
+                label="Nascimento"
+                value={formatDisplayDate(data.person.birthDate)}
+                icon={<Calendar className="w-4 h-4 text-primary" />}
+              />
+              <InfoBox
+                label="Gênero"
+                value={data.person.gender || 'N/A'}
+                icon={<User className="w-4 h-4 text-primary" />}
+              />
+              <InfoBox
+                label="Email"
+                value={data.person.email || 'N/A'}
+                icon={<User className="w-4 h-4 text-primary" />}
+              />
+              {data.person.motherName && (
+                <div className="col-span-2 lg:col-span-4">
+                  <InfoBox
+                    label="Nome da Mãe"
+                    value={data.person.motherName}
+                    icon={<User className="w-4 h-4 text-gray-400" />}
+                  />
+                </div>
+              )}
             </div>
-          )}
+          </Card>
         </div>
-      </Card>
+      </div>
 
       <AlertsGrid alerts={data.alerts || []} />
 
