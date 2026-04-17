@@ -6,7 +6,7 @@ import {
   Calendar, 
   Mail,
   AlertTriangle,
-  CheckCircle2
+  Gavel
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
 import { formatDisplayDate } from '@/lib/utils';
@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/glass-table";
+import { ScoreGauge } from './components/ScoreGauge';
 import { InfoBox } from './components/InfoBox';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategyHeader } from './components/StrategyHeader';
@@ -29,48 +30,78 @@ import { StrategyContacts } from './components/StrategyContacts';
 export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<CompletaPlusCpfResult>) {
   if (!data) return null;
 
+  const parseScoreValue = (value?: string) => {
+    if (!value) return 0;
+
+    const normalized = value
+      .replace(/[^\d,.-]/g, '')
+      .replace(/\.(?=\d{3}(\D|$))/g, '')
+      .replace(',', '.');
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const hasScore = !!data.score?.value;
+  const scoreValue = parseScoreValue(data.score?.value);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       
-      {/* Header Info */}
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
-         <StrategyHeader
-            title={data.person.name}
-            protocol={data.protocol}
-            status={data.person.revenueStatus}
-            statusVariant={data.person.revenueStatus === 'REGULAR' ? 'success' : 'warning'}
-            pdfUrl={data.pdf}
-                  queryId={queryId}
-         />
-         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-             <InfoBox 
-               label="Documento" 
-               value={data.person.document}
-               icon={<User className="w-4 h-4 text-primary" />}
-             />
-             <InfoBox 
-               label="Nascimento" 
-               value={`${formatDisplayDate(data.person.birthDate)} ${data.person.gender ? `(${data.person.gender})` : ''}`}
-               icon={<Calendar className="w-4 h-4 text-primary" />}
-             />
-             {data.person.email && (
+      <div className="grid md:grid-cols-12 gap-6">
+        {hasScore && (
+          <div className="md:col-span-4">
+            <ScoreGauge
+              value={scoreValue}
+              band={data.score?.class ? `Classe ${data.score.class}` : undefined}
+              riskText={data.score?.riskText}
+              label="SCORE"
+            />
+          </div>
+        )}
+
+        {/* Header Info */}
+        <div className={hasScore ? 'md:col-span-8' : 'md:col-span-12'}>
+          <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
+            <StrategyHeader
+                title={data.person.name}
+                protocol={data.protocol}
+                status={data.person.revenueStatus}
+                statusVariant={data.person.revenueStatus === 'REGULAR' ? 'success' : 'warning'}
+                pdfUrl={data.pdf}
+                      queryId={queryId}
+            />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
                 <InfoBox 
-                  label="Email" 
-                  value={data.person.email}
-                  icon={<Mail className="w-4 h-4 text-primary" />}
+                  label="Documento" 
+                  value={data.person.document}
+                  icon={<User className="w-4 h-4 text-primary" />}
                 />
-             )}
-             {data.person.motherName && (
-               <div className="lg:col-span-2">
-                 <InfoBox 
-                   label="Nome da Mãe" 
-                   value={data.person.motherName}
-                   icon={<User className="w-4 h-4 text-gray-400" />}
-                 />
-               </div>
-             )}
-         </div>
-      </Card>
+                <InfoBox 
+                  label="Nascimento" 
+                  value={`${formatDisplayDate(data.person.birthDate)} ${data.person.gender ? `(${data.person.gender})` : ''}`}
+                  icon={<Calendar className="w-4 h-4 text-primary" />}
+                />
+                {data.person.email && (
+                    <InfoBox 
+                      label="Email" 
+                      value={data.person.email}
+                      icon={<Mail className="w-4 h-4 text-primary" />}
+                    />
+                )}
+                {data.person.motherName && (
+                  <div className="lg:col-span-2">
+                    <InfoBox 
+                      label="Nome da Mãe" 
+                      value={data.person.motherName}
+                      icon={<User className="w-4 h-4 text-gray-400" />}
+                    />
+                  </div>
+                )}
+            </div>
+          </Card>
+        </div>
+      </div>
 
       {/* Contacts if available */}
       <StrategyContacts 
@@ -86,7 +117,7 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
       />
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
          <SummaryCard 
           title="Dívidas Negativadas"
           value={data.totalDebts}
@@ -100,6 +131,13 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
           subtitle="Últimos meses"
           color="blue"
           icon={<Search className="w-5 h-5" />}
+        />
+        <SummaryCard 
+          title="Ações Judiciais"
+          value={data.totalLegalActions || 0}
+          subtitle={(data.totalLegalActions || 0) > 0 ? "Constam registros" : "Nada consta"}
+          color={(data.totalLegalActions || 0) > 0 ? "gray" : "green"}
+          icon={<Gavel className="w-5 h-5" />}
         />
       </div>
 
@@ -151,6 +189,38 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
               <TableRow key={idx}>
                 <TableCell>{q.date}</TableCell>
                 <TableCell>{q.entity}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </StrategySectionWrapper>
+
+      {/* Legal Actions */}
+      <StrategySectionWrapper
+         title="Detalhamento de Ações Judiciais"
+         icon={<Gavel className="w-5 h-5 text-purple-500" />}
+         count={data.legalActions?.length || 0}
+         isEmpty={!data.legalActions || data.legalActions.length === 0}
+         emptyMessage="Nenhuma ação judicial encontrada."
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+               <TableHead>Data</TableHead>
+               <TableHead>Tipo</TableHead>
+               <TableHead>Origem</TableHead>
+               <TableHead>Detalhes</TableHead>
+               <TableHead className="text-right">Valor</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.legalActions?.map((action, idx) => (
+              <TableRow key={idx}>
+                <TableCell>{action.date}</TableCell>
+                <TableCell className="font-medium">{action.type}</TableCell>
+                <TableCell>{action.origin}</TableCell>
+                <TableCell>{action.details}</TableCell>
+                <TableCell className="text-right font-bold text-purple-600">{formatCurrency(String(action.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>

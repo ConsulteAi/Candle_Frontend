@@ -8,7 +8,8 @@ import {
   AlertTriangle,
   Search,
   CheckCircle2,
-  FileWarning
+  FileWarning,
+  Gavel
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
 import { formatCurrency } from '@/lib/formatters';
@@ -32,6 +33,21 @@ import { StrategyContacts } from './components/StrategyContacts';
 export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<CompletaPlusCnpjResult>) {
   if (!data) return null;
 
+  const parseScoreValue = (value?: string) => {
+    if (!value) return 0;
+
+    const normalized = value
+      .replace(/[^\d,.-]/g, '')
+      .replace(/\.(?=\d{3}(\D|$))/g, '')
+      .replace(',', '.');
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const hasScore = !!data.score?.value;
+  const scoreValue = parseScoreValue(data.score?.value);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       
@@ -39,15 +55,17 @@ export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<C
       <Card className="h-full relative overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg p-0">
           <div className="flex flex-col md:flex-row h-full">
             {/* Score Section (Left) */}
-            <div className="md:w-1/3 bg-gray-50 dark:bg-gray-800/50 p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 relative">
+            {hasScore && (
+              <div className="md:w-1/3 bg-gray-50 dark:bg-gray-800/50 p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 relative">
                <ScoreGauge 
-                 value={Number(data.score.value)} 
-                 band={`Classe ${data.score.class}`}
-                 riskText={data.score.riskText}
+                 value={scoreValue}
+                 band={data.score?.class ? `Classe ${data.score.class}` : undefined}
+                 riskText={data.score?.riskText}
                  label="SCORE"
                  simpleMode
                />
-            </div>
+              </div>
+            )}
 
             {/* Info Section (Right) */}
             <div className="flex-1 p-6">
@@ -127,6 +145,13 @@ export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<C
           subtitle="Últimos meses"
           color="blue"
           icon={<Search className="w-5 h-5" />}
+        />
+        <SummaryCard
+          title="Ações Judiciais"
+          value={data.totalLegalActions || 0}
+          subtitle={(data.totalLegalActions || 0) > 0 ? "Constam registros" : "Nada consta"}
+          color={(data.totalLegalActions || 0) > 0 ? "gray" : "green"}
+          icon={<Gavel className="w-5 h-5" />}
         />
       </div>
 
@@ -209,6 +234,38 @@ export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<C
                 <TableCell>{q.date}</TableCell>
                 <TableCell>{q.entity}</TableCell>
                 <TableCell>{q.cityState}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </StrategySectionWrapper>
+
+      {/* Legal Actions */}
+      <StrategySectionWrapper
+         title="Detalhamento de Ações Judiciais"
+         icon={<Gavel className="w-5 h-5 text-purple-500" />}
+         count={data.legalActions?.length || 0}
+         isEmpty={!data.legalActions || data.legalActions.length === 0}
+         emptyMessage="Nenhuma ação judicial encontrada."
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+               <TableHead>Data</TableHead>
+               <TableHead>Tipo</TableHead>
+               <TableHead>Origem</TableHead>
+               <TableHead>Detalhes</TableHead>
+               <TableHead className="text-right">Valor</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.legalActions?.map((action, idx) => (
+              <TableRow key={idx}>
+                <TableCell>{action.date}</TableCell>
+                <TableCell className="font-medium">{action.type}</TableCell>
+                <TableCell>{action.origin}</TableCell>
+                <TableCell>{action.details}</TableCell>
+                <TableCell className="text-right font-bold text-purple-600">{formatCurrency(String(action.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
