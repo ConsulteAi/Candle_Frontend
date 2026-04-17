@@ -166,17 +166,20 @@ interface RelativeItem { name: string; document: string; type: string; relation:
 // Completa Plus
 export interface CompletaPlusCpfResult extends BaseStandardResult {
   totalQueries: number;
+  totalLegalActions?: number;
   person: BasePerson & {
     revenueStatus: string;
     email: string;
     gender: string;
   };
   queries: Array<{ date: string; entity: string }>;
+  legalActions?: BaseLegalAction[];
   veicular: any;
 }
 
 export interface CompletaPlusCnpjResult extends Omit<BaseStandardResult, 'addresses'> {
   totalQueries: number;
+  totalLegalActions?: number;
   company: BaseCompany & {
     email: string;
     phone: string;
@@ -188,6 +191,7 @@ export interface CompletaPlusCnpjResult extends Omit<BaseStandardResult, 'addres
     riskText: string;
   };
   queries: Array<{ date: string; entity: string; cityState: string }>;
+  legalActions?: BaseLegalAction[];
 }
 
 // Boa Vista

@@ -6,7 +6,7 @@ import {
   Calendar, 
   Mail,
   AlertTriangle,
-  CheckCircle2
+  Gavel
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
 import { formatDisplayDate } from '@/lib/utils';
@@ -86,7 +86,7 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
       />
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
          <SummaryCard 
           title="Dívidas Negativadas"
           value={data.totalDebts}
@@ -100,6 +100,13 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
           subtitle="Últimos meses"
           color="blue"
           icon={<Search className="w-5 h-5" />}
+        />
+        <SummaryCard 
+          title="Ações Judiciais"
+          value={data.totalLegalActions || 0}
+          subtitle={(data.totalLegalActions || 0) > 0 ? "Constam registros" : "Nada consta"}
+          color={(data.totalLegalActions || 0) > 0 ? "gray" : "green"}
+          icon={<Gavel className="w-5 h-5" />}
         />
       </div>
 
@@ -151,6 +158,38 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
               <TableRow key={idx}>
                 <TableCell>{q.date}</TableCell>
                 <TableCell>{q.entity}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </StrategySectionWrapper>
+
+      {/* Legal Actions */}
+      <StrategySectionWrapper
+         title="Detalhamento de Ações Judiciais"
+         icon={<Gavel className="w-5 h-5 text-purple-500" />}
+         count={data.legalActions?.length || 0}
+         isEmpty={!data.legalActions || data.legalActions.length === 0}
+         emptyMessage="Nenhuma ação judicial encontrada."
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+               <TableHead>Data</TableHead>
+               <TableHead>Tipo</TableHead>
+               <TableHead>Origem</TableHead>
+               <TableHead>Detalhes</TableHead>
+               <TableHead className="text-right">Valor</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.legalActions?.map((action, idx) => (
+              <TableRow key={idx}>
+                <TableCell>{action.date}</TableCell>
+                <TableCell className="font-medium">{action.type}</TableCell>
+                <TableCell>{action.origin}</TableCell>
+                <TableCell>{action.details}</TableCell>
+                <TableCell className="text-right font-bold text-purple-600">{formatCurrency(String(action.value))}</TableCell>
               </TableRow>
             ))}
           </TableBody>
