@@ -33,6 +33,21 @@ import { StrategyContacts } from './components/StrategyContacts';
 export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<CompletaPlusCnpjResult>) {
   if (!data) return null;
 
+  const parseScoreValue = (value?: string) => {
+    if (!value) return 0;
+
+    const normalized = value
+      .replace(/[^\d,.-]/g, '')
+      .replace(/\.(?=\d{3}(\D|$))/g, '')
+      .replace(',', '.');
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const hasScore = !!data.score?.value;
+  const scoreValue = parseScoreValue(data.score?.value);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       
@@ -40,15 +55,17 @@ export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<C
       <Card className="h-full relative overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg p-0">
           <div className="flex flex-col md:flex-row h-full">
             {/* Score Section (Left) */}
-            <div className="md:w-1/3 bg-gray-50 dark:bg-gray-800/50 p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 relative">
+            {hasScore && (
+              <div className="md:w-1/3 bg-gray-50 dark:bg-gray-800/50 p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 relative">
                <ScoreGauge 
-                 value={Number(data.score.value)} 
-                 band={`Classe ${data.score.class}`}
-                 riskText={data.score.riskText}
+                 value={scoreValue}
+                 band={data.score?.class ? `Classe ${data.score.class}` : undefined}
+                 riskText={data.score?.riskText}
                  label="SCORE"
                  simpleMode
                />
-            </div>
+              </div>
+            )}
 
             {/* Info Section (Right) */}
             <div className="flex-1 p-6">

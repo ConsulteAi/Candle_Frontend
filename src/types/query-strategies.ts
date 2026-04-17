@@ -172,6 +172,12 @@ export interface CompletaPlusCpfResult extends BaseStandardResult {
     email: string;
     gender: string;
   };
+  score?: {
+    value: string;
+    class?: string;
+    riskText?: string;
+    informant?: string;
+  };
   queries: Array<{ date: string; entity: string }>;
   legalActions?: BaseLegalAction[];
   veicular: any;

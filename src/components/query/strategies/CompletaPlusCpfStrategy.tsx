@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/glass-table";
+import { ScoreGauge } from './components/ScoreGauge';
 import { InfoBox } from './components/InfoBox';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategyHeader } from './components/StrategyHeader';
@@ -29,48 +30,78 @@ import { StrategyContacts } from './components/StrategyContacts';
 export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<CompletaPlusCpfResult>) {
   if (!data) return null;
 
+  const parseScoreValue = (value?: string) => {
+    if (!value) return 0;
+
+    const normalized = value
+      .replace(/[^\d,.-]/g, '')
+      .replace(/\.(?=\d{3}(\D|$))/g, '')
+      .replace(',', '.');
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const hasScore = !!data.score?.value;
+  const scoreValue = parseScoreValue(data.score?.value);
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       
-      {/* Header Info */}
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
-         <StrategyHeader
-            title={data.person.name}
-            protocol={data.protocol}
-            status={data.person.revenueStatus}
-            statusVariant={data.person.revenueStatus === 'REGULAR' ? 'success' : 'warning'}
-            pdfUrl={data.pdf}
-                  queryId={queryId}
-         />
-         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
-             <InfoBox 
-               label="Documento" 
-               value={data.person.document}
-               icon={<User className="w-4 h-4 text-primary" />}
-             />
-             <InfoBox 
-               label="Nascimento" 
-               value={`${formatDisplayDate(data.person.birthDate)} ${data.person.gender ? `(${data.person.gender})` : ''}`}
-               icon={<Calendar className="w-4 h-4 text-primary" />}
-             />
-             {data.person.email && (
+      <div className="grid md:grid-cols-12 gap-6">
+        {hasScore && (
+          <div className="md:col-span-4">
+            <ScoreGauge
+              value={scoreValue}
+              band={data.score?.class ? `Classe ${data.score.class}` : undefined}
+              riskText={data.score?.riskText}
+              label="SCORE"
+            />
+          </div>
+        )}
+
+        {/* Header Info */}
+        <div className={hasScore ? 'md:col-span-8' : 'md:col-span-12'}>
+          <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
+            <StrategyHeader
+                title={data.person.name}
+                protocol={data.protocol}
+                status={data.person.revenueStatus}
+                statusVariant={data.person.revenueStatus === 'REGULAR' ? 'success' : 'warning'}
+                pdfUrl={data.pdf}
+                      queryId={queryId}
+            />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
                 <InfoBox 
-                  label="Email" 
-                  value={data.person.email}
-                  icon={<Mail className="w-4 h-4 text-primary" />}
+                  label="Documento" 
+                  value={data.person.document}
+                  icon={<User className="w-4 h-4 text-primary" />}
                 />
-             )}
-             {data.person.motherName && (
-               <div className="lg:col-span-2">
-                 <InfoBox 
-                   label="Nome da Mãe" 
-                   value={data.person.motherName}
-                   icon={<User className="w-4 h-4 text-gray-400" />}
-                 />
-               </div>
-             )}
-         </div>
-      </Card>
+                <InfoBox 
+                  label="Nascimento" 
+                  value={`${formatDisplayDate(data.person.birthDate)} ${data.person.gender ? `(${data.person.gender})` : ''}`}
+                  icon={<Calendar className="w-4 h-4 text-primary" />}
+                />
+                {data.person.email && (
+                    <InfoBox 
+                      label="Email" 
+                      value={data.person.email}
+                      icon={<Mail className="w-4 h-4 text-primary" />}
+                    />
+                )}
+                {data.person.motherName && (
+                  <div className="lg:col-span-2">
+                    <InfoBox 
+                      label="Nome da Mãe" 
+                      value={data.person.motherName}
+                      icon={<User className="w-4 h-4 text-gray-400" />}
+                    />
+                  </div>
+                )}
+            </div>
+          </Card>
+        </div>
+      </div>
 
       {/* Contacts if available */}
       <StrategyContacts 
