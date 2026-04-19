@@ -382,6 +382,180 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'maturities', type: 'Array<{ code, description, value, percentage, isRestrictive, months }>', description: 'Faixas de vencimento.' },
     ],
   },
+  marketRestrictions: {
+    name: 'marketRestrictions',
+    description: 'Enriquecimento comercial opcional vindo da consulta complementar EHM_DIVIDAS_MULTI.',
+    fields: [
+      { name: 'sourceQueryTypeCode', type: 'string', description: 'Codigo da consulta complementar executada (ex.: EHM_DIVIDAS_MULTI_CPF_PRO).' },
+      { name: 'sourceProviderCode', type: 'string', description: 'Codigo do provider da consulta complementar (ex.: EHM_CONSULTAS).' },
+      { name: 'available', type: 'boolean', description: 'Indica se o enriquecimento de mercado foi carregado com sucesso.' },
+      { name: 'summary', type: 'object', description: 'Resumo comercial com totais de SCPC, REFIN/PEFIN, protestos, cheques, CADIN e acoes legais.' },
+      { name: 'serasaSummary', type: 'object | undefined', description: 'Resumo de ocorrencias SERASA quando disponivel.' },
+      { name: 'scpcDebts', type: 'Array<object> | undefined', description: 'Ocorrencias de SCPC (quando houver dados).' },
+      { name: 'refinPefinDebts', type: 'Array<object> | undefined', description: 'Ocorrencias de REFIN/PEFIN (quando houver dados).' },
+      { name: 'protests', type: 'Array<object> | undefined', description: 'Ocorrencias de protestos comerciais da camada complementar.' },
+      { name: 'badChecks', type: 'Array<object> | undefined', description: 'Ocorrencias de cheques sem fundos da camada complementar.' },
+      { name: 'cadin', type: 'Array<object> | undefined', description: 'Ocorrencias de CADIN da camada complementar.' },
+      { name: 'legalActions', type: 'Array<object> | undefined', description: 'Acoes legais retornadas pela camada complementar.' },
+      { name: 'rawSections', type: 'object | undefined', description: 'Recortes minimos de blocos brutos (serasa e siccf).' },
+    ],
+  },
+  ehmFinancialSummary: {
+    name: 'financialSummary',
+    description: 'Resumo financeiro consolidado das consultas EHM.',
+    fields: [
+      { name: 'totalDebts', type: 'number', description: 'Campo de compatibilidade tecnica; pode ser derivado de agregacao interna.' },
+      { name: 'totalScpcDebts', type: 'number', description: 'Quantidade de ocorrencias SCPC.' },
+      { name: 'totalRefinPefinDebts', type: 'number', description: 'Quantidade de ocorrencias REFIN/PEFIN.' },
+      { name: 'totalProtests', type: 'number', description: 'Quantidade de protestos.' },
+      { name: 'totalBadChecks', type: 'number', description: 'Quantidade de ocorrencias de cheques sem fundos.' },
+      { name: 'totalCadin', type: 'number', description: 'Quantidade de ocorrencias em CADIN.' },
+      { name: 'totalLegalActions', type: 'number', description: 'Quantidade de acoes legais.' },
+      { name: 'totalSerasaOccurrences', type: 'number', description: 'Quantidade total de ocorrencias SERASA.' },
+      { name: 'hasCommercialRestrictions', type: 'boolean | undefined', description: 'Sinaliza presenca de restricoes comerciais relevantes.' },
+    ],
+  },
+  scpcDebts: {
+    name: 'scpcDebts[]',
+    description: 'Ocorrencias SCPC retornadas pela DIVIDAS_MULTI.',
+    fields: [
+      { name: 'occurrenceDate', type: 'string', description: 'Data da ocorrencia.' },
+      { name: 'debtorType', type: 'string', description: 'Tipo do devedor.' },
+      { name: 'creditorName', type: 'string', description: 'Nome do credor.' },
+      { name: 'value', type: 'string | number', description: 'Valor da ocorrencia.' },
+      { name: 'city', type: 'string', description: 'Cidade da ocorrencia.' },
+      { name: 'state', type: 'string', description: 'UF da ocorrencia.' },
+      { name: 'contract', type: 'string', description: 'Contrato/referencia da ocorrencia.' },
+      { name: 'availabilityDate', type: 'string', description: 'Data de disponibilizacao.' },
+    ],
+  },
+  refinPefinDebts: {
+    name: 'refinPefinDebts[]',
+    description: 'Ocorrencias REFIN/PEFIN retornadas pela DIVIDAS_MULTI.',
+    fields: [
+      { name: 'date', type: 'string', description: 'Data da ocorrencia.' },
+      { name: 'value', type: 'string | number', description: 'Valor da ocorrencia.' },
+      { name: 'origin', type: 'string', description: 'Origem consolidada (prioriza RazaoSocial).' },
+      { name: 'contract', type: 'string', description: 'Contrato/referencia.' },
+      { name: 'informant', type: 'string | undefined', description: 'Fonte informante conforme campo Tipo do provider.' },
+      { name: 'institutionDocument', type: 'string | undefined', description: 'Documento da instituicao, quando fornecido.' },
+      { name: 'originDocument', type: 'string | undefined', description: 'Documento de origem, quando fornecido.' },
+      { name: 'guarantor', type: 'string | undefined', description: 'Garantidor da operacao, quando fornecido.' },
+    ],
+  },
+  serasaSummary: {
+    name: 'serasaSummary',
+    description: 'Resumo sintetico de ocorrencias SERASA.',
+    fields: [
+      { name: 'firstOccurrenceDate', type: 'string | undefined', description: 'Data da primeira ocorrencia.' },
+      { name: 'lastOccurrenceDate', type: 'string | undefined', description: 'Data da ultima ocorrencia.' },
+      { name: 'totalOccurrences', type: 'number', description: 'Quantidade total de ocorrencias.' },
+    ],
+  },
+  rawSections: {
+    name: 'rawSections',
+    description: 'Recortes minimos do payload bruto preservados para uso interno/PDF.',
+    fields: [
+      { name: 'serasa', type: 'object | undefined', description: 'Trecho bruto SERASA.' },
+      { name: 'siccf', type: 'object | undefined', description: 'Trecho bruto SICCF.' },
+    ],
+  },
+  ehmMessages: {
+    name: 'messages[]',
+    description: 'Mensagens retornadas pelo provider EHM.',
+    fields: [
+      { name: 'value', type: 'string', description: 'Mensagem textual.' },
+    ],
+  },
+  notaries: {
+    name: 'notaries[]',
+    description: 'Agrupamento de titulos por cartorio no Protesto Detalhado SP.',
+    fields: [
+      { name: 'state', type: 'string', description: 'UF do cartorio.' },
+      { name: 'city', type: 'string', description: 'Cidade do cartorio.' },
+      { name: 'notaryNumber', type: 'string', description: 'Numero do cartorio.' },
+      { name: 'notaryName', type: 'string', description: 'Nome do cartorio.' },
+      { name: 'address', type: 'string', description: 'Endereco do cartorio.' },
+      { name: 'district', type: 'string', description: 'Bairro do cartorio.' },
+      { name: 'phone', type: 'string', description: 'Telefone de contato.' },
+      { name: 'whatsapp', type: 'string | undefined', description: 'WhatsApp do cartorio, quando informado.' },
+      { name: 'ibgeCode', type: 'string', description: 'Codigo IBGE do municipio.' },
+      { name: 'totalProtests', type: 'number', description: 'Total de titulos vinculados ao cartorio.' },
+      { name: 'titles', type: 'Array<any>', description: 'Lista de titulos retornados para o cartorio.' },
+    ],
+  },
+  cadinSummary: {
+    name: 'summary',
+    description: 'Resumo da consulta CADIN.',
+    fields: [
+      { name: 'document', type: 'string', description: 'Documento consultado.' },
+      { name: 'name', type: 'string', description: 'Nome/Razao social consultada.' },
+      { name: 'personType', type: 'string', description: 'Tipo de pessoa (PF/PJ).' },
+      { name: 'totalDebts', type: 'number', description: 'Quantidade total de ocorrencias.' },
+      { name: 'totalValue', type: 'number', description: 'Valor total consolidado das ocorrencias.' },
+    ],
+  },
+  ehmLocation: {
+    name: 'location',
+    description: 'Bloco de localizacao da consulta EHM.',
+    fields: [
+      { name: 'city', type: 'string | undefined', description: 'Cidade principal encontrada.' },
+      { name: 'state', type: 'string | undefined', description: 'UF principal encontrada.' },
+      { name: 'addresses', type: 'Array<any> | undefined', description: 'Lista de enderecos relacionados.' },
+    ],
+  },
+  estimatedRevenue: {
+    name: 'estimatedRevenue',
+    description: 'Faturamento presumido para consultas PJ EHM.',
+    fields: [
+      { name: 'range', type: 'string', description: 'Faixa de faturamento estimado.' },
+      { name: 'annualRevenue', type: 'number', description: 'Valor anual estimado.' },
+      { name: 'message', type: 'string | undefined', description: 'Mensagem complementar quando fornecida.' },
+    ],
+  },
+  dashboardSummary: {
+    name: 'dashboardSummary',
+    description: 'Resumo executivo para visualizacao em dashboard.',
+    fields: [
+      { name: 'status', type: 'string | undefined', description: 'Status executivo calculado.' },
+      { name: 'highlights', type: 'Array<string> | undefined', description: 'Lista de destaques principais.' },
+    ],
+  },
+  decision: {
+    name: 'decision',
+    description: 'Recomendacao/decisao de credito da familia Rating.',
+    fields: [
+      { name: 'status', type: 'string | undefined', description: 'Decisao principal sugerida.' },
+      { name: 'reason', type: 'string | undefined', description: 'Motivo principal da decisao.' },
+    ],
+  },
+  creditLimitSuggestion: {
+    name: 'creditLimitSuggestion',
+    description: 'Sugestao de limite de credito da familia Rating.',
+    fields: [
+      { name: 'value', type: 'number', description: 'Valor sugerido de limite.' },
+      { name: 'currency', type: 'string | undefined', description: 'Moeda de referencia.' },
+    ],
+  },
+  serasaDebts: {
+    name: 'serasaDebts[]',
+    description: 'Ocorrencias de debitos SERASA nas consultas EHM_SERASA.',
+    fields: [
+      { name: 'creditor', type: 'string', description: 'Credor da ocorrencia.' },
+      { name: 'dueDate', type: 'string', description: 'Data de vencimento.' },
+      { name: 'type', type: 'string', description: 'Tipo da ocorrencia.' },
+      { name: 'contract', type: 'string', description: 'Contrato/referencia.' },
+      { name: 'value', type: 'string | number', description: 'Valor da ocorrencia.' },
+      { name: 'inclusionDate', type: 'string', description: 'Data de inclusao no SERASA.' },
+    ],
+  },
+  preservedRawBlocks: {
+    name: 'preservedRawBlocks',
+    description: 'Blocos de payload bruto preservados no result parseado para uso interno e PDF.',
+    fields: [
+      { name: 'details', type: 'Array<string>', description: 'Nomes dos blocos preservados para a estrategia.' },
+    ],
+  },
 };
 
 const commonRoot: FieldDoc[] = [
@@ -403,6 +577,12 @@ const raioXScrRoot: FieldDoc[] = [
   { name: 'hasRestrictions', type: 'boolean', description: 'true quando expiredCredit.value + loss.value > 0.' },
   { name: 'totalRestrictiveValue', type: 'number', description: 'Soma de expiredCredit.value + loss.value.' },
   { name: 'product', type: 'string | undefined', description: 'Nome completo do produto retornado (HEADER.INFORMACOES_RETORNO.PRODUTO).' },
+];
+
+const raioXScrEnhancedRoot: FieldDoc[] = [
+  ...raioXScrRoot,
+  { name: 'marketRestrictionsUnavailable', type: 'boolean | undefined', description: 'Sinaliza indisponibilidade da consulta complementar de mercado.' },
+  { name: 'marketRestrictionsMessage', type: 'string | undefined', description: 'Mensagem resumida explicando indisponibilidade do enriquecimento comercial.' },
 ];
 
 const scrRoot: FieldDoc[] = [
@@ -459,8 +639,124 @@ const queryTypeDocs: QueryTypeDoc[] = [
   { code: 'REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PJ', title: 'Realtime MAX SPC Serasa BVS Protesto PJ', input: 'CNPJ', summary: 'Consulta PJ com bloco de syntheticProtests.', rootFields: commonRoot, blocks: getBlocks(['company', 'alerts', 'debts', 'syntheticProtests', 'protests', 'badChecks']) },
   { code: 'MAX_BRASIL_SCORE_BVS_BASICA_PF', title: 'MAX Brasil Score BVS Basica PF', input: 'CPF', summary: 'Consulta PF sem score, com restricoes basicas completas.', rootFields: commonRoot, blocks: getBlocks(['person', 'alerts', 'debts', 'protests', 'badChecks']) },
   { code: 'MAX_BRASIL_SCORE_BVS_BASICA_PJ', title: 'MAX Brasil Score BVS Basica PJ', input: 'CNPJ', summary: 'Consulta PJ sem score; campo protests[].type e relevante.', rootFields: commonRoot, blocks: getBlocks(['company', 'alerts', 'debts', 'protests', 'badChecks']) },
-  { code: 'RAIO_X_CREDITO_RATING_SCR_PF', title: 'Raio X Credito Rating SCR PF', input: 'CPF', summary: 'Consulta SCR detalhada PF com score, resumo de carteiras, operacoes e blocos opcionais de enriquecimento.', rootFields: raioXScrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXPerson', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails']) },
-  { code: 'RAIO_X_CREDITO_RATING_SCR_PJ', title: 'Raio X Credito Rating SCR PJ', input: 'CNPJ', summary: 'Consulta SCR detalhada PJ com score, resumo de carteiras, operacoes e blocos opcionais de enriquecimento.', rootFields: raioXScrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails']) },
+  { code: 'RAIO_X_CREDITO_RATING_SCR_PF', title: 'Raio X Credito Rating SCR PF', input: 'CPF', summary: 'Consulta SCR detalhada PF com enriquecimento complementar de mercado (DIVIDAS_MULTI) quando disponivel.', rootFields: raioXScrEnhancedRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXPerson', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions']) },
+  { code: 'RAIO_X_CREDITO_RATING_SCR_PJ', title: 'Raio X Credito Rating SCR PJ', input: 'CNPJ', summary: 'Consulta SCR detalhada PJ com enriquecimento complementar de mercado (DIVIDAS_MULTI) quando disponivel.', rootFields: raioXScrEnhancedRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions']) },
+  { code: 'EHM_DIVIDAS_MULTI_CPF_PRO', title: 'EHM Dividas Multi CPF Pro', input: 'CPF', summary: 'Consulta comercial agregada EHM com blocos SCPC, REFIN/PEFIN, protestos, CADIN e resumo SERASA para PF.', rootFields: [], blocks: getBlocks(['person', 'ehmFinancialSummary', 'scpcDebts', 'refinPefinDebts', 'protests', 'badChecks', 'cadin', 'legalActions', 'serasaSummary', 'rawSections']) },
+  { code: 'EHM_DIVIDAS_MULTI_CNPJ_PRO', title: 'EHM Dividas Multi CNPJ Pro', input: 'CNPJ', summary: 'Consulta comercial agregada EHM com blocos SCPC, REFIN/PEFIN, protestos, CADIN e resumo SERASA para PJ.', rootFields: [], blocks: getBlocks(['company', 'ehmFinancialSummary', 'scpcDebts', 'refinPefinDebts', 'protests', 'badChecks', 'cadin', 'legalActions', 'serasaSummary', 'rawSections']) },
+  { code: 'EHM_PROTESTO_NACIONAL_CPF', title: 'EHM Protesto Nacional CPF', input: 'CPF', summary: 'Consulta EHM de protestos nacionais para CPF com retorno tolerante a respostas vazias.', rootFields: [
+    { name: 'document', type: 'string', description: 'Documento consultado.' },
+    { name: 'consultedAt', type: 'string', description: 'Data/hora da consulta.' },
+    { name: 'status', type: 'string', description: 'Status geral retornado pelo provider.' },
+    { name: 'totalProtests', type: 'number', description: 'Total de protestos encontrados.' },
+  ], blocks: [
+    ...getBlocks(['ehmMessages']),
+    {
+      name: 'protests[]',
+      description: 'Ocorrencias de protesto retornadas pelo provider (estrutura pode variar por resposta).',
+      fields: [
+        { name: 'rawData', type: 'object', description: 'Payload bruto do item de protesto.' },
+      ],
+    },
+  ] },
+  { code: 'EHM_PROTESTO_NACIONAL_CNPJ', title: 'EHM Protesto Nacional CNPJ', input: 'CNPJ', summary: 'Consulta EHM de protestos nacionais para CNPJ com retorno tolerante a respostas vazias.', rootFields: [
+    { name: 'document', type: 'string', description: 'Documento consultado.' },
+    { name: 'consultedAt', type: 'string', description: 'Data/hora da consulta.' },
+    { name: 'status', type: 'string', description: 'Status geral retornado pelo provider.' },
+    { name: 'totalProtests', type: 'number', description: 'Total de protestos encontrados.' },
+  ], blocks: [
+    ...getBlocks(['ehmMessages']),
+    {
+      name: 'protests[]',
+      description: 'Ocorrencias de protesto retornadas pelo provider (estrutura pode variar por resposta).',
+      fields: [
+        { name: 'rawData', type: 'object', description: 'Payload bruto do item de protesto.' },
+      ],
+    },
+  ] },
+  { code: 'EHM_CADIN_CPF', title: 'EHM CADIN CPF', input: 'CPF', summary: 'Consulta EHM de CADIN para CPF com resumo consolidado e lista de ocorrencias.', rootFields: [], blocks: getBlocks(['cadinSummary', 'cadin']) },
+  { code: 'EHM_CADIN_CNPJ', title: 'EHM CADIN CNPJ', input: 'CNPJ', summary: 'Consulta EHM de CADIN para CNPJ com resumo consolidado e lista de ocorrencias.', rootFields: [], blocks: getBlocks(['cadinSummary', 'cadin']) },
+  { code: 'EHM_PROTESTO_DETALHADO_SP_CPF', title: 'EHM Protesto Detalhado SP CPF', input: 'CPF', summary: 'Consulta detalhada IEPTB/SP com visao por titulo e por cartorio para CPF.', rootFields: [
+    { name: 'document', type: 'string', description: 'Documento consultado.' },
+    { name: 'consultedAt', type: 'string', description: 'Data/hora da consulta no provider EHM.' },
+    { name: 'elapsedTime', type: 'string', description: 'Tempo total de processamento informado pelo provider.' },
+    { name: 'totalProtests', type: 'number', description: 'Total de protestos encontrados no estado de SP.' },
+  ], blocks: [
+    {
+      name: 'protests[]',
+      description: 'Lista achatada de titulos protestados em SP.',
+      fields: [
+        { name: 'state', type: 'string', description: 'UF da ocorrencia.' },
+        { name: 'city', type: 'string', description: 'Cidade da ocorrencia.' },
+        { name: 'notaryNumber', type: 'string', description: 'Numero do cartorio.' },
+        { name: 'notaryName', type: 'string', description: 'Nome do cartorio.' },
+        { name: 'protestDate', type: 'string', description: 'Data do protesto.' },
+        { name: 'dueDate', type: 'string', description: 'Data de vencimento do titulo.' },
+        { name: 'value', type: 'string | number', description: 'Valor do titulo protestado.' },
+        { name: 'hasConsent', type: 'boolean', description: 'Indica se o titulo possui anuencia.' },
+        { name: 'hasRenegotiation', type: 'boolean', description: 'Indica se houve renegociacao.' },
+        { name: 'key', type: 'string', description: 'Chave unica da ocorrencia.' },
+      ],
+    },
+    ...getBlocks(['notaries']),
+  ] },
+  { code: 'EHM_PROTESTO_DETALHADO_SP_CNPJ', title: 'EHM Protesto Detalhado SP CNPJ', input: 'CNPJ', summary: 'Consulta detalhada IEPTB/SP com visao por titulo e por cartorio para CNPJ.', rootFields: [
+    { name: 'document', type: 'string', description: 'Documento consultado.' },
+    { name: 'consultedAt', type: 'string', description: 'Data/hora da consulta no provider EHM.' },
+    { name: 'elapsedTime', type: 'string', description: 'Tempo total de processamento informado pelo provider.' },
+    { name: 'totalProtests', type: 'number', description: 'Total de protestos encontrados no estado de SP.' },
+  ], blocks: [
+    {
+      name: 'protests[]',
+      description: 'Lista achatada de titulos protestados em SP.',
+      fields: [
+        { name: 'state', type: 'string', description: 'UF da ocorrencia.' },
+        { name: 'city', type: 'string', description: 'Cidade da ocorrencia.' },
+        { name: 'notaryNumber', type: 'string', description: 'Numero do cartorio.' },
+        { name: 'notaryName', type: 'string', description: 'Nome do cartorio.' },
+        { name: 'protestDate', type: 'string', description: 'Data do protesto.' },
+        { name: 'dueDate', type: 'string', description: 'Data de vencimento do titulo.' },
+        { name: 'value', type: 'string | number', description: 'Valor do titulo protestado.' },
+        { name: 'hasConsent', type: 'boolean', description: 'Indica se o titulo possui anuencia.' },
+        { name: 'hasRenegotiation', type: 'boolean', description: 'Indica se houve renegociacao.' },
+        { name: 'key', type: 'string', description: 'Chave unica da ocorrencia.' },
+      ],
+    },
+    ...getBlocks(['notaries']),
+  ] },
+  { code: 'EHM_BOA_VISTA_ACERTA_ESSENCIAL_POSITIVO_PF', title: 'EHM Boa Vista Acerta Essencial Positivo PF', input: 'CPF', summary: 'Consulta Boa Vista PF com score, resumo financeiro, localizacao e blocos ricos preservados.', rootFields: [], blocks: [
+    ...getBlocks(['person', 'score', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedIncome', 'dashboardSummary']),
+    {
+      name: 'preservedRawBlocks',
+      description: 'Blocos preservados: painelControlePF, scoresRaw, consultasRaw, participacoesEmpresas, rendaPresumida, listaPainelControle.',
+      fields: sharedBlocks.preservedRawBlocks.fields,
+    },
+  ] },
+  { code: 'EHM_BOA_VISTA_DEFINE_RISCO_POSITIVO_PJ', title: 'EHM Boa Vista Define Risco Positivo PJ', input: 'CNPJ', summary: 'Consulta Boa Vista PJ com score, resumo financeiro, localizacao e blocos ricos preservados.', rootFields: [], blocks: [
+    ...getBlocks(['company', 'score', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedRevenue', 'dashboardSummary']),
+    {
+      name: 'preservedRawBlocks',
+      description: 'Blocos preservados: painelControle, painelControlePositivo, scoresRaw, quadroSocietario, faturamentoPresumido, consultasRaw.',
+      fields: sharedBlocks.preservedRawBlocks.fields,
+    },
+  ] },
+  { code: 'EHM_RATING_BANCARIO_BOA_VISTA_PF', title: 'EHM Rating Bancario Boa Vista PF', input: 'CPF', summary: 'Consulta Rating PF com decisao de credito, sugestao de limite e blocos preservados.', rootFields: [], blocks: [
+    ...getBlocks(['person', 'score', 'decision', 'creditLimitSuggestion', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedIncome']),
+    {
+      name: 'preservedRawBlocks',
+      description: 'Blocos preservados: dashboardSummary, painelControlePf, consultasRaw, rendaPresumida.',
+      fields: sharedBlocks.preservedRawBlocks.fields,
+    },
+  ] },
+  { code: 'EHM_RATING_BANCARIO_BOA_VISTA_PJ', title: 'EHM Rating Bancario Boa Vista PJ', input: 'CNPJ', summary: 'Consulta Rating PJ com decisao de credito, sugestao de limite e blocos preservados.', rootFields: [], blocks: [
+    ...getBlocks(['company', 'score', 'decision', 'creditLimitSuggestion', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedRevenue']),
+    {
+      name: 'preservedRawBlocks',
+      description: 'Blocos preservados: painelPositivo, painelControle, consultasRaw, quadroSocietario, faturamentoPresumido.',
+      fields: sharedBlocks.preservedRawBlocks.fields,
+    },
+  ] },
+  { code: 'EHM_SERASA_PF', title: 'EHM Serasa PF', input: 'CPF', summary: 'Consulta Serasa PF com dividas analiticas (serasaDebts) e protestos.', rootFields: [], blocks: getBlocks(['person', 'ehmFinancialSummary', 'serasaDebts', 'protests']) },
+  { code: 'EHM_SERASA_PJ', title: 'EHM Serasa PJ', input: 'CNPJ', summary: 'Consulta Serasa PJ com dividas analiticas (serasaDebts) e protestos.', rootFields: [], blocks: getBlocks(['company', 'ehmFinancialSummary', 'serasaDebts', 'protests']) },
   { code: 'LOCALIZA_CPF_CNPJ', title: 'Localiza CPF CNPJ', input: 'CPF/CNPJ', summary: 'Consulta de enriquecimento cadastral e relacional.', rootFields: [{ name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' }], blocks: getBlocks(['basicInfo', 'contact', 'addresses', 'relations']) },
   { code: 'SCR_BACEN_PREMIUM_SCORE', title: 'SCR Bacen Premium Score', input: 'CPF/CNPJ', summary: 'Consulta SCR padrao com score e operacoes.', rootFields: scrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations']) },
   { code: 'COMPLETA_PLUS_BVS_ACOES_CPF', title: 'Completa Plus BVS Acoes CPF', input: 'CPF', summary: 'Consulta CPF com dividas e passagens comerciais.', rootFields: [
@@ -718,6 +1014,7 @@ export default function DocsPage() {
                 <ul className="space-y-1 text-xs text-gray-700 list-disc list-inside">
                   <li><span className="font-mono">queryId</span>: identificador unico para consultar depois por <span className="font-mono">GET /queries/:id</span>.</li>
                   <li><span className="font-mono">result</span>: dados completos da consulta (estrutura varia por tipo).</li>
+                  <li><span className="font-mono">pdf</span> nao e mais exposto no <span className="font-mono">result</span>; para baixar use <span className="font-mono">GET /queries/:id/pdf</span>.</li>
                   <li><span className="font-mono">price</span>: valor cobrado na execucao.</li>
                 </ul>
               </div>
