@@ -348,3 +348,97 @@ export interface MaxBrasilScoreBvsBasicaPfResult extends BaseStandardResult {
 export interface MaxBrasilScoreBvsBasicaPjResult extends BaseStandardResult {
   company: BaseCompany;
 }
+
+// Dividas Multi (EHM)
+export interface DividasMultiFinancialSummary {
+  // Compatibility field from provider aggregation. Avoid using as primary UI metric.
+  totalDebts: number;
+  totalScpcDebts: number;
+  totalRefinPefinDebts: number;
+  totalProtests: number;
+  totalBadChecks: number;
+  totalCadin: number;
+  totalLegalActions: number;
+  totalSerasaOccurrences: number;
+}
+
+export interface DividasMultiScpcDebt {
+  occurrenceDate: string;
+  debtorType: string;
+  creditorName: string;
+  value: string | number;
+  city: string;
+  state: string;
+  contract: string;
+  availabilityDate: string;
+}
+
+export interface DividasMultiRefinPefinDebt {
+  date: string;
+  value: string | number;
+  origin: string;
+  contract: string;
+  informant: string;
+  institutionDocument: string;
+  originDocument: string;
+  guarantor: string;
+}
+
+export interface DividasMultiProtest {
+  date: string;
+  value: string | number;
+  city: string;
+  state: string;
+  origin: string;
+  notary: string;
+}
+
+export interface DividasMultiBadCheck {
+  bankNumber: string;
+  quantity: string | number;
+  lastOccurrence: string;
+  branch: string;
+  city: string;
+  state: string;
+  alinea: string;
+}
+
+export interface DividasMultiCadinItem {
+  entity: string;
+  unit: string;
+  registrationNumber: string;
+  registrationDate: string;
+  value: string | number;
+  state: string;
+}
+
+export interface DividasMultiSerasaSummary {
+  firstOccurrenceDate: string;
+  lastOccurrenceDate: string;
+  totalOccurrences: number;
+}
+
+interface DividasMultiBaseResult {
+  protocol: string;
+  pdf?: string;
+  financialSummary: DividasMultiFinancialSummary;
+  scpcDebts: DividasMultiScpcDebt[];
+  refinPefinDebts: DividasMultiRefinPefinDebt[];
+  protests: DividasMultiProtest[];
+  badChecks: DividasMultiBadCheck[];
+  cadin: DividasMultiCadinItem[];
+  legalActions: Array<Record<string, unknown>>;
+  serasaSummary?: DividasMultiSerasaSummary;
+  rawSections: {
+    serasa?: Record<string, unknown>;
+    siccf?: Record<string, unknown>;
+  };
+}
+
+export interface DividasMultiCpfProResult extends DividasMultiBaseResult {
+  person: Pick<BasePerson, 'name' | 'document' | 'birthDate' | 'motherName'>;
+}
+
+export interface DividasMultiCnpjProResult extends DividasMultiBaseResult {
+  company: Pick<BaseCompany, 'cnpj' | 'socialReason'>;
+}
