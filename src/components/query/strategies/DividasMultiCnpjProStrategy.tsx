@@ -345,26 +345,6 @@ export function DividasMultiCnpjProStrategy({
         </StrategySectionWrapper>
       )}
 
-      <StrategySectionWrapper
-        title="Raw Sections"
-        icon={<FileWarning className="w-5 h-5 text-gray-500" />}
-        isEmpty={false}
-      >
-        <div className="p-4 space-y-4">
-          <div>
-            <p className="text-sm font-semibold mb-2">serasa</p>
-            <pre className="text-xs bg-gray-50 border border-gray-100 rounded-lg p-3 overflow-x-auto">
-              {JSON.stringify(data.rawSections?.serasa || {}, null, 2)}
-            </pre>
-          </div>
-          <div>
-            <p className="text-sm font-semibold mb-2">siccf</p>
-            <pre className="text-xs bg-gray-50 border border-gray-100 rounded-lg p-3 overflow-x-auto">
-              {JSON.stringify(data.rawSections?.siccf || {}, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </StrategySectionWrapper>
     </div>
   );
 }
