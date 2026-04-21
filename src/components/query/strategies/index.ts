@@ -20,6 +20,8 @@ import { RealtimeMaxSpcSerasaBvsProtestoPfStrategy } from './RealtimeMaxSpcSeras
 import { RealtimeMaxSpcSerasaBvsProtestoPjStrategy } from './RealtimeMaxSpcSerasaBvsProtestoPjStrategy';
 import { MaxBrasilScoreBvsBasicaPfStrategy } from './MaxBrasilScoreBvsBasicaPfStrategy';
 import { MaxBrasilScoreBvsBasicaPjStrategy } from './MaxBrasilScoreBvsBasicaPjStrategy';
+import { DividasMultiCpfProStrategy } from './DividasMultiCpfProStrategy';
+import { DividasMultiCnpjProStrategy } from './DividasMultiCnpjProStrategy';
 import type { QueryStrategyProps } from '@/types/query-strategies';
 import React from 'react';
 
@@ -44,6 +46,10 @@ export const STRATEGIES: Record<string, React.ComponentType<QueryStrategyProps>>
   'REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PJ': RealtimeMaxSpcSerasaBvsProtestoPjStrategy,
   'MAX_BRASIL_SCORE_BVS_BASICA_PF': MaxBrasilScoreBvsBasicaPfStrategy,
   'MAX_BRASIL_SCORE_BVS_BASICA_PJ': MaxBrasilScoreBvsBasicaPjStrategy,
+  'DIVIDAS_MULTI_CPF_PRO': DividasMultiCpfProStrategy,
+  'DIVIDAS_MULTI_CNPJ_PRO': DividasMultiCnpjProStrategy,
+  'EHM_DIVIDAS_MULTI_CPF_PRO': DividasMultiCpfProStrategy,
+  'EHM_DIVIDAS_MULTI_CNPJ_PRO': DividasMultiCnpjProStrategy,
 };
 
 export const getStrategyComponent = (code: string): React.ComponentType<QueryStrategyProps> => {
@@ -72,3 +78,5 @@ export * from './RealtimeMaxSpcSerasaBvsProtestoPfStrategy';
 export * from './RealtimeMaxSpcSerasaBvsProtestoPjStrategy';
 export * from './MaxBrasilScoreBvsBasicaPfStrategy';
 export * from './MaxBrasilScoreBvsBasicaPjStrategy';
+export * from './DividasMultiCpfProStrategy';
+export * from './DividasMultiCnpjProStrategy';
