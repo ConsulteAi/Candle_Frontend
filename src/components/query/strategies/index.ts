@@ -22,6 +22,12 @@ import { MaxBrasilScoreBvsBasicaPfStrategy } from './MaxBrasilScoreBvsBasicaPfSt
 import { MaxBrasilScoreBvsBasicaPjStrategy } from './MaxBrasilScoreBvsBasicaPjStrategy';
 import { DividasMultiCpfProStrategy } from './DividasMultiCpfProStrategy';
 import { DividasMultiCnpjProStrategy } from './DividasMultiCnpjProStrategy';
+import { RaioXCreditoRatingScrStrategy } from './RaioXCreditoRatingScrStrategy';
+import { ProtestoNacionalPlusStrategy } from './ProtestoNacionalPlusStrategy';
+import { CadinStrategy } from './CadinStrategy';
+import { ProtestoDetalhadoSpStrategy } from './ProtestoDetalhadoSpStrategy';
+import { CommercialAnalysisPfStrategy } from './CommercialAnalysisPfStrategy';
+import { CommercialAnalysisPjStrategy } from './CommercialAnalysisPjStrategy';
 import type { QueryStrategyProps } from '@/types/query-strategies';
 import React from 'react';
 
@@ -48,8 +54,17 @@ export const STRATEGIES: Record<string, React.ComponentType<QueryStrategyProps>>
   'MAX_BRASIL_SCORE_BVS_BASICA_PJ': MaxBrasilScoreBvsBasicaPjStrategy,
   'DIVIDAS_MULTI_CPF_PRO': DividasMultiCpfProStrategy,
   'DIVIDAS_MULTI_CNPJ_PRO': DividasMultiCnpjProStrategy,
-  'EHM_DIVIDAS_MULTI_CPF_PRO': DividasMultiCpfProStrategy,
-  'EHM_DIVIDAS_MULTI_CNPJ_PRO': DividasMultiCnpjProStrategy,
+  'RAIO_X_CREDITO_RATING_SCR_PF': RaioXCreditoRatingScrStrategy,
+  'RAIO_X_CREDITO_RATING_SCR_PJ': RaioXCreditoRatingScrStrategy,
+  'PROTESTO_NACIONAL_PLUS': ProtestoNacionalPlusStrategy,
+  'CADIN': CadinStrategy,
+  'PROTESTO_DETALHADO_SP': ProtestoDetalhadoSpStrategy,
+  'BOA_VISTA_ACERTA_ESSENCIAL_POSITIVO_PF': CommercialAnalysisPfStrategy,
+  'BOA_VISTA_DEFINE_RISCO_POSITIVO_PJ': CommercialAnalysisPjStrategy,
+  'RATING_BANCARIO_BOA_VISTA_PF': CommercialAnalysisPfStrategy,
+  'RATING_BANCARIO_BOA_VISTA_PJ': CommercialAnalysisPjStrategy,
+  'SERASA_PF': CommercialAnalysisPfStrategy,
+  'SERASA_PJ': CommercialAnalysisPjStrategy,
 };
 
 export const getStrategyComponent = (code: string): React.ComponentType<QueryStrategyProps> => {
@@ -80,3 +95,9 @@ export * from './MaxBrasilScoreBvsBasicaPfStrategy';
 export * from './MaxBrasilScoreBvsBasicaPjStrategy';
 export * from './DividasMultiCpfProStrategy';
 export * from './DividasMultiCnpjProStrategy';
+export * from './RaioXCreditoRatingScrStrategy';
+export * from './ProtestoNacionalPlusStrategy';
+export * from './CadinStrategy';
+export * from './ProtestoDetalhadoSpStrategy';
+export * from './CommercialAnalysisPfStrategy';
+export * from './CommercialAnalysisPjStrategy';

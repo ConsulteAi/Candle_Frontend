@@ -14,6 +14,8 @@ import {
   FileSearch,
   FileDown,
   ChevronRight,
+  ShieldCheck,
+  Workflow,
 } from 'lucide-react';
 
 type FieldDoc = {
@@ -65,6 +67,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'status', type: 'string | undefined', description: 'Situacao cadastral.' },
       { name: 'email', type: 'string | undefined', description: 'Email institucional quando disponivel.' },
       { name: 'phone', type: 'string | undefined', description: 'Telefone institucional quando disponivel.' },
+      { name: 'address', type: 'object | undefined', description: 'Endereco completo (presente apenas em COMPLETA_PLUS_BVS_ACOES_CNPJ).' },
     ],
   },
   score: {
@@ -76,7 +79,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'riskText', type: 'string | undefined', description: 'Texto descritivo de risco.' },
       { name: 'risk', type: 'string | undefined', description: 'Texto de risco em tipos que nao usam riskText.' },
       { name: 'informant', type: 'string | undefined', description: 'Base informante (Bases I, II, III e IV).' },
-      { name: 'probability', type: 'string | undefined', description: 'Probabilidade de inadimplencia (quando existir).' },
+      { name: 'probability', type: 'string | undefined', description: 'Probabilidade de inadimplencia (apenas em REALTIME_PREMIUM_SCORE_PF).' },
       { name: 'band', type: 'string | undefined', description: 'Faixa de score em consultas SCR.' },
     ],
   },
@@ -176,7 +179,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
     fields: [
       { name: 'date', type: 'string', description: 'Data da consulta.' },
       { name: 'entity', type: 'string', description: 'Entidade que consultou.' },
-      { name: 'cityState', type: 'string | undefined', description: 'Cidade/UF da entidade.' },
+      { name: 'cityState', type: 'string | undefined', description: 'Cidade/UF da entidade (com fallback de campos alternativos em algumas familias).' },
     ],
   },
   partners: {
@@ -224,7 +227,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   contacts: {
     name: 'contacts[]',
-    description: 'Contatos relacionados vindos de CONTATOS.INFOCONTATOS (itens totalmente vazios sao descartados).',
+    description: 'Contatos relacionados retornados pela consulta.',
     fields: [
       { name: 'name', type: 'string', description: 'Nome do contato.' },
       { name: 'relation', type: 'string', description: 'Relacao com o consultado.' },
@@ -235,7 +238,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   emails: {
     name: 'emails[]',
-    description: 'Lista de emails vindos de EMAILS.INFOEMAILS.',
+    description: 'Lista de emails retornados pela consulta.',
     fields: [
       { name: 'value', type: 'string', description: 'Email encontrado.' },
     ],
@@ -252,7 +255,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   financialRestrictions: {
     name: 'financialRestrictions',
-    description: 'Consolidado de RESTRICOES_FINANCEIRAS.',
+    description: 'Consolidado de restricoes financeiras.',
     fields: [
       { name: 'count', type: 'number', description: 'Quantidade de restricoes.' },
       { name: 'totalValue', type: 'number', description: 'Valor total das restricoes.' },
@@ -262,7 +265,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   creditEngine: {
     name: 'creditEngine',
-    description: 'Resultado do motor de credito (MOTOR_CREDITO.OCORRENCIAS[0]).',
+    description: 'Resultado do motor de credito.',
     fields: [
       { name: 'situation', type: 'string', description: 'Situacao do motor de credito.' },
       { name: 'message', type: 'string', description: 'Mensagem de retorno.' },
@@ -277,7 +280,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   additionalDetails: {
     name: 'additionalDetails',
-    description: 'Metricas adicionais processadas de RELATORIO_SCR.',
+    description: 'Metricas adicionais processadas da consulta SCR.',
     fields: [
       { name: 'coobligationsValue', type: 'number', description: 'Valor de coobrigacoes.' },
       { name: 'coobligationsPercentage', type: 'number', description: 'Percentual de coobrigacoes.' },
@@ -384,10 +387,8 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   marketRestrictions: {
     name: 'marketRestrictions',
-    description: 'Enriquecimento comercial opcional vindo da consulta complementar DIVIDAS_MULTI.',
+    description: 'Enriquecimento comercial opcional retornado por consultas complementares.',
     fields: [
-      { name: 'sourceQueryTypeCode', type: 'string', description: 'Codigo da consulta complementar executada (ex.: DIVIDAS_MULTI_CPF_PRO).' },
-      { name: 'sourceProviderCode', type: 'string', description: 'Codigo do provider da consulta complementar.' },
       { name: 'available', type: 'boolean', description: 'Indica se o enriquecimento de mercado foi carregado com sucesso.' },
       { name: 'summary', type: 'object', description: 'Resumo comercial com totais de SCPC, REFIN/PEFIN, protestos, cheques, CADIN e acoes legais.' },
       { name: 'serasaSummary', type: 'object | undefined', description: 'Resumo de ocorrencias SERASA quando disponivel.' },
@@ -397,7 +398,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'badChecks', type: 'Array<object> | undefined', description: 'Ocorrencias de cheques sem fundos da camada complementar.' },
       { name: 'cadin', type: 'Array<object> | undefined', description: 'Ocorrencias de CADIN da camada complementar.' },
       { name: 'legalActions', type: 'Array<object> | undefined', description: 'Acoes legais retornadas pela camada complementar.' },
-      { name: 'rawSections', type: 'object | undefined', description: 'Recortes minimos de blocos brutos (serasa e siccf).' },
+      { name: 'rawSections', type: 'object | undefined', description: 'Recortes minimos de blocos brutos preservados internamente.' },
     ],
   },
   ehmFinancialSummary: {
@@ -437,7 +438,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'value', type: 'string | number', description: 'Valor da ocorrencia.' },
       { name: 'origin', type: 'string', description: 'Origem consolidada (prioriza RazaoSocial).' },
       { name: 'contract', type: 'string', description: 'Contrato/referencia.' },
-      { name: 'informant', type: 'string | undefined', description: 'Fonte informante conforme campo Tipo do provider.' },
+      { name: 'informant', type: 'string | undefined', description: 'Fonte informante conforme campo de origem retornado na consulta.' },
       { name: 'institutionDocument', type: 'string | undefined', description: 'Documento da instituicao, quando fornecido.' },
       { name: 'originDocument', type: 'string | undefined', description: 'Documento de origem, quando fornecido.' },
       { name: 'guarantor', type: 'string | undefined', description: 'Garantidor da operacao, quando fornecido.' },
@@ -454,7 +455,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   rawSections: {
     name: 'rawSections',
-    description: 'Recortes minimos do payload bruto preservados para uso interno/PDF.',
+    description: 'Recortes minimos do payload bruto preservados para uso interno e PDF.',
     fields: [
       { name: 'serasa', type: 'object | undefined', description: 'Trecho bruto SERASA.' },
       { name: 'siccf', type: 'object | undefined', description: 'Trecho bruto SICCF.' },
@@ -462,9 +463,9 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   ehmMessages: {
     name: 'messages[]',
-    description: 'Mensagens retornadas pelo provider da consulta.',
+    description: 'Mensagens retornadas pela consulta.',
     fields: [
-      { name: 'value', type: 'string', description: 'Mensagem textual.' },
+      { name: 'item', type: 'string', description: 'Mensagem textual.' },
     ],
   },
   notaries: {
@@ -479,6 +480,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'district', type: 'string', description: 'Bairro do cartorio.' },
       { name: 'phone', type: 'string', description: 'Telefone de contato.' },
       { name: 'whatsapp', type: 'string | undefined', description: 'WhatsApp do cartorio, quando informado.' },
+      { name: 'hasPublicWhatsapp', type: 'boolean | undefined', description: 'Indica se o WhatsApp pode ser exibido publicamente.' },
       { name: 'ibgeCode', type: 'string', description: 'Codigo IBGE do municipio.' },
       { name: 'totalProtests', type: 'number', description: 'Total de titulos vinculados ao cartorio.' },
       { name: 'titles', type: 'Array<any>', description: 'Lista de titulos retornados para o cartorio.' },
@@ -497,7 +499,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   ehmCadin: {
     name: 'cadin[]',
-    description: 'Ocorrencias de CADIN retornadas pelo provider da consulta.',
+    description: 'Ocorrencias de CADIN retornadas pela consulta.',
     fields: [
       { name: 'entity', type: 'string', description: 'Entidade/orgão credor.' },
       { name: 'unit', type: 'string', description: 'Unidade responsavel pelo registro.' },
@@ -513,6 +515,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
     fields: [
       { name: 'city', type: 'string | undefined', description: 'Cidade principal encontrada.' },
       { name: 'state', type: 'string | undefined', description: 'UF principal encontrada.' },
+      { name: 'phones', type: 'Array<string> | undefined', description: 'Telefones consolidados da localizacao.' },
       { name: 'addresses', type: 'Array<any> | undefined', description: 'Lista de enderecos relacionados.' },
     ],
   },
@@ -545,7 +548,12 @@ const sharedBlocks: Record<string, BlockDoc> = {
     name: 'creditLimitSuggestion',
     description: 'Sugestao de limite de credito da familia Rating.',
     fields: [
-      { name: 'value', type: 'number', description: 'Valor sugerido de limite.' },
+      { name: 'score', type: 'number | string | undefined', description: 'Score auxiliar da sugestao quando fornecido.' },
+      { name: 'text', type: 'string | undefined', description: 'Texto explicativo da sugestao.' },
+      { name: 'model', type: 'string | undefined', description: 'Modelo utilizado para a recomendacao.' },
+      { name: 'name', type: 'string | undefined', description: 'Nome exibivel da recomendacao.' },
+      { name: 'amount', type: 'number | string | undefined', description: 'Valor sugerido de limite.' },
+      { name: 'value', type: 'number | string | undefined', description: 'Alias de valor em algumas respostas.' },
       { name: 'currency', type: 'string | undefined', description: 'Moeda de referencia.' },
     ],
   },
@@ -579,16 +587,16 @@ const commonRoot: FieldDoc[] = [
 
 const raioXScrRoot: FieldDoc[] = [
   { name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' },
-  { name: 'document', type: 'string', description: 'CPF/CNPJ consultado (HEADER.PARAMETROS.CPFCNPJ).' },
-  { name: 'documentType', type: 'string', description: 'Tipo do documento (HEADER.RELATORIO_SCR.TIPO_DOCUMENTO): FISICA ou JURIDICA.' },
-  { name: 'consultationDateTime', type: 'string', description: 'Data e hora da consulta (HEADER.INFORMACOES_RETORNO.DATA_HORA_CONSULTA).' },
+  { name: 'document', type: 'string', description: 'CPF/CNPJ consultado.' },
+  { name: 'documentType', type: 'string', description: 'Tipo do documento: FISICA ou JURIDICA.' },
+  { name: 'consultationDateTime', type: 'string', description: 'Data e hora da consulta.' },
   { name: 'databaseDate', type: 'string', description: 'Competencia da base consultada (ex.: 08/2022).' },
   { name: 'relationshipStartDate', type: 'string', description: 'Data de inicio do relacionamento bancario.' },
   { name: 'institutionsCount', type: 'number', description: 'Quantidade de instituicoes financeiras com operacoes ativas.' },
   { name: 'operationsCount', type: 'number', description: 'Quantidade total de operacoes.' },
   { name: 'hasRestrictions', type: 'boolean', description: 'true quando expiredCredit.value + loss.value > 0.' },
   { name: 'totalRestrictiveValue', type: 'number', description: 'Soma de expiredCredit.value + loss.value.' },
-  { name: 'product', type: 'string | undefined', description: 'Nome completo do produto retornado (HEADER.INFORMACOES_RETORNO.PRODUTO).' },
+  { name: 'product', type: 'string | undefined', description: 'Nome completo do produto retornado.' },
 ];
 
 const raioXScrEnhancedRoot: FieldDoc[] = [
@@ -655,32 +663,45 @@ const queryTypeDocs: QueryTypeDoc[] = [
   { code: 'RAIO_X_CREDITO_RATING_SCR_PJ', title: 'Raio X Credito Rating SCR PJ', input: 'CNPJ', summary: 'Consulta SCR detalhada PJ com enriquecimento complementar de mercado (DIVIDAS_MULTI) quando disponivel.', rootFields: raioXScrEnhancedRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions']) },
   { code: 'DIVIDAS_MULTI_CPF_PRO', title: 'Dividas Multi CPF Pro', input: 'CPF', summary: 'Consulta agregada (PF) com SCPC, REFIN/PEFIN, protestos, cheques, CADIN, acoes legais e resumo SERASA.', rootFields: [], blocks: getBlocks(['person', 'ehmFinancialSummary', 'scpcDebts', 'refinPefinDebts', 'protests', 'badChecks', 'ehmCadin', 'legalActions', 'serasaSummary', 'rawSections']) },
   { code: 'DIVIDAS_MULTI_CNPJ_PRO', title: 'Dividas Multi CNPJ Pro', input: 'CNPJ', summary: 'Consulta agregada (PJ) com SCPC, REFIN/PEFIN, protestos, cheques, CADIN, acoes legais e resumo SERASA.', rootFields: [], blocks: getBlocks(['company', 'ehmFinancialSummary', 'scpcDebts', 'refinPefinDebts', 'protests', 'badChecks', 'ehmCadin', 'legalActions', 'serasaSummary', 'rawSections']) },
-  { code: 'PROTESTO_NACIONAL_PLUS', title: 'Protesto Nacional Plus', input: 'CPF/CNPJ', summary: 'Consulta de protestos nacionais com retorno tolerante a respostas vazias.', rootFields: [
+  { code: 'PROTESTO_NACIONAL_PLUS', title: 'Protesto Nacional', input: 'CPF/CNPJ', summary: 'Consulta de protestos nacionais com retorno tolerante a respostas vazias.', rootFields: [
     { name: 'document', type: 'string', description: 'Documento consultado.' },
     { name: 'consultedAt', type: 'string', description: 'Data/hora da consulta.' },
-    { name: 'status', type: 'string', description: 'Status geral retornado pelo provider.' },
+    { name: 'status', type: 'string', description: 'Status geral retornado pela consulta.' },
     { name: 'totalProtests', type: 'number', description: 'Total de protestos encontrados.' },
   ], blocks: [
     ...getBlocks(['ehmMessages']),
     {
       name: 'protests[]',
-      description: 'Ocorrencias de protesto retornadas pelo provider (estrutura pode variar por resposta).',
+      description: 'Ocorrencias de protesto normalizadas da consulta.',
       fields: [
-        { name: 'rawData', type: 'object', description: 'Payload bruto do item de protesto.' },
+        { name: 'document', type: 'string', description: 'Documento do protestado.' },
+        { name: 'protestDate', type: 'string', description: 'Data do protesto.' },
+        { name: 'dueDate', type: 'string', description: 'Data de vencimento.' },
+        { name: 'value', type: 'string | number', description: 'Valor do titulo.' },
+        { name: 'city', type: 'string', description: 'Cidade da ocorrencia.' },
+        { name: 'state', type: 'string', description: 'UF da ocorrencia.' },
+        { name: 'notaryNumber', type: 'string', description: 'Numero do cartorio.' },
+        { name: 'notaryName', type: 'string', description: 'Nome do cartorio.' },
+        { name: 'presenterName', type: 'string', description: 'Apresentante do titulo.' },
+        { name: 'assignorName', type: 'string', description: 'Cedente do titulo.' },
+        { name: 'hasConsent', type: 'boolean', description: 'Indica se ha anuencia.' },
+        { name: 'hasRenegotiation', type: 'boolean', description: 'Indica se houve renegociacao.' },
+        { name: 'key', type: 'string', description: 'Chave unica da ocorrencia.' },
       ],
     },
   ] },
   { code: 'CADIN', title: 'CADIN', input: 'CPF/CNPJ', summary: 'Consulta de CADIN com resumo consolidado e lista de ocorrencias.', rootFields: [], blocks: getBlocks(['cadinSummary', 'ehmCadin']) },
   { code: 'PROTESTO_DETALHADO_SP', title: 'Protesto Detalhado SP', input: 'CPF/CNPJ', summary: 'Consulta detalhada IEPTB/SP com visao por titulo e por cartorio.', rootFields: [
     { name: 'document', type: 'string', description: 'Documento consultado.' },
-    { name: 'consultedAt', type: 'string', description: 'Data/hora da consulta no provider.' },
-    { name: 'elapsedTime', type: 'string', description: 'Tempo total de processamento informado pelo provider.' },
+    { name: 'consultedAt', type: 'string', description: 'Data/hora da consulta.' },
+    { name: 'elapsedTime', type: 'string', description: 'Tempo total de processamento informado pela consulta.' },
     { name: 'totalProtests', type: 'number', description: 'Total de protestos encontrados no estado de SP.' },
   ], blocks: [
     {
       name: 'protests[]',
       description: 'Lista achatada de titulos protestados em SP.',
       fields: [
+        { name: 'document', type: 'string', description: 'Documento vinculado ao titulo.' },
         { name: 'state', type: 'string', description: 'UF da ocorrencia.' },
         { name: 'city', type: 'string', description: 'Cidade da ocorrencia.' },
         { name: 'notaryNumber', type: 'string', description: 'Numero do cartorio.' },
@@ -689,41 +710,44 @@ const queryTypeDocs: QueryTypeDoc[] = [
         { name: 'dueDate', type: 'string', description: 'Data de vencimento do titulo.' },
         { name: 'value', type: 'string | number', description: 'Valor do titulo protestado.' },
         { name: 'hasConsent', type: 'boolean', description: 'Indica se o titulo possui anuencia.' },
+        { name: 'hasExpiredConsent', type: 'boolean', description: 'Indica se a anuencia esta vencida.' },
         { name: 'hasRenegotiation', type: 'boolean', description: 'Indica se houve renegociacao.' },
+        { name: 'presenterName', type: 'string', description: 'Apresentante do titulo.' },
+        { name: 'assignorName', type: 'string', description: 'Cedente do titulo.' },
         { name: 'key', type: 'string', description: 'Chave unica da ocorrencia.' },
       ],
     },
     ...getBlocks(['notaries']),
   ] },
-  { code: 'BOA_VISTA_ACERTA_ESSENCIAL_POSITIVO_PF', title: 'Boa Vista Acerta Essencial Positivo PF', input: 'CPF', summary: 'Consulta Boa Vista PF com score, resumo financeiro, localizacao e blocos ricos preservados.', rootFields: [], blocks: [
+  { code: 'BOA_VISTA_ACERTA_ESSENCIAL_POSITIVO_PF', title: 'Boa Vista Acerta Essencial Positivo PF', input: 'CPF', summary: 'Consulta PF com score, resumo financeiro, localizacao e blocos complementares.', rootFields: [], blocks: [
     ...getBlocks(['person', 'score', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedIncome', 'dashboardSummary']),
     {
       name: 'preservedRawBlocks',
-      description: 'Blocos preservados: painelControlePF, scoresRaw, consultasRaw, participacoesEmpresas, rendaPresumida, listaPainelControle.',
+      description: 'Blocos complementares preservados pela consulta.',
       fields: sharedBlocks.preservedRawBlocks.fields,
     },
   ] },
-  { code: 'BOA_VISTA_DEFINE_RISCO_POSITIVO_PJ', title: 'Boa Vista Define Risco Positivo PJ', input: 'CNPJ', summary: 'Consulta Boa Vista PJ com score, resumo financeiro, localizacao e blocos ricos preservados.', rootFields: [], blocks: [
+  { code: 'BOA_VISTA_DEFINE_RISCO_POSITIVO_PJ', title: 'Boa Vista Define Risco Positivo PJ', input: 'CNPJ', summary: 'Consulta PJ com score, resumo financeiro, localizacao e blocos complementares.', rootFields: [], blocks: [
     ...getBlocks(['company', 'score', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedRevenue', 'dashboardSummary']),
     {
       name: 'preservedRawBlocks',
-      description: 'Blocos preservados: painelControle, painelControlePositivo, scoresRaw, quadroSocietario, faturamentoPresumido, consultasRaw.',
+      description: 'Blocos complementares preservados pela consulta.',
       fields: sharedBlocks.preservedRawBlocks.fields,
     },
   ] },
-  { code: 'RATING_BANCARIO_BOA_VISTA_PF', title: 'Rating Bancario Boa Vista PF', input: 'CPF', summary: 'Consulta Rating PF com decisao de credito, sugestao de limite e blocos preservados.', rootFields: [], blocks: [
+  { code: 'RATING_BANCARIO_BOA_VISTA_PF', title: 'Rating Bancario Boa Vista PF', input: 'CPF', summary: 'Consulta PF com decisao de credito, sugestao de limite e blocos complementares.', rootFields: [], blocks: [
     ...getBlocks(['person', 'score', 'decision', 'creditLimitSuggestion', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedIncome']),
     {
       name: 'preservedRawBlocks',
-      description: 'Blocos preservados: dashboardSummary, painelControlePf, consultasRaw, rendaPresumida.',
+      description: 'Blocos complementares preservados pela consulta.',
       fields: sharedBlocks.preservedRawBlocks.fields,
     },
   ] },
-  { code: 'RATING_BANCARIO_BOA_VISTA_PJ', title: 'Rating Bancario Boa Vista PJ', input: 'CNPJ', summary: 'Consulta Rating PJ com decisao de credito, sugestao de limite e blocos preservados.', rootFields: [], blocks: [
+  { code: 'RATING_BANCARIO_BOA_VISTA_PJ', title: 'Rating Bancario Boa Vista PJ', input: 'CNPJ', summary: 'Consulta PJ com decisao de credito, sugestao de limite e blocos complementares.', rootFields: [], blocks: [
     ...getBlocks(['company', 'score', 'decision', 'creditLimitSuggestion', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedRevenue']),
     {
       name: 'preservedRawBlocks',
-      description: 'Blocos preservados: painelPositivo, painelControle, consultasRaw, quadroSocietario, faturamentoPresumido.',
+      description: 'Blocos complementares preservados pela consulta.',
       fields: sharedBlocks.preservedRawBlocks.fields,
     },
   ] },
@@ -928,6 +952,42 @@ export default function DocsPage() {
             </div>
 
             <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
+              <Card className="p-4 md:p-6 border-primary/20 bg-primary/5">
+                <div className="flex items-center gap-2 mb-3">
+                  <ShieldCheck className="w-5 h-5 text-primary" />
+                  <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">Escopo da Documentacao</h2>
+                </div>
+                <p className="text-sm text-gray-700 mb-3">
+                  Esta pagina descreve somente o contrato publico da API: como chamar, o que enviar e como ler o retorno.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="info">POST /queries/execute</Badge>
+                  <Badge variant="outline">GET /queries/:id</Badge>
+                  <Badge variant="outline">GET /queries/:id/pdf</Badge>
+                </div>
+                <p className="text-xs text-gray-600 mt-3">
+                  O PDF e acessado por endpoint dedicado e nao aparece como campo extra no payload publico.
+                </p>
+              </Card>
+
+              <Card className="p-4 md:p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Workflow className="w-5 h-5 text-primary" />
+                  <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">Fluxo de Uso</h2>
+                </div>
+                <ol className="space-y-2 text-sm text-gray-700 list-decimal list-inside">
+                  <li>Envie o queryTypeCode e o input.</li>
+                  <li>Receba queryId, result e price.</li>
+                  <li>Consulte o historico pelo queryId quando precisar.</li>
+                  <li>Baixe o PDF pelo endpoint dedicado.</li>
+                </ol>
+                <p className="text-xs text-gray-500 mt-3">
+                  O contrato abaixo detalha somente campos de resposta e blocos publicos.
+                </p>
+              </Card>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
               <Card className="p-4 md:p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <KeyRound className="w-5 h-5 text-primary" />
@@ -1022,7 +1082,7 @@ export default function DocsPage() {
                   <p className="font-semibold text-gray-900 text-sm mb-2">Como interpretar o retorno</p>
                   <ul className="space-y-1 text-xs text-gray-700 list-disc list-inside">
                     <li><span className="font-mono">query</span>: metadados da consulta (status, tipo, datas e preco).</li>
-                    <li><span className="font-mono">result</span>: payload completo retornado pelo provedor.</li>
+                    <li><span className="font-mono">result</span>: payload completo retornado pela API.</li>
                     <li>Quando o status for <span className="font-mono">SUCCESS</span>, voce pode usar o mesmo <span className="font-mono">queryId</span> para baixar o PDF.</li>
                   </ul>
                 </div>
@@ -1089,6 +1149,32 @@ export default function DocsPage() {
                 ))}
               </div>
             </Card>
+
+            <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
+              <Card className="p-4 md:p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Database className="w-5 h-5 text-primary" />
+                  <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">Notas de Leitura</h2>
+                </div>
+                <ul className="space-y-2 text-sm text-gray-700 list-disc list-inside">
+                  <li><span className="font-mono">result</span> muda de formato conforme o queryTypeCode.</li>
+                  <li>Algumas consultas retornam um objeto unico em vez de array para enderecos.</li>
+                  <li>Campos opcionais aparecem apenas quando o dado existe na resposta.</li>
+                </ul>
+              </Card>
+
+              <Card className="p-4 md:p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Database className="w-5 h-5 text-primary" />
+                  <h2 className="font-display text-xl md:text-2xl font-bold text-gray-900">Campos Mais Comuns</h2>
+                </div>
+                <div className="space-y-2 text-sm text-gray-700">
+                  <p><span className="font-mono">protocol</span>: identificador da consulta.</p>
+                  <p><span className="font-mono">result</span>: resposta normalizada.</p>
+                  <p><span className="font-mono">price</span>: valor cobrado pela consulta.</p>
+                </div>
+              </Card>
+            </div>
 
             <div className="grid lg:grid-cols-[320px,1fr] gap-4 md:gap-6">
               <Card className="p-4 h-fit lg:sticky lg:top-28">
