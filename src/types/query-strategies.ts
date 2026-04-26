@@ -442,3 +442,195 @@ export interface DividasMultiCpfProResult extends DividasMultiBaseResult {
 export interface DividasMultiCnpjProResult extends DividasMultiBaseResult {
   company: Pick<BaseCompany, 'cnpj' | 'socialReason'>;
 }
+
+// Raio X Credito Rating SCR
+export interface RaioXMarketRestrictionsSummary {
+  totalScpcDebts?: number;
+  totalRefinPefinDebts?: number;
+  totalProtests?: number;
+  totalCadin?: number;
+}
+
+export interface RaioXMarketRestrictions {
+  summary?: RaioXMarketRestrictionsSummary;
+}
+
+export interface RaioXCreditoRatingScrResult extends ScrBacenResult {
+  person?: Pick<BasePerson, 'name' | 'document'>;
+  company?: Pick<BaseCompany, 'socialReason' | 'cnpj'>;
+  marketRestrictions?: RaioXMarketRestrictions;
+  marketRestrictionsUnavailable?: boolean;
+  marketRestrictionsMessage?: string;
+}
+
+// Protesto Nacional Plus
+export interface ProtestoNacionalPlusRawItem {
+  document?: string;
+  protestDate?: string;
+  date?: string;
+  dueDate?: string;
+  value?: string | number;
+  city?: string;
+  state?: string;
+  notaryNumber?: string;
+  notaryName?: string;
+  presenterName?: string;
+  assignorName?: string;
+  hasConsent?: boolean;
+  hasRenegotiation?: boolean;
+  key?: string;
+}
+
+export interface ProtestoNacionalPlusItem extends ProtestoNacionalPlusRawItem {
+  rawData?: ProtestoNacionalPlusRawItem;
+}
+
+export interface ProtestoNacionalPlusResult {
+  protocol: string;
+  pdf?: string;
+  status?: string;
+  document?: string;
+  consultedAt?: string;
+  totalProtests?: number;
+  messages?: string[];
+  protests?: ProtestoNacionalPlusItem[];
+}
+
+// CADIN
+export interface CadinSummary {
+  name?: string;
+  document?: string;
+  personType?: string;
+  totalDebts?: number;
+  totalValue?: string | number;
+}
+
+export interface CadinEntry {
+  document?: string;
+  name?: string;
+  entity?: string;
+  unit?: string;
+  registrationNumber?: string;
+  registrationDate?: string;
+  state?: string;
+  value?: string | number;
+}
+
+export interface CadinResult {
+  protocol: string;
+  pdf?: string;
+  summary?: CadinSummary;
+  cadin?: CadinEntry[];
+}
+
+// Protesto Detalhado SP
+export interface ProtestoDetalhadoSpTitle {
+  document?: string;
+  protestDate?: string;
+  dueDate?: string;
+  city?: string;
+  state?: string;
+  notaryNumber?: string;
+  notaryName?: string;
+  value?: string | number;
+}
+
+export interface ProtestoDetalhadoSpNotary {
+  notaryNumber?: string;
+  notaryName?: string;
+  city?: string;
+  state?: string;
+  phone?: string;
+  whatsapp?: string;
+  totalProtests?: number;
+  titles?: ProtestoDetalhadoSpTitle[];
+}
+
+export interface ProtestoDetalhadoSpResult {
+  protocol: string;
+  pdf?: string;
+  document?: string;
+  consultedAt?: string;
+  elapsedTime?: string;
+  totalProtests?: number;
+  protests?: ProtestoDetalhadoSpTitle[];
+  notaries?: ProtestoDetalhadoSpNotary[];
+}
+
+// Analise Comercial (PF/PJ)
+export interface CommercialAnalysisFinancialSummary {
+  totalDebts?: number;
+  totalProtests?: number;
+  totalQueries?: number;
+  totalScpcDebts?: number;
+  totalRefinPefinDebts?: number;
+}
+
+export interface CommercialAnalysisDebt {
+  date?: string;
+  origin?: string;
+  contract?: string;
+  value?: string | number;
+}
+
+export interface CommercialAnalysisProtest {
+  date?: string;
+  origin?: string;
+  notary?: string;
+  notaryName?: string;
+  value?: string | number;
+}
+
+export interface CommercialAnalysisQuery {
+  date?: string;
+  entity?: string;
+  cityState?: string;
+}
+
+export interface CommercialAnalysisSerasaDebt {
+  creditor?: string;
+  dueDate?: string;
+  type?: string;
+  contract?: string;
+  inclusionDate?: string;
+  value?: string | number;
+}
+
+export interface CommercialAnalysisCreditLimitSuggestion {
+  model?: string;
+  name?: string;
+  text?: string;
+  amount?: string | number;
+  value?: string | number;
+}
+
+export interface CommercialAnalysisScore {
+  value?: string | number;
+  riskText?: string;
+  risk?: string;
+}
+
+export interface CommercialAnalysisDecision {
+  status?: string;
+}
+
+interface CommercialAnalysisBaseResult {
+  protocol: string;
+  pdf?: string;
+  financialSummary?: CommercialAnalysisFinancialSummary;
+  score?: CommercialAnalysisScore;
+  decision?: CommercialAnalysisDecision;
+  creditLimitSuggestion?: CommercialAnalysisCreditLimitSuggestion;
+  debts?: CommercialAnalysisDebt[];
+  protests?: CommercialAnalysisProtest[];
+  queries?: CommercialAnalysisQuery[];
+  serasaDebts?: CommercialAnalysisSerasaDebt[];
+}
+
+export interface CommercialAnalysisPfResult extends CommercialAnalysisBaseResult {
+  person?: Pick<BasePerson, 'name' | 'document' | 'birthDate' | 'motherName' | 'status' | 'revenueStatus'>;
+}
+
+export interface CommercialAnalysisPjResult extends CommercialAnalysisBaseResult {
+  company?: Pick<BaseCompany, 'cnpj' | 'socialReason' | 'fantasyName' | 'foundationDate' | 'status'>;
+}
