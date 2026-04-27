@@ -448,7 +448,7 @@ export function QueryTypesManager() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-primary"
+                          className="h-8 w-8 text-muted-foreground"
                           onClick={() => openModal(qt)}
                           aria-label="Editar consulta"
                         >
