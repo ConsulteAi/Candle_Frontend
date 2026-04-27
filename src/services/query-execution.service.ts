@@ -6,9 +6,16 @@ import type {
   QueryByIdResponse,
 } from '@/types/query';
 
+const QUERY_EXECUTION_TIMEOUT_MS = 90000;
+
 export class QueryExecutionService {
   static async executeQuery(data: ExecuteQueryRequest): Promise<ExecuteQueryResponse> {
-    const response = await serverHttpClient.post<ExecuteQueryResponse>('/queries/execute', data);
+    const response = await serverHttpClient.post<ExecuteQueryResponse>(
+      '/queries/execute',
+      data,
+      { timeout: QUERY_EXECUTION_TIMEOUT_MS },
+    );
+
     return response.data;
   }
 

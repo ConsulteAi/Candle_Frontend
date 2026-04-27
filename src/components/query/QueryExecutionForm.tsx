@@ -292,7 +292,7 @@ export function QueryExecutionForm({
                      return 'Não encontramos registros para os dados informados. O valor da consulta não foi debitado.';
                    }
                    if (err.includes('TIMEOUT') || err.includes('TIME OUT')) {
-                     return 'O provedor está respondendo mais lentamente que o normal. Por favor, tente novamente em alguns instantes.';
+                     return 'A consulta demorou mais do que o esperado. Antes de tentar novamente, verifique o histórico, pois ela pode ter sido concluída com sucesso.';
                    }
                    return 'Houve um problema técnico ao processar sua consulta. O valor não foi debitado do seu saldo. Tente novamente.';
                  })()}

@@ -1,5 +1,6 @@
 'use server';
 
+import axios from 'axios';
 import { QueryExecutionService } from '@/services/query-execution.service';
 import { useAuthStore } from '@/store/authStore';
 import type {
@@ -28,15 +29,25 @@ export async function executeQueryAction(
     await refreshBalanceAction();
 
     return { success: true, data: response };
-  } catch (error: any) {
-
-    if (error.response?.status === 402) {
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response?.status === 402) {
       return { success: false, error: 'Saldo insuficiente. Recarregue sua carteira.' };
+    }
+
+    if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
+      return {
+        success: false,
+        error:
+          'TIMEOUT: a consulta demorou mais do que o esperado. Verifique o histórico antes de tentar novamente, pois ela pode ter sido concluída.',
+      };
     }
 
     return {
       success: false,
-      error: error.response?.data?.message || 'Erro ao executar consulta',
+      error:
+        axios.isAxiosError(error)
+          ? error.response?.data?.message || 'Erro ao executar consulta'
+          : 'Erro ao executar consulta',
     };
   }
 }
