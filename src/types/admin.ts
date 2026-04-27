@@ -144,6 +144,8 @@ export interface QueryType {
   endpoint: string;
   providerCredential?: any;
   price: number;
+  apiTokenPrice?: number | null;
+  resellerPrice?: number | null;
   cost: number;
   cachedPrice: number;
   cacheTtlMinutes: number;
@@ -310,6 +312,8 @@ export interface CreateQueryTypeDto {
   category: string[];
   endpoint?: string;
   price: number;
+  apiTokenPrice?: number | null;
+  resellerPrice?: number | null;
   cost: number;
   cachedPrice?: number;
   cacheTtlMinutes?: number;
