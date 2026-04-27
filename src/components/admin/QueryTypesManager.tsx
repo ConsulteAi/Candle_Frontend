@@ -11,7 +11,9 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -29,7 +31,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/store/authStore';
 
 type QueryTypeFormState = {
-  code: string;
   name: string;
   description: string;
   price: number;
@@ -39,7 +40,6 @@ type QueryTypeFormState = {
 };
 
 const emptyFormData: QueryTypeFormState = {
-  code: '',
   name: '',
   description: '',
   price: 0,
@@ -116,7 +116,6 @@ export function QueryTypesManager() {
     try {
       const payload = isMaster
         ? {
-            code: formData.code,
             name: formData.name,
             description: formData.description,
             price: formData.price,
@@ -166,7 +165,6 @@ export function QueryTypesManager() {
   const openModal = (item: QueryType) => {
     setEditingItem(item);
     setFormData({
-      code: item.code,
       name: item.name,
       description: item.description ?? '',
       price: item.price,
@@ -193,7 +191,7 @@ export function QueryTypesManager() {
     .filter(qt => !isMaster || selectedProviderId === 'all' || qt.providerId === selectedProviderId)
     .sort((a, b) => a.name.localeCompare(b.name));
 
-  const tableColSpan = isMaster ? 7 : 5;
+  const tableColSpan = isMaster ? 8 : 5;
 
   return (
     <div className="flex flex-col gap-4">
@@ -239,6 +237,7 @@ export function QueryTypesManager() {
               {isMaster ? (
                 <>
                   <TableHead>Custo</TableHead>
+                  <TableHead>Preço Site</TableHead>
                   <TableHead>Preço API</TableHead>
                   <TableHead>Preço Revenda</TableHead>
                 </>
@@ -275,6 +274,7 @@ export function QueryTypesManager() {
                   {isMaster ? (
                     <>
                       <TableCell>R$ {qt.cost.toFixed(2)}</TableCell>
+                      <TableCell>R$ {qt.price.toFixed(2)}</TableCell>
                       <TableCell>R$ {resolveApiTokenPrice(qt).toFixed(2)}</TableCell>
                       <TableCell>R$ {resolveResellerPrice(qt).toFixed(2)}</TableCell>
                     </>
@@ -309,114 +309,152 @@ export function QueryTypesManager() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Editar Consulta</DialogTitle>
+            <DialogDescription>
+              Ajuste os valores conforme a política comercial vigente.
+            </DialogDescription>
           </DialogHeader>
-          <FieldGroup className="py-4">
+          <div className="flex flex-col gap-6 py-4">
             {isMaster ? (
               <>
-                <Field>
-                  <FieldLabel>Código</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      value={formData.code}
-                      onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                    />
-                  </FieldContent>
-                </Field>
-                <Field>
-                  <FieldLabel>Nome</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
-                  </FieldContent>
-                </Field>
-                <Field>
-                  <FieldLabel>Descrição</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    />
-                  </FieldContent>
-                </Field>
-                <Field>
-                  <FieldLabel>Preço</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                    />
-                  </FieldContent>
-                </Field>
-                <Field>
-                  <FieldLabel>Preço API</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Usa o preço padrão"
-                      value={formData.apiTokenPrice ?? ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          apiTokenPrice: parseOptionalNumber(e.target.value)
-                        })
-                      }
-                    />
-                    <FieldDescription>
-                      Se vazio, usa o preço padrão.
-                    </FieldDescription>
-                  </FieldContent>
-                </Field>
-                <Field>
-                  <FieldLabel>Preço Revenda</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Usa o custo"
-                      value={formData.resellerPrice ?? ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          resellerPrice: parseOptionalNumber(e.target.value)
-                        })
-                      }
-                    />
-                    <FieldDescription>
-                      Se vazio, usa o custo.
-                    </FieldDescription>
-                  </FieldContent>
-                </Field>
-                <Field>
-                  <FieldLabel>Custo</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={formData.cost}
-                      onChange={(e) => setFormData({ ...formData, cost: Number(e.target.value) })}
-                    />
-                  </FieldContent>
-                </Field>
+                <Alert>
+                  <AlertTitle>Regras de fallback</AlertTitle>
+                  <AlertDescription>
+                    Preço API herda de Preço Site quando vazio. Preço Revenda herda de Custo.
+                  </AlertDescription>
+                </Alert>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Detalhes da consulta</CardTitle>
+                      <CardDescription>
+                        Informações exibidas no painel e para seus clientes.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <FieldGroup>
+                        <Field>
+                          <FieldLabel>Nome</FieldLabel>
+                          <FieldContent>
+                            <Input
+                              value={formData.name}
+                              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                          </FieldContent>
+                        </Field>
+                        <Field>
+                          <FieldLabel>Descrição</FieldLabel>
+                          <FieldContent>
+                            <Input
+                              value={formData.description}
+                              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            />
+                          </FieldContent>
+                        </Field>
+                      </FieldGroup>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Precificação</CardTitle>
+                      <CardDescription>
+                        Defina o preço do site e regras para API e revenda.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <FieldGroup>
+                        <Field>
+                          <FieldLabel>Preço Site</FieldLabel>
+                          <FieldContent>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={formData.price}
+                              onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                            />
+                          </FieldContent>
+                        </Field>
+                        <Field>
+                          <FieldLabel>Preço API</FieldLabel>
+                          <FieldContent>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="Usa o preço do site"
+                              value={formData.apiTokenPrice ?? ''}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  apiTokenPrice: parseOptionalNumber(e.target.value)
+                                })
+                              }
+                            />
+                            <FieldDescription>
+                              Se vazio, usa o preço do site.
+                            </FieldDescription>
+                          </FieldContent>
+                        </Field>
+                        <Field>
+                          <FieldLabel>Preço Revenda</FieldLabel>
+                          <FieldContent>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="Usa o custo"
+                              value={formData.resellerPrice ?? ''}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  resellerPrice: parseOptionalNumber(e.target.value)
+                                })
+                              }
+                            />
+                            <FieldDescription>
+                              Se vazio, usa o custo.
+                            </FieldDescription>
+                          </FieldContent>
+                        </Field>
+                        <Field>
+                          <FieldLabel>Custo</FieldLabel>
+                          <FieldContent>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={formData.cost}
+                              onChange={(e) => setFormData({ ...formData, cost: Number(e.target.value) })}
+                            />
+                          </FieldContent>
+                        </Field>
+                      </FieldGroup>
+                    </CardContent>
+                  </Card>
+                </div>
               </>
             ) : (
-              <Field>
-                <FieldLabel>Preço</FieldLabel>
-                <FieldContent>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                  />
-                </FieldContent>
-              </Field>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Preço da consulta</CardTitle>
+                  <CardDescription>
+                    Atualize apenas o valor comercial exibido no painel.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FieldGroup>
+                    <Field>
+                      <FieldLabel>Preço</FieldLabel>
+                      <FieldContent>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={formData.price}
+                          onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                        />
+                      </FieldContent>
+                    </Field>
+                  </FieldGroup>
+                </CardContent>
+              </Card>
             )}
-          </FieldGroup>
+          </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => handleModalChange(false)}>Cancelar</Button>
             <Button onClick={handleSave}>Salvar</Button>
