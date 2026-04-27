@@ -31,7 +31,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Edit, Loader2, Info, Save, DollarSign, FileText, Tag } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Search, Edit, Loader2, Info, Save, DollarSign, FileText, Tag, SlidersHorizontal } from 'lucide-react';
+
+/** Formata valor monetário em BRL sem prefixo duplicado */
+const fmt = (v: number) =>
+  v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 import { httpClient } from '@/lib/api/httpClient';
 import type { QueryType, PaginatedResponse, Provider } from '@/types/admin';
 import { useToast } from '@/components/ui/use-toast';
@@ -248,109 +253,210 @@ export function QueryTypesManager() {
   const tableColSpan = isMaster ? 8 : 5;
 
   return (
+    <TooltipProvider>
     <div className="flex flex-col gap-4">
       {/* ── Barra de filtros ── */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative w-64">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Buscar consulta..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        {isMaster && (
-          <div className="w-64">
-            <Select value={selectedProviderId} onValueChange={setSelectedProviderId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Todos os provedores" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="all">Todos os provedores</SelectItem>
-                  {providers.map((provider) => (
-                    <SelectItem key={provider.id} value={provider.id}>
-                      {provider.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar consulta..."
+              className="h-9 w-64 pl-9 text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
+          {isMaster && (
+            <div className="flex items-center gap-1.5">
+              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+              <Select value={selectedProviderId} onValueChange={setSelectedProviderId}>
+                <SelectTrigger className="h-9 w-52 text-sm">
+                  <SelectValue placeholder="Todos os provedores" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="all">Todos os provedores</SelectItem>
+                    {providers.map((provider) => (
+                      <SelectItem key={provider.id} value={provider.id}>
+                        {provider.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+        {/* Contador de resultados */}
+        {!loading && (
+          <span className="text-xs text-muted-foreground">
+            {filteredTypes.length} consulta{filteredTypes.length !== 1 ? 's' : ''}
+          </span>
         )}
       </div>
 
       {/* ── Tabela ── */}
-      <div className="rounded-md border bg-white">
+      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Código</TableHead>
-              <TableHead>Nome</TableHead>
+            <TableRow className="bg-muted/40 hover:bg-muted/40">
+              {/* Coluna código com largura controlada */}
+              <TableHead className="w-[200px] text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Código
+              </TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Nome
+              </TableHead>
               {isMaster ? (
                 <>
-                  <TableHead>Custo</TableHead>
-                  <TableHead>Preço Site</TableHead>
-                  <TableHead>Preço API</TableHead>
-                  <TableHead>Preço Revenda</TableHead>
+                  {/* Custo — separado dos preços de venda pela semântica */}
+                  <TableHead className="w-28 text-right text-xs font-semibold uppercase tracking-wide text-amber-600">
+                    Custo
+                  </TableHead>
+                  <TableHead className="w-28 text-right text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                    Preço Site
+                  </TableHead>
+                  <TableHead className="w-28 text-right text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                    Preço API
+                  </TableHead>
+                  <TableHead className="w-28 text-right text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                    P. Revenda
+                  </TableHead>
                 </>
               ) : (
-                <TableHead>Preço</TableHead>
+                <TableHead className="w-28 text-right text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                  Preço
+                </TableHead>
               )}
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead className="w-32 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Status
+              </TableHead>
+              <TableHead className="w-16 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Ações
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={tableColSpan} className="h-24 text-center">
-                  <div className="flex justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                <TableCell colSpan={tableColSpan} className="h-32 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Carregando consultas...</span>
                   </div>
                 </TableCell>
               </TableRow>
             ) : filteredTypes.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={tableColSpan} className="h-24 text-center text-slate-500">
-                  Nenhum tipo de consulta encontrado.
+                <TableCell colSpan={tableColSpan} className="h-32 text-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-sm font-medium text-foreground">Nenhuma consulta encontrada</span>
+                    <span className="text-xs text-muted-foreground">Tente ajustar o filtro de busca</span>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               filteredTypes.map((qt) => (
-                <TableRow key={qt.id}>
-                  <TableCell className="font-mono text-xs">{qt.code}</TableCell>
-                  <TableCell>
-                    <div className="font-medium">{qt.name}</div>
-                    {isMaster && <div className="text-xs text-slate-500">{qt.providerName}</div>}
+                <TableRow
+                  key={qt.id}
+                  className={cn(
+                    'group cursor-default transition-colors',
+                    !qt.isActive && 'opacity-50'
+                  )}
+                >
+                  {/* Código — chip monospace truncado com tooltip */}
+                  <TableCell className="py-3">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-block max-w-[180px] truncate rounded bg-muted/70 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
+                          {qt.code}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="font-mono text-xs">
+                        {qt.code}
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
+
+                  {/* Nome + badge do provedor */}
+                  <TableCell className="py-3">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm font-medium leading-tight text-foreground">
+                        {qt.name}
+                      </span>
+                      {isMaster && qt.providerName && (
+                        <span className="w-fit rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                          {qt.providerName}
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+
+                  {/* Valores monetários — alinhados à direita, tabular-nums */}
                   {isMaster ? (
                     <>
-                      <TableCell>R$ {qt.cost.toFixed(2)}</TableCell>
-                      <TableCell>R$ {qt.price.toFixed(2)}</TableCell>
-                      <TableCell>R$ {resolveApiTokenPrice(qt).toFixed(2)}</TableCell>
-                      <TableCell>R$ {resolveResellerPrice(qt).toFixed(2)}</TableCell>
+                      <TableCell className="py-3 text-right tabular-nums">
+                        <span className="text-sm font-medium text-amber-700">
+                          R$ {fmt(qt.cost)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3 text-right tabular-nums">
+                        <span className="text-sm font-semibold text-foreground">
+                          R$ {fmt(qt.price)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3 text-right tabular-nums">
+                        <span className="text-sm text-foreground">
+                          R$ {fmt(resolveApiTokenPrice(qt))}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3 text-right tabular-nums">
+                        <span className="text-sm text-foreground">
+                          R$ {fmt(resolveResellerPrice(qt))}
+                        </span>
+                      </TableCell>
                     </>
                   ) : (
-                    <TableCell>R$ {qt.price.toFixed(2)}</TableCell>
+                    <TableCell className="py-3 text-right tabular-nums">
+                      <span className="text-sm font-semibold text-foreground">
+                        R$ {fmt(qt.price)}
+                      </span>
+                    </TableCell>
                   )}
-                  <TableCell>
-                    <Switch
-                      checked={qt.isActive}
-                      onCheckedChange={() => handleToggle(qt.id)}
-                    />
+
+                  {/* Status: badge semântico + toggle */}
+                  <TableCell className="py-3">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={qt.isActive}
+                        onCheckedChange={() => handleToggle(qt.id)}
+                      />
+                      <span className={cn(
+                        'text-xs font-medium',
+                        qt.isActive ? 'text-emerald-600' : 'text-muted-foreground'
+                      )}>
+                        {qt.isActive ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </div>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openModal(qt)}
-                      aria-label="Editar consulta"
-                    >
-                      <Edit data-icon="inline-start" />
-                      <span className="sr-only">Editar</span>
-                    </Button>
+
+                  {/* Ações */}
+                  <TableCell className="py-3 text-right">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                          onClick={() => openModal(qt)}
+                          aria-label="Editar consulta"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Editar consulta</TooltipContent>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))
@@ -539,5 +645,6 @@ export function QueryTypesManager() {
         </DialogContent>
       </Dialog>
     </div>
+    </TooltipProvider>
   );
 }
