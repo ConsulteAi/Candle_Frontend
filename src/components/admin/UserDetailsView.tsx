@@ -21,6 +21,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { UserTransactionsList } from './UserTransactionsList';
 import { UserQueriesList } from './UserQueriesList';
+import { UserPriceBenefitsTab } from './UserPriceBenefitsTab';
 
 import { useAuth } from '@/hooks/useAuth';
 import { UserRole } from '@/types/auth';
@@ -315,15 +316,19 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
 
            {/* Stats / Activity */}
            <Tabs defaultValue="activity" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="activity">Atividade Recente</TabsTrigger>
                 <TabsTrigger value="transactions">Transações</TabsTrigger>
+                <TabsTrigger value="benefits">Benefícios</TabsTrigger>
               </TabsList>
               <TabsContent value="activity" className="mt-4">
                  <UserQueriesList userId={user.id} />
               </TabsContent>
               <TabsContent value="transactions" className="mt-4">
                  <UserTransactionsList userId={user.id} />
+              </TabsContent>
+              <TabsContent value="benefits" className="mt-4">
+                 <UserPriceBenefitsTab userId={user.id} userName={user.name} />
               </TabsContent>
            </Tabs>
         </div>
