@@ -25,6 +25,8 @@ const allowedRoutes: AllowedRoute[] = [
   { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+$/, methods: ["GET"] },
   { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+\/queries$/, methods: ["GET"] },
   { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+\/transactions$/, methods: ["GET"] },
+  { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+\/query-price-benefits$/, methods: ["GET"] },
+  { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+\/query-price-benefits\/[a-zA-Z0-9-]+$/, methods: ["PUT", "DELETE"] },
   { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+\/adjust-balance$/, methods: ["POST"] },
   { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+\/status$/, methods: ["PATCH"] },
   { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+\/role$/, methods: ["PATCH"] },
