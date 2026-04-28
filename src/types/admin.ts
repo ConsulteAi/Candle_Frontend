@@ -133,6 +133,26 @@ export interface AdjustBalanceDTO {
   description: string;
 }
 
+export interface UserQueryPriceBenefit {
+  id: string;
+  userId: string;
+  queryTypeId: string;
+  sitePrice: number | null;
+  apiPrice: number | null;
+  queryType: {
+    id: string;
+    code: string;
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpsertUserQueryPriceBenefitDTO {
+  sitePrice?: number | null;
+  apiPrice?: number | null;
+}
+
 // --- Query Types Management ---
 
 export interface QueryType {
