@@ -514,6 +514,111 @@ interface TimelineDialogProps {
   onClose: () => void;
 }
 
+function TimelineEventCard({ ev, index, total }: { ev: AuditEvent; index: number; total: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasExtra = Object.keys(ev.metadata ?? {}).length > 0 || ev.before || ev.after;
+  const isLast = index === total - 1;
+
+  const dotColor = ev.action.includes('FAILED') || ev.action.includes('ERROR') || ev.action.includes('DETECTED')
+    ? 'bg-red-500'
+    : ev.action.includes('CREATED') || ev.action.includes('SUCCESS') || ev.action.includes('ACTIVATED')
+    ? 'bg-emerald-500'
+    : ev.action.includes('DELETED') || ev.action.includes('REMOVED') || ev.action.includes('REVOKED') || ev.action.includes('REVERSAL')
+    ? 'bg-rose-500'
+    : 'bg-slate-400';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.04, ease: 'easeOut' }}
+      className="relative flex gap-4"
+    >
+      {/* Timeline column */}
+      <div className="flex flex-col items-center shrink-0 w-8">
+        <div className={`w-8 h-8 rounded-full ${dotColor} flex items-center justify-center shadow-md text-white text-[10px] font-bold z-10 shrink-0`}>
+          {index + 1}
+        </div>
+        {!isLast && <div className="w-px flex-1 bg-slate-200 mt-1" />}
+      </div>
+
+      {/* Card */}
+      <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-4'}`}>
+        <div className="bg-white border border-slate-100 rounded-xl shadow-sm overflow-hidden">
+          {/* Header */}
+          <div className="p-4">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div className="space-y-1.5">
+                <ActionBadge action={ev.action} />
+                <div className="flex items-center gap-3 flex-wrap">
+                  <ActorBadge type={ev.actorType} />
+                  <span className="text-xs text-slate-400 flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {fmtDate(ev.createdAt)}
+                  </span>
+                </div>
+              </div>
+              {hasExtra && (
+                <button
+                  onClick={() => setExpanded(v => !v)}
+                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 transition-colors shrink-0 mt-0.5"
+                >
+                  <ChevronRight className={`w-3.5 h-3.5 transition-transform ${expanded ? 'rotate-90' : ''}`} />
+                  {expanded ? 'Ocultar detalhes' : 'Ver detalhes'}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Expandable details */}
+          <AnimatePresence>
+            {expanded && hasExtra && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden border-t border-slate-100"
+              >
+                <div className="p-4 bg-slate-50 space-y-3">
+                  {Object.keys(ev.metadata ?? {}).length > 0 && (
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Metadata</span>
+                      <pre className="bg-slate-900 text-emerald-400 text-xs font-mono p-3 rounded-lg overflow-auto max-h-36 leading-relaxed">
+                        {JSON.stringify(ev.metadata, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                  {(ev.before || ev.after) && (
+                    <div className="grid grid-cols-2 gap-3">
+                      {ev.before && (
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Antes</span>
+                          <pre className="bg-slate-900 text-orange-300 text-xs font-mono p-3 rounded-lg overflow-auto max-h-36 leading-relaxed">
+                            {JSON.stringify(ev.before, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                      {ev.after && (
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Depois</span>
+                          <pre className="bg-slate-900 text-emerald-400 text-xs font-mono p-3 rounded-lg overflow-auto max-h-36 leading-relaxed">
+                            {JSON.stringify(ev.after, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 function TimelineDialog({ resourceType, resourceId, onClose }: TimelineDialogProps) {
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -539,59 +644,53 @@ function TimelineDialog({ resourceType, resourceId, onClose }: TimelineDialogPro
 
   return (
     <Dialog open={open} onOpenChange={o => { if (!o) { onClose(); setEvents([]); } }}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="max-w-2xl w-full max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+        {/* Sticky header */}
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-slate-100 shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <GitBranch className="w-5 h-5 text-primary" />
-            Histórico de {resourceType ? labelResource(resourceType) : '—'}
-          </DialogTitle>
-        </DialogHeader>
-
-        {loading && (
-          <div className="flex items-center justify-center h-32">
-            <RefreshCw className="w-6 h-6 animate-spin text-slate-400" />
           </div>
-        )}
+          <div className="min-w-0">
+            <DialogTitle className="text-base font-semibold text-slate-900 leading-tight">
+              Histórico de {resourceType ? labelResource(resourceType) : '—'}
+            </DialogTitle>
+            {resourceId && (
+              <p className="text-xs text-slate-400 font-mono mt-0.5 truncate" title={resourceId}>
+                {resourceId}
+              </p>
+            )}
+          </div>
+          {events.length > 0 && (
+            <span className="ml-auto shrink-0 bg-slate-100 text-slate-600 text-xs font-semibold px-2.5 py-1 rounded-full">
+              {events.length} evento{events.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
 
-        {!loading && events.length === 0 && (
-          <p className="text-center text-slate-400 py-8 text-sm">Nenhum evento encontrado para este recurso.</p>
-        )}
+        {/* Scrollable body */}
+        <div className="overflow-y-auto flex-1 px-6 py-5">
+          {loading && (
+            <div className="flex flex-col items-center justify-center h-40 gap-3 text-slate-400">
+              <RefreshCw className="w-6 h-6 animate-spin" />
+              <span className="text-sm">Carregando histórico…</span>
+            </div>
+          )}
 
-        {events.length > 0 && (
-          <div className="relative pl-4">
-            <div className="absolute left-[7px] top-0 bottom-0 w-px bg-slate-200" />
-            <div className="space-y-4">
+          {!loading && events.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-40 gap-2 text-slate-400">
+              <GitBranch className="w-8 h-8 text-slate-200" />
+              <p className="text-sm">Nenhum evento encontrado para este recurso.</p>
+            </div>
+          )}
+
+          {events.length > 0 && (
+            <div className="space-y-0">
               {events.map((ev, i) => (
-                <motion.div
-                  key={ev.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  className="relative pl-5"
-                >
-                  <div className="absolute left-[-1px] top-2 w-3 h-3 rounded-full bg-primary border-2 border-white shadow-sm" />
-                  <div className="bg-white border border-slate-100 rounded-lg p-3 shadow-sm">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <ActionBadge action={ev.action} />
-                      <div className="flex items-center gap-1.5">
-                        <ActorBadge type={ev.actorType} />
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {fmtDate(ev.createdAt)}
-                        </span>
-                      </div>
-                    </div>
-                    {Object.keys(ev.metadata).length > 0 && (
-                      <pre className="mt-2 bg-slate-50 text-slate-600 text-xs font-mono p-2 rounded overflow-auto max-h-20 leading-relaxed">
-                        {JSON.stringify(ev.metadata, null, 2)}
-                      </pre>
-                    )}
-                  </div>
-                </motion.div>
+                <TimelineEventCard key={ev.id} ev={ev} index={i} total={events.length} />
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
