@@ -44,43 +44,111 @@ import type {
   AuditActorType,
 } from '@/types/admin';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Translation Maps ────────────────────────────────────────────────────────
+
+const ACTION_LABELS: Record<string, string> = {
+  // Payments
+  RECHARGE_CREATED:              'Recarga criada',
+  WEBHOOK_RECEIVED:              'Webhook recebido',
+  PAYMENT_STATUS_CHANGED:        'Status do pagamento alterado',
+  WEBHOOK_PROCESSED:             'Webhook processado',
+  WEBHOOK_FAILED:                'Falha no webhook',
+  BALANCE_CREDIT_APPLIED:        'Crédito de saldo aplicado',
+  BALANCE_REVERSAL_APPLIED:      'Estorno de saldo aplicado',
+  PAID_WITHOUT_DEPOSIT_DETECTED: 'Pagamento sem depósito detectado',
+  // Auth
+  ACCOUNT_ACTIVATED:             'Conta ativada',
+  LOGIN_SUCCESS:                 'Login realizado',
+  LOGIN_FAILED:                  'Falha no login',
+  PASSWORD_CHANGE:               'Senha alterada',
+  PASSWORD_RESET_REQUEST:        'Solicitação de redefinição de senha',
+  PASSWORD_RESET:                'Senha redefinida',
+  // Sessions
+  SESSION_LOGOUT:                'Logout realizado',
+  ALL_SESSIONS_REVOKED:          'Todas as sessões encerradas',
+  SESSION_REVOKED:               'Sessão encerrada',
+  // Admin
+  ADMIN_BALANCE_ADJUSTED:        'Saldo ajustado pelo admin',
+  USER_STATUS_CHANGED:           'Status do usuário alterado',
+  USER_ROLE_CHANGED:             'Perfil do usuário alterado',
+  QUERY_PRICE_BENEFIT_UPSERTED:  'Benefício de preço salvo',
+  QUERY_PRICE_BENEFIT_REMOVED:   'Benefício de preço removido',
+  // Queries
+  QUERY_RESERVED:                'Consulta reservada',
+  QUERY_BILLING_DEBIT_APPLIED:   'Débito de consulta aplicado',
+  QUERY_CACHE_HIT_RECORDED:      'Resultado obtido do cache',
+  QUERY_EXECUTION_SUCCEEDED:     'Consulta realizada com sucesso',
+  QUERY_EXECUTION_FAILED:        'Falha na execução da consulta',
+  QUERY_BILLING_REFUND_APPLIED:  'Estorno de consulta aplicado',
+  QUERY_RESULT_PERSISTENCE_FAILED: 'Falha ao salvar resultado da consulta',
+  // API Tokens
+  API_TOKEN_CREATED:             'Token de API criado',
+  API_TOKEN_STATUS_CHANGED:      'Status do token de API alterado',
+  API_TOKEN_DELETED:             'Token de API removido',
+};
+
+const RESOURCE_LABELS: Record<string, string> = {
+  transaction:         'Transação',
+  webhook_log:         'Webhook',
+  balance_movement:    'Movimentação de saldo',
+  user:                'Usuário',
+  session:             'Sessão',
+  query:               'Consulta',
+  query_price_benefit: 'Benefício de preço',
+  api_token:           'Token de API',
+};
+
+const ACTOR_LABELS: Record<AuditActorType, string> = {
+  USER:   'Usuário',
+  ADMIN:  'Administrador',
+  SYSTEM: 'Sistema',
+};
+
+function labelAction(action: string): string {
+  return ACTION_LABELS[action] ?? action;
+}
+
+function labelResource(resourceType: string): string {
+  return RESOURCE_LABELS[resourceType] ?? resourceType;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function fmtDate(d: string) {
   return format(new Date(d), "dd/MM/yy HH:mm:ss", { locale: ptBR });
 }
 
 function ActorBadge({ type }: { type: AuditActorType }) {
-  const map: Record<AuditActorType, string> = {
+  const styles: Record<AuditActorType, string> = {
     USER:   'bg-sky-100 text-sky-700',
     ADMIN:  'bg-amber-100 text-amber-700',
     SYSTEM: 'bg-slate-100 text-slate-600',
   };
-  const icon: Record<AuditActorType, React.ReactNode> = {
+  const icons: Record<AuditActorType, React.ReactNode> = {
     USER:   <User className="w-3 h-3" />,
     ADMIN:  <ShieldCheck className="w-3 h-3" />,
     SYSTEM: <Cpu className="w-3 h-3" />,
   };
   return (
-    <Badge className={`gap-1 border-none text-xs font-medium ${map[type]}`}>
-      {icon[type]} {type}
+    <Badge title={type} className={`gap-1 border-none text-xs font-medium ${styles[type]}`}>
+      {icons[type]} {ACTOR_LABELS[type]}
     </Badge>
   );
 }
 
 function ActionBadge({ action }: { action: string }) {
-  const color = action.includes('FAILED') || action.includes('ERROR')
+  const color = action.includes('FAILED') || action.includes('ERROR') || action.includes('DETECTED')
     ? 'bg-red-100 text-red-700'
-    : action.includes('CREATED') || action.includes('CREDIT') || action.includes('SUCCESS')
+    : action.includes('CREATED') || action.includes('CREDIT') || action.includes('SUCCESS') || action.includes('ACTIVATED')
     ? 'bg-emerald-100 text-emerald-700'
-    : action.includes('CHANGED') || action.includes('UPDATED') || action.includes('UPSERTED')
+    : action.includes('CHANGED') || action.includes('UPDATED') || action.includes('UPSERTED') || action.includes('PROCESSED') || action.includes('RECEIVED')
     ? 'bg-blue-100 text-blue-700'
-    : action.includes('DELETED') || action.includes('REMOVED') || action.includes('REVOKED')
+    : action.includes('DELETED') || action.includes('REMOVED') || action.includes('REVOKED') || action.includes('REVERSAL')
     ? 'bg-rose-100 text-rose-700'
     : 'bg-slate-100 text-slate-600';
   return (
-    <Badge className={`border-none text-xs font-mono font-medium ${color}`}>
-      {action}
+    <Badge title={action} className={`border-none text-xs font-medium max-w-[220px] truncate ${color}`}>
+      {labelAction(action)}
     </Badge>
   );
 }
@@ -149,9 +217,9 @@ function FilterPanel({ filters, onChange, onSearch, onReset, loading }: FilterPa
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">Todos</SelectItem>
-              <SelectItem value="USER">USER</SelectItem>
-              <SelectItem value="ADMIN">ADMIN</SelectItem>
-              <SelectItem value="SYSTEM">SYSTEM</SelectItem>
+              <SelectItem value="USER">Usuário</SelectItem>
+              <SelectItem value="ADMIN">Administrador</SelectItem>
+              <SelectItem value="SYSTEM">Sistema</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -240,7 +308,7 @@ function EventDetailDialog({ eventId, onClose, onViewTimeline }: EventDetailDial
               {[
                 { label: 'Ação', value: <ActionBadge action={event.action} /> },
                 { label: 'Tipo de Ator', value: <ActorBadge type={event.actorType} /> },
-                { label: 'Tipo de Recurso', value: <span className="font-mono text-sm text-slate-700">{event.resourceType}</span> },
+                { label: 'Tipo de Recurso', value: <span title={event.resourceType} className="text-sm text-slate-700">{labelResource(event.resourceType)}</span> },
                 { label: 'ID do Recurso', value: <Truncate text={event.resourceId} max={32} /> },
                 { label: 'ID do Ator', value: <Truncate text={event.actorUserId} max={32} /> },
                 { label: 'Request ID', value: <Truncate text={event.requestId} max={32} /> },
@@ -284,7 +352,7 @@ function EventDetailDialog({ eventId, onClose, onViewTimeline }: EventDetailDial
                 onClick={() => { onViewTimeline(event.resourceType, event.resourceId!); onClose(); setEvent(null); }}
               >
                 <GitBranch className="w-4 h-4 text-primary" />
-                Ver timeline de {event.resourceType}/{event.resourceId.slice(0, 8)}…
+                Ver histórico completo de {labelResource(event.resourceType)}
               </Button>
             )}
           </div>
@@ -331,7 +399,7 @@ function TimelineDialog({ resourceType, resourceId, onClose }: TimelineDialogPro
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <GitBranch className="w-5 h-5 text-primary" />
-            Timeline · {resourceType}/{resourceId?.slice(0, 8)}…
+            Histórico de {resourceType ? labelResource(resourceType) : '—'}
           </DialogTitle>
         </DialogHeader>
 
@@ -547,7 +615,7 @@ export function AuditClientView({ initialData }: AuditClientViewProps) {
                 </TableCell>
                 <TableCell><ActionBadge action={ev.action} /></TableCell>
                 <TableCell><ActorBadge type={ev.actorType} /></TableCell>
-                <TableCell className="font-mono text-xs text-slate-600">{ev.resourceType}</TableCell>
+                <TableCell className="text-xs text-slate-700" title={ev.resourceType}>{labelResource(ev.resourceType)}</TableCell>
                 <TableCell><Truncate text={ev.resourceId} /></TableCell>
                 <TableCell><Truncate text={ev.actorUserId} /></TableCell>
                 <TableCell className="font-mono text-xs text-slate-500 max-w-[160px] truncate">{ev.route ?? '—'}</TableCell>
