@@ -421,3 +421,50 @@ export interface CreateApiTokenDto {
   name: string;
   expiresAt?: string;
 }
+
+// --- Audit Events ---
+
+export type AuditActorType = 'USER' | 'ADMIN' | 'SYSTEM';
+
+export interface AuditEvent {
+  id: string;
+  createdAt: string;
+  action: string;
+  actorType: AuditActorType;
+  resourceType: string;
+  metadata: Record<string, unknown>;
+  requestId: string | null;
+  tenantId: string | null;
+  actorUserId: string | null;
+  resourceId: string | null;
+  ip: string | null;
+  userAgent: string | null;
+  method: string | null;
+  route: string | null;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+}
+
+export interface AuditEventListResponse {
+  data: AuditEvent[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface AuditEventListFilters {
+  action?: string;
+  resourceType?: string;
+  resourceId?: string;
+  actorUserId?: string;
+  requestId?: string;
+  actorType?: AuditActorType;
+  method?: string;
+  route?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}
+
+export type AuditEventExportFilters = Omit<AuditEventListFilters, 'page'>;

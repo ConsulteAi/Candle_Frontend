@@ -17,7 +17,9 @@ import {
   Building2,
   Palette,
   KeyRound,
+  ShieldAlert,
 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { UserRole } from '@/types/auth';
@@ -30,6 +32,7 @@ const menuItems = [
   { name: 'Provedores', href: '/backoffice/providers', icon: Activity, role: UserRole.MASTER },
   { name: 'Tenants', href: '/backoffice/tenants', icon: Building2, role: UserRole.MASTER },
   { name: 'Identidade Visual', href: '/backoffice/ui-settings', icon: Palette },
+  { name: 'Auditoria', href: '/backoffice/audit', icon: ShieldAlert },
   { name: 'API Tokens', href: '/backoffice/api-tokens', icon: KeyRound, role: UserRole.MASTER },
 ];
 
