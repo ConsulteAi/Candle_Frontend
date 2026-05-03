@@ -160,7 +160,7 @@ function JsonBlock({ value }: { value: Record<string, unknown> | null }) {
     return <span className="text-slate-400 italic text-xs">—</span>;
   }
   return (
-    <pre className="bg-slate-900 text-emerald-400 text-xs font-mono p-3 rounded-lg overflow-auto max-h-48 leading-relaxed">
+    <pre className="bg-slate-900 text-emerald-400 text-xs font-mono p-3 rounded-lg overflow-x-auto max-h-48 leading-relaxed whitespace-pre-wrap break-all">
       {JSON.stringify(value, null, 2)}
     </pre>
   );
@@ -543,7 +543,7 @@ function TimelineEventCard({ ev, index, total }: { ev: AuditEvent; index: number
       </div>
 
       {/* Card */}
-      <div className={`flex-1 ${isLast ? 'pb-0' : 'pb-4'}`}>
+      <div className={`flex-1 min-w-0 ${isLast ? 'pb-0' : 'pb-4'}`}>
         <div className="bg-white border border-slate-100 rounded-xl shadow-sm overflow-hidden">
           {/* Header */}
           <div className="p-4">
@@ -584,7 +584,7 @@ function TimelineEventCard({ ev, index, total }: { ev: AuditEvent; index: number
                   {Object.keys(ev.metadata ?? {}).length > 0 && (
                     <div className="space-y-1">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Metadata</span>
-                      <pre className="bg-slate-900 text-emerald-400 text-xs font-mono p-3 rounded-lg overflow-auto max-h-36 leading-relaxed">
+                      <pre className="bg-slate-900 text-emerald-400 text-xs font-mono p-3 rounded-lg overflow-x-auto max-h-36 leading-relaxed whitespace-pre-wrap break-all">
                         {JSON.stringify(ev.metadata, null, 2)}
                       </pre>
                     </div>
@@ -594,7 +594,7 @@ function TimelineEventCard({ ev, index, total }: { ev: AuditEvent; index: number
                       {ev.before && (
                         <div className="space-y-1">
                           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Antes</span>
-                          <pre className="bg-slate-900 text-orange-300 text-xs font-mono p-3 rounded-lg overflow-auto max-h-36 leading-relaxed">
+                          <pre className="bg-slate-900 text-orange-300 text-xs font-mono p-3 rounded-lg overflow-x-auto max-h-36 leading-relaxed whitespace-pre-wrap break-all">
                             {JSON.stringify(ev.before, null, 2)}
                           </pre>
                         </div>
@@ -602,7 +602,7 @@ function TimelineEventCard({ ev, index, total }: { ev: AuditEvent; index: number
                       {ev.after && (
                         <div className="space-y-1">
                           <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Depois</span>
-                          <pre className="bg-slate-900 text-emerald-400 text-xs font-mono p-3 rounded-lg overflow-auto max-h-36 leading-relaxed">
+                          <pre className="bg-slate-900 text-emerald-400 text-xs font-mono p-3 rounded-lg overflow-x-auto max-h-36 leading-relaxed whitespace-pre-wrap break-all">
                             {JSON.stringify(ev.after, null, 2)}
                           </pre>
                         </div>
