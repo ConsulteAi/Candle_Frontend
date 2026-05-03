@@ -34,8 +34,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import { UserSearchComboBox } from '@/components/admin/UserSearchComboBox';
+
 
 import type {
   AuditEvent,
@@ -182,6 +184,47 @@ const EMPTY_FILTERS: AuditEventListFilters = {
   page: 1, limit: 20,
 };
 
+const ACTION_GROUPS: { label: string; actions: string[] }[] = [
+  {
+    label: 'Pagamentos',
+    actions: [
+      'RECHARGE_CREATED', 'WEBHOOK_RECEIVED', 'PAYMENT_STATUS_CHANGED',
+      'WEBHOOK_PROCESSED', 'WEBHOOK_FAILED', 'BALANCE_CREDIT_APPLIED',
+      'BALANCE_REVERSAL_APPLIED', 'PAID_WITHOUT_DEPOSIT_DETECTED',
+    ],
+  },
+  {
+    label: 'Autenticação',
+    actions: [
+      'ACCOUNT_ACTIVATED', 'LOGIN_SUCCESS', 'LOGIN_FAILED',
+      'PASSWORD_CHANGE', 'PASSWORD_RESET_REQUEST', 'PASSWORD_RESET',
+      'SESSION_LOGOUT', 'ALL_SESSIONS_REVOKED', 'SESSION_REVOKED',
+    ],
+  },
+  {
+    label: 'Administração',
+    actions: [
+      'ADMIN_BALANCE_ADJUSTED', 'USER_STATUS_CHANGED', 'USER_ROLE_CHANGED',
+      'QUERY_PRICE_BENEFIT_UPSERTED', 'QUERY_PRICE_BENEFIT_REMOVED',
+    ],
+  },
+  {
+    label: 'Consultas',
+    actions: [
+      'QUERY_RESERVED', 'QUERY_BILLING_DEBIT_APPLIED', 'QUERY_CACHE_HIT_RECORDED',
+      'QUERY_EXECUTION_SUCCEEDED', 'QUERY_EXECUTION_FAILED',
+      'QUERY_BILLING_REFUND_APPLIED', 'QUERY_RESULT_PERSISTENCE_FAILED',
+    ],
+  },
+  {
+    label: 'API Tokens',
+    actions: [
+      'API_TOKEN_CREATED', 'API_TOKEN_STATUS_CHANGED', 'API_TOKEN_DELETED',
+    ],
+  },
+];
+
+
 interface FilterPanelProps {
   filters: AuditEventListFilters;
   onChange: (f: AuditEventListFilters) => void;
@@ -190,25 +233,63 @@ interface FilterPanelProps {
   loading: boolean;
 }
 
+
 function FilterPanel({ filters, onChange, onSearch, onReset, loading }: FilterPanelProps) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const set = (key: keyof AuditEventListFilters, val: string) =>
     onChange({ ...filters, [key]: val || undefined, page: 1 });
 
+  const hasAdvanced = !!(filters.resourceId || filters.actorUserId || filters.requestId);
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
+      {/* ── Primary filters ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+        {/* Action – grouped dropdown */}
         <div className="space-y-1">
           <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Ação</Label>
-          <Input placeholder="ex: WEBHOOK_FAILED" value={filters.action ?? ''} onChange={e => set('action', e.target.value)} className="h-9 text-sm border-slate-200" />
+          <Select
+            value={filters.action ?? 'ALL'}
+            onValueChange={v => set('action', v === 'ALL' ? '' : v)}
+          >
+            <SelectTrigger className="h-9 text-sm border-slate-200">
+              <SelectValue placeholder="Todas" />
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+              <SelectItem value="ALL">Todas as ações</SelectItem>
+              {ACTION_GROUPS.map(group => (
+                <SelectGroup key={group.label}>
+                  <SelectLabel className="text-xs text-slate-400 font-semibold px-2 py-1">{group.label}</SelectLabel>
+                  {group.actions.map(a => (
+                    <SelectItem key={a} value={a}>{labelAction(a)}</SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+
+        {/* Resource Type – dropdown */}
         <div className="space-y-1">
           <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tipo de Recurso</Label>
-          <Input placeholder="ex: transaction" value={filters.resourceType ?? ''} onChange={e => set('resourceType', e.target.value)} className="h-9 text-sm border-slate-200" />
+          <Select
+            value={filters.resourceType ?? 'ALL'}
+            onValueChange={v => set('resourceType', v === 'ALL' ? '' : v)}
+          >
+            <SelectTrigger className="h-9 text-sm border-slate-200">
+              <SelectValue placeholder="Todos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Todos os recursos</SelectItem>
+              {Object.entries(RESOURCE_LABELS).map(([key, label]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <div className="space-y-1">
-          <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">ID do Recurso</Label>
-          <Input placeholder="UUID do recurso" value={filters.resourceId ?? ''} onChange={e => set('resourceId', e.target.value)} className="h-9 text-sm border-slate-200" />
-        </div>
+
+        {/* Actor Type */}
         <div className="space-y-1">
           <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tipo de Ator</Label>
           <Select value={filters.actorType ?? 'ALL'} onValueChange={v => onChange({ ...filters, actorType: v === 'ALL' ? undefined : v as AuditActorType, page: 1 })}>
@@ -223,23 +304,85 @@ function FilterPanel({ filters, onChange, onSearch, onReset, loading }: FilterPa
             </SelectContent>
           </Select>
         </div>
+
+        {/* Date range */}
         <div className="space-y-1">
-          <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">ID do Ator</Label>
-          <Input placeholder="UUID do usuário" value={filters.actorUserId ?? ''} onChange={e => set('actorUserId', e.target.value)} className="h-9 text-sm border-slate-200" />
+          <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Período</Label>
+          <div className="flex gap-1.5">
+            <Input
+              type="date"
+              title="De"
+              value={filters.from ? filters.from.slice(0, 10) : ''}
+              onChange={e => set('from', e.target.value ? new Date(e.target.value).toISOString() : '')}
+              className="h-9 text-sm border-slate-200 w-1/2"
+            />
+            <Input
+              type="date"
+              title="Até"
+              value={filters.to ? filters.to.slice(0, 10) : ''}
+              onChange={e => set('to', e.target.value ? new Date(e.target.value + 'T23:59:59').toISOString() : '')}
+              className="h-9 text-sm border-slate-200 w-1/2"
+            />
+          </div>
         </div>
-        <div className="space-y-1">
-          <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Request ID</Label>
-          <Input placeholder="UUID da request" value={filters.requestId ?? ''} onChange={e => set('requestId', e.target.value)} className="h-9 text-sm border-slate-200" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">De</Label>
-          <Input type="datetime-local" value={filters.from ?? ''} onChange={e => set('from', e.target.value ? new Date(e.target.value).toISOString() : '')} className="h-9 text-sm border-slate-200" />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Até</Label>
-          <Input type="datetime-local" value={filters.to ?? ''} onChange={e => set('to', e.target.value ? new Date(e.target.value).toISOString() : '')} className="h-9 text-sm border-slate-200" />
+
+        {/* User search */}
+        <div className="space-y-1 md:col-span-2">
+          <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Usuário</Label>
+          <UserSearchComboBox
+            ownerId={filters.actorUserId ?? null}
+            onSelect={userId => onChange({ ...filters, actorUserId: userId ?? undefined, page: 1 })}
+          />
         </div>
       </div>
+
+      {/* ── Advanced (UUID) filters ── */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowAdvanced(v => !v)}
+          className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showAdvanced ? 'rotate-90' : ''}`} />
+          Filtros avançados por ID
+          {hasAdvanced && <span className="ml-1 bg-primary/10 text-primary text-[10px] px-1.5 py-0.5 rounded-full font-bold">ativo</span>}
+        </button>
+
+        <AnimatePresence>
+          {showAdvanced && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.18 }}
+              className="overflow-hidden"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">ID do Recurso</Label>
+                  <Input
+                    placeholder="Cole o ID do recurso aqui"
+                    value={filters.resourceId ?? ''}
+                    onChange={e => set('resourceId', e.target.value)}
+                    className="h-9 text-sm border-slate-200 font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">ID da Requisição</Label>
+                  <Input
+                    placeholder="Cole o Request ID aqui"
+                    value={filters.requestId ?? ''}
+                    onChange={e => set('requestId', e.target.value)}
+                    className="h-9 text-sm border-slate-200 font-mono"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Actions ── */}
       <div className="flex gap-2 justify-end pt-1">
         <Button variant="ghost" size="sm" onClick={onReset} className="gap-1.5 text-slate-500 hover:text-slate-800">
           <X className="w-3.5 h-3.5" /> Limpar
@@ -253,6 +396,7 @@ function FilterPanel({ filters, onChange, onSearch, onReset, loading }: FilterPa
     </div>
   );
 }
+
 
 // ─── Event Detail Dialog ──────────────────────────────────────────────────────
 
