@@ -41,6 +41,11 @@ const allowedRoutes: AllowedRoute[] = [
   { pattern: /^\/admin\/query-types\/[a-zA-Z0-9-]+$/, methods: ["PATCH"] },
   { pattern: /^\/admin\/query-types\/[a-zA-Z0-9-]+\/toggle$/, methods: ["POST"] },
 
+  { pattern: /^\/admin\/audit-events$/, methods: ["GET"] },
+  { pattern: /^\/admin\/audit-events\/export$/, methods: ["GET"] },
+  { pattern: /^\/admin\/audit-events\/resource\/[^/]+\/[^/]+$/, methods: ["GET"] },
+  { pattern: /^\/admin\/audit-events\/[a-zA-Z0-9-]+$/, methods: ["GET"] },
+
   { pattern: /^\/admin\/tenants$/, methods: ["GET", "POST"] },
   { pattern: /^\/admin\/tenants\/[a-zA-Z0-9-]+$/, methods: ["PATCH", "DELETE"] },
   { pattern: /^\/admin\/tenants\/ui-settings$/, methods: ["PATCH"] },
