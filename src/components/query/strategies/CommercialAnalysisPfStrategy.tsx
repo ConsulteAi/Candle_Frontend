@@ -9,6 +9,11 @@ import {
   Landmark,
   Search,
   User,
+  Gavel,
+  TrendingUp,
+  ShieldAlert,
+  Activity,
+  Clock,
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type { CommercialAnalysisPfResult, QueryStrategyProps } from '@/types/query-strategies';
@@ -33,6 +38,7 @@ const EMPTY_SUMMARY = {
   totalQueries: 0,
   totalScpcDebts: 0,
   totalRefinPefinDebts: 0,
+  totalLegalActions: 0,
 };
 
 export function CommercialAnalysisPfStrategy({
@@ -46,9 +52,11 @@ export function CommercialAnalysisPfStrategy({
   const protests = data.protests ?? [];
   const queries = data.queries ?? [];
   const serasaDebts = data.serasaDebts ?? [];
+  const legalActions = data.legalActions ?? [];
 
   const scoreValue = data.score?.value;
   const riskText = data.score?.riskText || data.score?.risk;
+  const hasExtraDebtFields = debts.some((d) => d.creditor || d.updatedValue);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -106,6 +114,23 @@ export function CommercialAnalysisPfStrategy({
             )}
           </div>
         )}
+
+        {(data.person?.rg || data.person?.estadoCivil || data.person?.tituloEleitor || data.person?.dataAtualizacao) && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            {data.person?.rg && (
+              <InfoBox label="RG" value={data.person.rg} icon={<FileText className="w-4 h-4 text-gray-400" />} />
+            )}
+            {data.person?.estadoCivil && (
+              <InfoBox label="Estado Civil" value={data.person.estadoCivil} icon={<User className="w-4 h-4 text-gray-400" />} />
+            )}
+            {data.person?.tituloEleitor && (
+              <InfoBox label="Título Eleitor" value={data.person.tituloEleitor} icon={<FileText className="w-4 h-4 text-gray-400" />} />
+            )}
+            {data.person?.dataAtualizacao && (
+              <InfoBox label="Atualização" value={formatDisplayDate(data.person.dataAtualizacao)} icon={<Clock className="w-4 h-4 text-gray-400" />} />
+            )}
+          </div>
+        )}
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -139,7 +164,61 @@ export function CommercialAnalysisPfStrategy({
           color={(summary.totalRefinPefinDebts || 0) > 0 ? 'purple' : 'green'}
           icon={<FileText className="w-5 h-5" />}
         />
+        {legalActions.length > 0 && (
+          <SummaryCard
+            title="Ações Cíveis"
+            value={legalActions.length}
+            color="red"
+            icon={<Gavel className="w-5 h-5" />}
+          />
+        )}
       </div>
+
+      {(data.debitSummary || data.protestSummary) && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {data.debitSummary && (
+            <Card className="p-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Resumo de Débitos</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {data.debitSummary.valorAcumulado != null && (
+                  <InfoBox label="Valor Acumulado" value={formatCurrency(String(data.debitSummary.valorAcumulado))} />
+                )}
+                {data.debitSummary.totalDebitosDevedor != null && (
+                  <InfoBox label="Total Débitos" value={String(data.debitSummary.totalDebitosDevedor)} />
+                )}
+                {data.debitSummary.dataMaiorDebito && (
+                  <InfoBox label="Maior Débito" value={formatDisplayDate(data.debitSummary.dataMaiorDebito)} />
+                )}
+                {data.debitSummary.dataPrimeiroDebito && (
+                  <InfoBox label="Primeiro Débito" value={formatDisplayDate(data.debitSummary.dataPrimeiroDebito)} />
+                )}
+              </div>
+            </Card>
+          )}
+          {data.protestSummary && (
+            <Card className="p-4 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <ShieldAlert className="w-4 h-4 text-primary" />
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Resumo de Protestos</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {data.protestSummary.quantidade != null && (
+                  <InfoBox label="Quantidade" value={String(data.protestSummary.quantidade)} />
+                )}
+                {data.protestSummary.valorTotal != null && (
+                  <InfoBox label="Valor Total" value={formatCurrency(String(data.protestSummary.valorTotal))} />
+                )}
+                {data.protestSummary.ultimaData && (
+                  <InfoBox label="Último" value={formatDisplayDate(data.protestSummary.ultimaData)} />
+                )}
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
 
       {data.creditLimitSuggestion && (
         <StrategySectionWrapper
@@ -201,6 +280,7 @@ export function CommercialAnalysisPfStrategy({
           <TableHeader>
             <TableRow>
               <TableHead>Data</TableHead>
+              {hasExtraDebtFields && <TableHead>Credor</TableHead>}
               <TableHead>Origem</TableHead>
               <TableHead>Contrato</TableHead>
               <TableHead className="text-right">Valor</TableHead>
@@ -210,9 +290,14 @@ export function CommercialAnalysisPfStrategy({
             {debts.map((item, idx) => (
               <TableRow key={idx}>
                 <TableCell>{item.date || '-'}</TableCell>
-                <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                {hasExtraDebtFields && (
+                  <TableCell className="font-medium">{item.creditor || item.origin || '-'}</TableCell>
+                )}
+                <TableCell>{item.origin || '-'}</TableCell>
                 <TableCell>{item.contract || '-'}</TableCell>
-                <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(item.value || 0))}</TableCell>
+                <TableCell className="text-right font-bold text-red-600">
+                  {formatCurrency(String(item.updatedValue || item.value || 0))}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -247,6 +332,133 @@ export function CommercialAnalysisPfStrategy({
           </TableBody>
         </Table>
       </StrategySectionWrapper>
+
+      {legalActions.length > 0 && (
+        <StrategySectionWrapper
+          title="Ações Cíveis"
+          icon={<Gavel className="w-5 h-5 text-red-500" />}
+          count={legalActions.length}
+          isEmpty={false}
+        >
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Origem</TableHead>
+                <TableHead>Processo</TableHead>
+                <TableHead>Autor</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {legalActions.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{item.date || '-'}</TableCell>
+                  <TableCell className="font-medium">{item.type || '-'}</TableCell>
+                  <TableCell>{item.origin || '-'}</TableCell>
+                  <TableCell>{item.processo || '-'}</TableCell>
+                  <TableCell>{item.autor || '-'}</TableCell>
+                  <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(item.value || 0))}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </StrategySectionWrapper>
+      )}
+
+      {data.painelNotaComportamento && (
+        <StrategySectionWrapper
+          title="Nota de Comportamento"
+          icon={<Activity className="w-5 h-5 text-primary" />}
+          isEmpty={false}
+        >
+          <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {data.painelNotaComportamento.notaFaturaEmAtraso && (
+              <InfoBox
+                label={data.painelNotaComportamento.notaFaturaEmAtraso.label || 'Fatura em Atraso'}
+                value={data.painelNotaComportamento.notaFaturaEmAtraso.nota || '-'}
+                icon={<AlertTriangle className="w-4 h-4 text-gray-400" />}
+              />
+            )}
+            {data.painelNotaComportamento.notaContratosRecentes && (
+              <InfoBox
+                label={data.painelNotaComportamento.notaContratosRecentes.label || 'Contratos Recentes'}
+                value={data.painelNotaComportamento.notaContratosRecentes.nota || '-'}
+                icon={<FileText className="w-4 h-4 text-gray-400" />}
+              />
+            )}
+            {data.painelNotaComportamento.notaAdiantamentoDePagamento && (
+              <InfoBox
+                label={data.painelNotaComportamento.notaAdiantamentoDePagamento.label || 'Adiantamento'}
+                value={data.painelNotaComportamento.notaAdiantamentoDePagamento.nota || '-'}
+                icon={<CheckCircle2 className="w-4 h-4 text-gray-400" />}
+              />
+            )}
+          </div>
+        </StrategySectionWrapper>
+      )}
+
+      {data.painelMaturidadeCredito && (
+        <StrategySectionWrapper
+          title="Maturidade de Crédito"
+          icon={<Clock className="w-5 h-5 text-primary" />}
+          isEmpty={false}
+        >
+          <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {data.painelMaturidadeCredito.txtTempoExperiencia && (
+              <InfoBox label="Tempo de Experiência" value={data.painelMaturidadeCredito.txtTempoExperiencia} icon={<Clock className="w-4 h-4 text-gray-400" />} />
+            )}
+            {data.painelMaturidadeCredito.datContratoMaisAntigo && (
+              <InfoBox label="Contrato Mais Antigo" value={formatDisplayDate(data.painelMaturidadeCredito.datContratoMaisAntigo)} icon={<Calendar className="w-4 h-4 text-gray-400" />} />
+            )}
+            {data.painelMaturidadeCredito.mesesContratoMaisAntigo != null && (
+              <InfoBox label="Meses de Experiência" value={String(data.painelMaturidadeCredito.mesesContratoMaisAntigo)} icon={<TrendingUp className="w-4 h-4 text-gray-400" />} />
+            )}
+          </div>
+        </StrategySectionWrapper>
+      )}
+
+      {data.painelPontuacaoComprometimento && (
+        <StrategySectionWrapper
+          title="Comprometimento"
+          icon={<TrendingUp className="w-5 h-5 text-primary" />}
+          isEmpty={false}
+        >
+          <div className="space-y-4 p-4">
+            {data.painelPontuacaoComprometimento.operacoesParceladas?.periodos && data.painelPontuacaoComprometimento.operacoesParceladas.periodos.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{data.painelPontuacaoComprometimento.operacoesParceladas.blocoLabel || 'Parcelados'}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {data.painelPontuacaoComprometimento.operacoesParceladas.periodos.map((p, i) => (
+                    <InfoBox key={i} label={p.label || '-'} value={p.valor || '-'} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {data.painelPontuacaoComprometimento.servicosContinuados?.periodos && data.painelPontuacaoComprometimento.servicosContinuados.periodos.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{data.painelPontuacaoComprometimento.servicosContinuados.blocoLabel || 'Serviços Continuados'}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {data.painelPontuacaoComprometimento.servicosContinuados.periodos.map((p, i) => (
+                    <InfoBox key={i} label={p.label || '-'} value={p.valor || '-'} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {data.painelPontuacaoComprometimento.cartaoCreditoChequeOutrosRotativos?.periodos && data.painelPontuacaoComprometimento.cartaoCreditoChequeOutrosRotativos.periodos.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">{data.painelPontuacaoComprometimento.cartaoCreditoChequeOutrosRotativos.blocoLabel || 'Cartão/Cheque/Rotativos'}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {data.painelPontuacaoComprometimento.cartaoCreditoChequeOutrosRotativos.periodos.map((p, i) => (
+                    <InfoBox key={i} label={p.label || '-'} value={p.valor || '-'} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </StrategySectionWrapper>
+      )}
 
       {queries.length > 0 && (
         <StrategySectionWrapper
