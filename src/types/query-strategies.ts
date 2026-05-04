@@ -564,6 +564,7 @@ export interface CommercialAnalysisFinancialSummary {
   totalQueries?: number;
   totalScpcDebts?: number;
   totalRefinPefinDebts?: number;
+  totalLegalActions?: number;
 }
 
 export interface CommercialAnalysisDebt {
@@ -571,6 +572,14 @@ export interface CommercialAnalysisDebt {
   origin?: string;
   contract?: string;
   value?: string | number;
+  creditor?: string;
+  currency?: string;
+  modality?: string;
+  debtorType?: string;
+  inclusionDate?: string;
+  registryType?: string;
+  originalValue?: string | number;
+  updatedValue?: string | number;
 }
 
 export interface CommercialAnalysisProtest {
@@ -608,10 +617,75 @@ export interface CommercialAnalysisScore {
   value?: string | number;
   riskText?: string;
   risk?: string;
+  nomeScore?: string;
+  tipoScore?: string;
+  modeloPlano?: string;
+  textoExplicativo?: string;
+  classificacaoCor?: string;
 }
 
 export interface CommercialAnalysisDecision {
   status?: string;
+}
+
+export interface CommercialAnalysisLegalAction {
+  type?: string;
+  value?: string | number;
+  date?: string;
+  origin?: string;
+  details?: string;
+  processo?: string;
+  autor?: string;
+  vara?: string;
+}
+
+export interface CommercialAnalysisDebitSummary {
+  valorAcumulado?: string | number;
+  dataMaiorDebito?: string;
+  valorMaiorDebito?: string | number;
+  dataPrimeiroDebito?: string;
+  totalDebitosDevedor?: number;
+  valorPrimeiroDebito?: string | number;
+}
+
+export interface CommercialAnalysisProtestSummary {
+  quantidade?: number;
+  ultimaData?: string;
+  valorTotal?: string | number;
+  primeiraData?: string;
+}
+
+export interface CommercialAnalysisPainelNotaItem {
+  nota?: string;
+  label?: string;
+}
+
+export interface CommercialAnalysisPainelNotaComportamento {
+  notaFaturaEmAtraso?: CommercialAnalysisPainelNotaItem;
+  notaContratosRecentes?: CommercialAnalysisPainelNotaItem;
+  notaAdiantamentoDePagamento?: CommercialAnalysisPainelNotaItem;
+}
+
+export interface CommercialAnalysisPainelMaturidade {
+  txtTempoExperiencia?: string;
+  datContratoMaisAntigo?: string;
+  mesesContratoMaisAntigo?: number;
+}
+
+export interface CommercialAnalysisPainelPontuacaoPeriodo {
+  label?: string;
+  valor?: string;
+}
+
+export interface CommercialAnalysisPainelPontuacaoCategoria {
+  blocoLabel?: string;
+  periodos?: CommercialAnalysisPainelPontuacaoPeriodo[];
+}
+
+export interface CommercialAnalysisPainelPontuacao {
+  operacoesParceladas?: CommercialAnalysisPainelPontuacaoCategoria;
+  servicosContinuados?: CommercialAnalysisPainelPontuacaoCategoria;
+  cartaoCreditoChequeOutrosRotativos?: CommercialAnalysisPainelPontuacaoCategoria;
 }
 
 interface CommercialAnalysisBaseResult {
@@ -625,10 +699,27 @@ interface CommercialAnalysisBaseResult {
   protests?: CommercialAnalysisProtest[];
   queries?: CommercialAnalysisQuery[];
   serasaDebts?: CommercialAnalysisSerasaDebt[];
+  legalActions?: CommercialAnalysisLegalAction[];
+  debitSummary?: CommercialAnalysisDebitSummary;
+  protestSummary?: CommercialAnalysisProtestSummary;
+  painelNotaComportamento?: CommercialAnalysisPainelNotaComportamento;
+  painelMaturidadeCredito?: CommercialAnalysisPainelMaturidade;
+  painelPontuacaoComprometimento?: CommercialAnalysisPainelPontuacao;
 }
 
 export interface CommercialAnalysisPfResult extends CommercialAnalysisBaseResult {
-  person?: Pick<BasePerson, 'name' | 'document' | 'birthDate' | 'motherName' | 'status' | 'revenueStatus'>;
+  person?: Pick<BasePerson, 'name' | 'document' | 'birthDate' | 'motherName' | 'status' | 'revenueStatus'> & {
+    gender?: string;
+    educationLevel?: string;
+    rg?: string;
+    orgaoEmissor?: string;
+    estadoCivil?: string;
+    tituloEleitor?: string;
+    dataAtualizacao?: string;
+    cidadeNascimento?: string;
+    numeroDependentes?: number;
+    obito?: boolean;
+  };
 }
 
 export interface CommercialAnalysisPjResult extends CommercialAnalysisBaseResult {
