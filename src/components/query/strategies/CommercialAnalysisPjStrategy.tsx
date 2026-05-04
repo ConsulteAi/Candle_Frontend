@@ -157,10 +157,10 @@ export function CommercialAnalysisPjStrategy({
               {serasaDebts.map((item, idx) => (
                 <TableRow key={idx}>
                   <TableCell className="font-medium">{item.creditor || '-'}</TableCell>
-                  <TableCell>{item.dueDate || '-'}</TableCell>
+                  <TableCell>{formatDisplayDate(item.dueDate) || '-'}</TableCell>
                   <TableCell>{item.type || '-'}</TableCell>
                   <TableCell>{item.contract || '-'}</TableCell>
-                  <TableCell>{item.inclusionDate || '-'}</TableCell>
+                  <TableCell>{formatDisplayDate(item.inclusionDate) || '-'}</TableCell>
                   <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(item.value || 0))}</TableCell>
                 </TableRow>
               ))}
@@ -188,7 +188,7 @@ export function CommercialAnalysisPjStrategy({
           <TableBody>
             {debts.map((item, idx) => (
               <TableRow key={idx}>
-                <TableCell>{item.date || '-'}</TableCell>
+                <TableCell>{formatDisplayDate(item.date) || '-'}</TableCell>
                 <TableCell className="font-medium">{item.origin || '-'}</TableCell>
                 <TableCell>{item.contract || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(item.value || 0))}</TableCell>
@@ -217,7 +217,7 @@ export function CommercialAnalysisPjStrategy({
           <TableBody>
             {protests.map((item, idx) => (
               <TableRow key={idx}>
-                <TableCell>{item.date || '-'}</TableCell>
+                <TableCell>{formatDisplayDate(item.date) || '-'}</TableCell>
                 <TableCell className="font-medium">{item.origin || '-'}</TableCell>
                 <TableCell>{item.notary || item.notaryName || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(item.value || 0))}</TableCell>
@@ -245,7 +245,7 @@ export function CommercialAnalysisPjStrategy({
             <TableBody>
               {queries.map((item, idx) => (
                 <TableRow key={idx}>
-                  <TableCell>{item.date || '-'}</TableCell>
+                  <TableCell>{formatDisplayDate(item.date) || '-'}</TableCell>
                   <TableCell className="font-medium">{item.entity || '-'}</TableCell>
                   <TableCell>{item.cityState || '-'}</TableCell>
                 </TableRow>
