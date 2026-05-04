@@ -123,20 +123,20 @@ export function ProtestoNacionalPlusStrategy({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {protests.map((item, idx) => (
-              <TableRow key={idx}>
-                <TableCell>{formatCpfCnpj(item.document || '-')}</TableCell>
-                <TableCell>{item.protestDate || '-'}</TableCell>
-                <TableCell>{item.dueDate || '-'}</TableCell>
-                <TableCell>{`${item.city || '-'} / ${item.state || '-'}`}</TableCell>
-                <TableCell className="font-medium">{`${item.notaryNumber || '-'} - ${item.notaryName || '-'}`}</TableCell>
-                <TableCell>{item.presenterName || '-'}</TableCell>
-                <TableCell>{item.assignorName || '-'}</TableCell>
-                <TableCell className="text-right font-bold text-orange-600">
-                  {formatCurrency(String(item.value || 0))}
-                </TableCell>
-              </TableRow>
-            ))}
+              {protests.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{formatCpfCnpj(item.document || '-')}</TableCell>
+                  <TableCell>{formatDisplayDate(item.protestDate) || '-'}</TableCell>
+                  <TableCell>{formatDisplayDate(item.dueDate) || '-'}</TableCell>
+                  <TableCell>{`${item.city || '-'} / ${item.state || '-'}`}</TableCell>
+                  <TableCell className="font-medium">{`${item.notaryNumber || '-'} - ${item.notaryName || '-'}`}</TableCell>
+                  <TableCell>{item.presenterName || '-'}</TableCell>
+                  <TableCell>{item.assignorName || '-'}</TableCell>
+                  <TableCell className="text-right font-bold text-orange-600">
+                    {formatCurrency(String(item.value || 0))}
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </StrategySectionWrapper>
