@@ -9,6 +9,12 @@ import { useAuthStore } from '@/store/authStore';
 import { loginAction, registerAction, logoutAction } from '@/actions/auth.actions';
 import type { LoginDTO, RegisterDTO } from '@/types';
 
+function sanitizeRedirectPath(redirectTo?: string): string {
+  if (!redirectTo || !redirectTo.startsWith('/')) return '/';
+  if (redirectTo.startsWith('//')) return '/';
+  return redirectTo;
+}
+
 export function useAuth() {
   const router = useRouter();
   const {
@@ -23,13 +29,13 @@ export function useAuth() {
    * Login
    */
   const login = useCallback(
-    async (credentials: LoginDTO) => {
+    async (credentials: LoginDTO, redirectTo?: string) => {
       try {
         const result = await loginAction(credentials);
 
         if (result.success && result.data) {
           setAuth(result.data);
-          router.push('/');
+          router.push(sanitizeRedirectPath(redirectTo));
           return { success: true };
         }
 

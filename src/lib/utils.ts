@@ -9,11 +9,16 @@ export function cn(...inputs: ClassValue[]) {
 
 export function sanitizeUser(user: any): User {
   if (!user) return user;
-  
+
+  const normalizedRole =
+    typeof user.role === 'string' && user.role.trim()
+      ? user.role.trim().toUpperCase()
+      : 'USER';
+
   return {
     name: user.name || '',
     email: user.email || '',
-    role: user.role || 'USER',
+    role: normalizedRole,
     phone: user.phone,
   };
 }

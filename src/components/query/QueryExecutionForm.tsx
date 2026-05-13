@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -38,7 +38,13 @@ export function QueryExecutionForm({
   onSuccess,
   className,
 }: QueryExecutionFormProps) {
-  const { balance, formattedBalance } = useBalance();
+  const {
+    balance,
+    formattedBalance,
+    fetchBalance,
+    isBalanceLoading,
+    isBalanceReady,
+  } = useBalance();
   const { executeQuery, isLoading, error: executionError } = useQueryExecution();
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -57,6 +63,14 @@ export function QueryExecutionForm({
   });
 
   const inputValue = watch('input');
+
+  useEffect(() => {
+    if (isBalanceReady) return;
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[balance][query-form] validating balance before submit');
+    }
+    fetchBalance();
+  }, [fetchBalance, isBalanceReady]);
 
   // Determine input configuration based on categories
   const isPerson = queryType.category.includes(QueryCategory.PERSON);
@@ -199,7 +213,23 @@ export function QueryExecutionForm({
   };
 
   const currentPrice = queryType.cachedPrice < queryType.price ? queryType.cachedPrice : queryType.price;
-  const hasSufficientBalance = balance >= currentPrice;
+  const hasSufficientBalance = isBalanceReady && balance >= currentPrice;
+  const shouldShowValidatingBalance = !isBalanceReady;
+
+  useEffect(() => {
+    if (!executionError) return;
+    const isInsufficientError = executionError.toUpperCase().includes('SALDO INSUFICIENTE');
+    if (!isInsufficientError) return;
+
+    if (process.env.NODE_ENV !== 'production' && balance >= currentPrice) {
+      console.warn('[balance][query-form] received 402 with local balance >= current price', {
+        balance,
+        currentPrice,
+      });
+    }
+
+    fetchBalance();
+  }, [balance, currentPrice, executionError, fetchBalance]);
 
   // React Hook Form requires manual registration for controlled input with custom onChange
   const { ref, ...restRegister } = register('input');
@@ -260,7 +290,16 @@ export function QueryExecutionForm({
       </div>
 
       {/* Balance warning */}
-      {!hasSufficientBalance && (
+      {shouldShowValidatingBalance && (
+        <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+          <p className="text-sm text-blue-700 flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Validando saldo disponível...
+          </p>
+        </div>
+      )}
+
+      {!shouldShowValidatingBalance && !hasSufficientBalance && (
         <div className="p-4 rounded-lg bg-red-50 border border-red-200">
           <p className="text-sm text-red-700 flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
@@ -327,7 +366,7 @@ export function QueryExecutionForm({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || !hasSufficientBalance}
+              disabled={isLoading || isBalanceLoading || !hasSufficientBalance}
               className="flex-1"
             >
               {isLoading ? (
@@ -343,7 +382,7 @@ export function QueryExecutionForm({
         ) : (
           <Button
             type="submit"
-            disabled={isLoading || !inputValue || !hasSufficientBalance}
+            disabled={isLoading || isBalanceLoading || !inputValue || !hasSufficientBalance}
             className="w-full h-12"
           >
             {isLoading ? (

@@ -14,6 +14,7 @@ import type {
 } from '@/types/query';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/authStore';
+import { getBalanceAction } from '@/actions/balance.actions';
 
 export function useQueryExecution() {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +38,14 @@ export function useQueryExecution() {
       if (!result.success || !result.data) {
         const errorMsg = result.error || 'Erro ao executar consulta';
         setError(errorMsg);
+
+        if (errorMsg.toUpperCase().includes('SALDO INSUFICIENTE')) {
+          const balanceResult = await getBalanceAction();
+          if (balanceResult.success && balanceResult.data) {
+            updateBalance(balanceResult.data.available);
+          }
+        }
+
         return null;
       }
 

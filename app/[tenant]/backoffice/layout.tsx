@@ -16,13 +16,24 @@ export default async function BackofficeLayout({
     const user = await AuthService.getMe();
 
     if (!user) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[auth][backoffice][ssr] denied: missing user');
+      }
       redirect('/login');
     }
 
     if (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[auth][backoffice][ssr] denied: invalid role', {
+          role: user.role,
+        });
+      }
       redirect('/');
     }
   } catch {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[auth][backoffice][ssr] denied: AuthService.getMe threw');
+    }
     redirect('/login');
   }
 
