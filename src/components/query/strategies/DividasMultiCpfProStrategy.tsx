@@ -18,6 +18,7 @@ import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
+import { ScoreGauge } from './components/ScoreGauge';
 import {
   Table,
   TableBody,
@@ -44,41 +45,59 @@ export function DividasMultiCpfProStrategy({
     summary.totalSerasaOccurrences,
   ].some((value) => Number(value || 0) > 0);
 
+  const hasScore = !!data.score?.value;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
-        <StrategyHeader
-          title={data.person.name}
-          protocol={data.protocol}
-          status={hasOccurrences ? 'COM OCORRENCIAS' : 'SEM OCORRENCIAS'}
-          statusVariant={hasOccurrences ? 'warning' : 'success'}
-          pdfUrl={data.pdf}
-          queryId={queryId}
-          className="mb-6"
-        >
-          <Badge variant="info">Dividas Multi PF Pro</Badge>
-        </StrategyHeader>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <InfoBox
-            label="Documento"
-            value={data.person.document}
-            icon={<User className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Nascimento"
-            value={formatDisplayDate(data.person.birthDate)}
-            icon={<Calendar className="w-4 h-4 text-primary" />}
-          />
-          <div className="col-span-2">
-            <InfoBox
-              label="Nome da Mãe"
-              value={data.person.motherName || 'N/A'}
-              icon={<User className="w-4 h-4 text-gray-400" />}
+      <div className="grid md:grid-cols-12 gap-6">
+        {/* Score Card (Left) */}
+        {hasScore && (
+          <div className="md:col-span-4">
+            <ScoreGauge
+              value={Number(data.score!.value)}
+              band={data.score!.class}
+              riskText={data.score!.riskText}
             />
           </div>
+        )}
+
+        {/* Info Card (Right) */}
+        <div className={hasScore ? 'md:col-span-8' : 'md:col-span-12'}>
+          <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
+            <StrategyHeader
+              title={data.person.name}
+              protocol={data.protocol}
+              status={hasOccurrences ? 'COM OCORRENCIAS' : 'SEM OCORRENCIAS'}
+              statusVariant={hasOccurrences ? 'warning' : 'success'}
+              pdfUrl={data.pdf}
+              queryId={queryId}
+              className="mb-6"
+            >
+              <Badge variant="info">Dividas Multi PF Pro</Badge>
+            </StrategyHeader>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <InfoBox
+                label="Documento"
+                value={data.person.document}
+                icon={<User className="w-4 h-4 text-primary" />}
+              />
+              <InfoBox
+                label="Nascimento"
+                value={formatDisplayDate(data.person.birthDate)}
+                icon={<Calendar className="w-4 h-4 text-primary" />}
+              />
+              <div className="col-span-2">
+                <InfoBox
+                  label="Nome da Mãe"
+                  value={data.person.motherName || 'N/A'}
+                  icon={<User className="w-4 h-4 text-gray-400" />}
+                />
+              </div>
+            </div>
+          </Card>
         </div>
-      </Card>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <SummaryCard
