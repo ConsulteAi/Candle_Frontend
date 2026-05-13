@@ -22,6 +22,7 @@ import { TenantLogo } from '@/components/ui/TenantLogo';
 export default function LoginPage() {
   const { login } = useAuth();
   const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect') || '/';
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -44,7 +45,7 @@ export default function LoginPage() {
     await new Promise((resolve) => setTimeout(resolve, 800));
     
     try {
-      const result = await login(data);
+      const result = await login(data, redirectTo);
 
       if (!result.success) {
         if (result.fieldErrors) {
