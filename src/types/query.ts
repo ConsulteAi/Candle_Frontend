@@ -51,6 +51,7 @@ export interface ExecuteQueryResponse {
   result: any; // Resultado do provider (JSON genérico)
   cached: boolean; // Se veio do cache
   price: number; // Preço cobrado
+  newBalance?: number; // Saldo atualizado após a consulta (opcional, retornado pelo server)
 }
 
 /**

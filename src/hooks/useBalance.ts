@@ -13,8 +13,9 @@ export function useBalance() {
   const balance = useAuthStore((state) => state.balance);
   const updateBalance = useAuthStore((state) => state.updateBalance);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
+  const isHydrated = useAuthStore((state) => state.isHydrated);
   const logout = useAuthStore((state) => state.logout);
+
   const [isBalanceLoading, setIsBalanceLoading] = useState(false);
   const [isBalanceReady, setIsBalanceReady] = useState(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
@@ -24,8 +25,15 @@ export function useBalance() {
    * Buscar saldo do usuário no backend
    */
   const fetchBalance = useCallback(async () => {
+    // Aguarda hidratação do Zustand para evitar flash de não autenticado
+    if (!isHydrated) {
+      return;
+    }
+
+    // Usuário não autenticado: estado final conhecido
     if (!isAuthenticated) {
-      setIsBalanceReady(false);
+      setIsBalanceReady(true);
+      setBalanceError(null);
       return;
     }
 
@@ -39,26 +47,31 @@ export function useBalance() {
       const result = await getBalanceAction();
       if (result.success && result.data) {
         updateBalance(result.data.available);
+      } else if (result.statusCode === 401) {
+        // Sessão expirada — limpa estado e mostra erro amigável
+        logout();
+        setBalanceError("Sessão expirada. Faça login novamente.");
       } else if (result.error) {
         setBalanceError(result.error);
-      } else if (result.statusCode === 401) {
-        logout();
       }
     } catch (error: any) {
-      setBalanceError("Erro ao buscar saldo");
-      if (
+      const isUnauthorized =
         error?.response?.status === 401 ||
         error?.status === 401 ||
-        error?.message?.includes("401")
-      ) {
+        error?.message?.includes("401");
+
+      if (isUnauthorized) {
         logout();
+        setBalanceError("Sessão expirada. Faça login novamente.");
+      } else {
+        setBalanceError("Erro ao buscar saldo");
       }
     } finally {
       inFlightRef.current = false;
       setIsBalanceLoading(false);
       setIsBalanceReady(true);
     }
-  }, [isAuthenticated, updateBalance, logout]);
+  }, [isHydrated, isAuthenticated, updateBalance, logout]);
 
   /**
    * Formatar saldo para exibição
@@ -72,6 +85,8 @@ export function useBalance() {
     updateBalance,
     isBalanceLoading,
     isBalanceReady,
+    isAuthenticated,
+    isHydrated,
     balanceError,
   };
 }

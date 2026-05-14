@@ -7,12 +7,14 @@ interface AuthStore {
   user: User | null;
   balance: number; // Saldo mantido separado do User
   isAuthenticated: boolean;
+  isHydrated: boolean;
 
   // Actions
   login: (authResponse: AuthResponse) => void;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
   updateBalance: (balance: number) => void;
+  setHydrated: () => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -22,6 +24,7 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       balance: 0,
       isAuthenticated: false,
+      isHydrated: false,
 
       // Login - armazena usuário e estado de autenticação (tokens ficam em cookies)
       login: (authResponse: AuthResponse) => {
@@ -55,6 +58,11 @@ export const useAuthStore = create<AuthStore>()(
         set({ balance });
       },
 
+      // Marcar como hidratado após persistência
+      setHydrated: () => {
+        set({ isHydrated: true });
+      },
+
     }),
     {
       name: 'candle-auth-storage', // nome da chave no localStorage
@@ -64,7 +72,13 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         balance: state.balance,
         isAuthenticated: state.isAuthenticated,
+        // isHydrated NÃO é persistido — é um estado runtime
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHydrated();
+        }
+      },
     }
   )
 );
@@ -73,3 +87,4 @@ export const useAuthStore = create<AuthStore>()(
 export const useUser = () => useAuthStore((state) => state.user);
 export const useBalance = () => useAuthStore((state) => state.balance);
 export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
+export const useIsHydrated = () => useAuthStore((state) => state.isHydrated);
