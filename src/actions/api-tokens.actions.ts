@@ -3,10 +3,12 @@
 import { ApiTokensService } from '@/services/api-tokens.service';
 import { AuthService } from '@/services/auth.service';
 import { UserRole } from '@/types/auth';
+import { sanitizeUser } from '@/lib/utils';
 
 export async function getApiTokensAction() {
   try {
-    const user = await AuthService.getMe();
+    const rawUser = await AuthService.getMe();
+    const user = rawUser ? sanitizeUser(rawUser) : null;
     if (!user || user.role !== UserRole.MASTER) {
       return { success: false, data: [] };
     }

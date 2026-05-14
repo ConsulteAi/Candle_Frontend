@@ -1,12 +1,14 @@
 import { QueryTypesManager } from '@/components/admin/QueryTypesManager';
 import { AuthService } from '@/services/auth.service';
 import { UserRole } from '@/types/auth';
+import { sanitizeUser } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
 export default async function QueryTypesPage() {
   try {
-    const user = await AuthService.getMe();
-    if (!user || (user.role !== UserRole.MASTER && user.role !== UserRole.ADMIN)) {
+    const rawUser = await AuthService.getMe();
+    const user = rawUser ? sanitizeUser(rawUser) : null;
+    if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER)) {
       redirect('/backoffice');
     }
   } catch {

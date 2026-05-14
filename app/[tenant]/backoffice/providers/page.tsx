@@ -1,11 +1,13 @@
 import { ProvidersManager } from '@/components/admin/ProvidersManager';
 import { AuthService } from '@/services/auth.service';
 import { UserRole } from '@/types/auth';
+import { sanitizeUser } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
 export default async function ProvidersPage() {
   try {
-    const user = await AuthService.getMe();
+    const rawUser = await AuthService.getMe();
+    const user = rawUser ? sanitizeUser(rawUser) : null;
     if (!user || user.role !== UserRole.MASTER) {
       redirect('/backoffice');
     }

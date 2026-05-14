@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { getMeAction } from '@/actions/auth.actions';
+import { UserRole } from '@/types/auth';
 import { Loader2 } from 'lucide-react';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
@@ -47,6 +48,21 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
       cancelled = true;
     };
   }, [isHydrated, isAuthenticated, isResolvingSession, login, logout, pathname, router, user]);
+
+  // After hydration and session resolution, check role on client-side
+  useEffect(() => {
+    if (!isHydrated || isResolvingSession) return;
+
+    const role = user?.role;
+    if (isAuthenticated && role && role !== UserRole.ADMIN && role !== UserRole.MASTER) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[auth][admin-guard] client-side role check failed, redirecting to home', {
+          role,
+        });
+      }
+      router.replace('/');
+    }
+  }, [isHydrated, isResolvingSession, isAuthenticated, user, router]);
 
   if (!isHydrated || (!isAuthenticated && !user) || isResolvingSession) {
     return (

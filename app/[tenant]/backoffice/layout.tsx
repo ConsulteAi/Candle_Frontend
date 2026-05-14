@@ -2,6 +2,7 @@ import { AdminSidebar } from '@/components/layout/AdminSidebar';
 import { AdminGuard } from '@/components/auth/AdminGuard';
 import { AuthService } from '@/services/auth.service';
 import { UserRole } from '@/types/auth';
+import { sanitizeUser } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
 
@@ -13,7 +14,8 @@ export default async function BackofficeLayout({
   children: React.ReactNode;
 }) {
   try {
-    const user = await AuthService.getMe();
+    const rawUser = await AuthService.getMe();
+    const user = rawUser ? sanitizeUser(rawUser) : null;
 
     if (!user) {
       if (process.env.NODE_ENV !== 'production') {
