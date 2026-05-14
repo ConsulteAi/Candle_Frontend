@@ -56,6 +56,7 @@ serverAxios.interceptors.request.use(async (config) => {
       // Inject the Tenant Domain header for the backend
       config.headers["X-Tenant-Domain"] = currentDomain || "consultaai.net.br"; // Fallback
     }
+
   } catch (error) {
     // Ignore error if cookies/headers fail (e.g. static generation)
     console.warn("Could not access request context in serverHttpClient", error);
@@ -63,11 +64,32 @@ serverAxios.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Response Interceptor: Handle 401 & Refresh Token
+// Response Interceptor: Handle 401, 429 & Refresh Token
 serverAxios.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
+
+    // Handle 429 Too Many Requests with exponential backoff retry
+    if (error.response?.status === 429) {
+      const maxRetries = 3;
+      originalRequest._429RetryCount = originalRequest._429RetryCount || 0;
+
+      if (originalRequest._429RetryCount < maxRetries) {
+        originalRequest._429RetryCount++;
+
+        // Exponential backoff: 1000ms, 2000ms, 4000ms
+        const delay = 1000 * Math.pow(2, originalRequest._429RetryCount - 1);
+
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`[serverHttpClient] 429 received, retrying in ${delay}ms (attempt ${originalRequest._429RetryCount}/${maxRetries})`);
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
+
+        return serverAxios(originalRequest);
+      }
+    }
 
     // If 401 Unauthorized and not already retried
     if (

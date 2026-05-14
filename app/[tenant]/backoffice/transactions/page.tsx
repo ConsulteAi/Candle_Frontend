@@ -1,9 +1,8 @@
 import { getTransactionsAction } from '@/actions/admin.actions';
 import { TransactionsClientView } from '@/components/admin/TransactionsClientView';
-import { AuthService } from '@/services/auth.service';
+import { getCurrentUser } from '@/lib/auth';
 import type { TransactionFilters } from '@/types/admin';
 import { UserRole } from '@/types/auth';
-import { sanitizeUser } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
 export default async function TransactionsPage({
@@ -11,13 +10,8 @@ export default async function TransactionsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  try {
-    const rawUser = await AuthService.getMe();
-    const user = rawUser ? sanitizeUser(rawUser) : null;
-    if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER)) {
-      redirect('/backoffice');
-    }
-  } catch {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER)) {
     redirect('/backoffice');
   }
 

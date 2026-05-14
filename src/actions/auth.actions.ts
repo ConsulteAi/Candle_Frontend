@@ -9,6 +9,7 @@ import { cookies } from 'next/headers';
 import { AuthService } from '@/services/auth.service';
 import type { LoginDTO, RegisterDTO, AuthResponse, User } from '@/types';
 import { sanitizeUser } from '@/lib/utils';
+import { invalidateCurrentUserCache } from '@/lib/auth';
 
 const isProduction = process.env.NODE_ENV === 'production';
 const authCookieOptions = {
@@ -85,6 +86,9 @@ export async function loginAction(
       ...csrfCookieOptions,
       maxAge: 60 * 60 * 24 * 7,
     });
+
+    // Invalidate cache so next request fetches fresh user
+    invalidateCurrentUserCache();
 
     return {
       success: true,
@@ -234,6 +238,9 @@ export async function logoutAction(): Promise<ActionState<void>> {
     cookieStore.delete('refreshToken');
     cookieStore.delete('csrfToken');
 
+    // Invalidate cache
+    invalidateCurrentUserCache();
+
     return {
       success: true,
     };
@@ -243,6 +250,9 @@ export async function logoutAction(): Promise<ActionState<void>> {
     cookieStore.delete('accessToken');
     cookieStore.delete('refreshToken');
     cookieStore.delete('csrfToken');
+
+    // Invalidate cache
+    invalidateCurrentUserCache();
 
     // Mesmo com erro, consideramos logout bem-sucedido no cliente
     return {

@@ -1,8 +1,7 @@
 import { AdminSidebar } from '@/components/layout/AdminSidebar';
 import { AdminGuard } from '@/components/auth/AdminGuard';
-import { AuthService } from '@/services/auth.service';
+import { getCurrentUser } from '@/lib/auth';
 import { UserRole } from '@/types/auth';
-import { sanitizeUser } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
 
@@ -13,30 +12,14 @@ export default async function BackofficeLayout({
 }: {
   children: React.ReactNode;
 }) {
-  try {
-    const rawUser = await AuthService.getMe();
-    const user = rawUser ? sanitizeUser(rawUser) : null;
+  const user = await getCurrentUser();
 
-    if (!user) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[auth][backoffice][ssr] denied: missing user');
-      }
-      redirect('/login');
-    }
-
-    if (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[auth][backoffice][ssr] denied: invalid role', {
-          role: user.role,
-        });
-      }
-      redirect('/');
-    }
-  } catch {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[auth][backoffice][ssr] denied: AuthService.getMe threw');
-    }
+  if (!user) {
     redirect('/login');
+  }
+
+  if (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER) {
+    redirect('/');
   }
 
   return (
