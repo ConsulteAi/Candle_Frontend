@@ -1,12 +1,12 @@
 'use server';
 
 import { ApiTokensService } from '@/services/api-tokens.service';
-import { AuthService } from '@/services/auth.service';
+import { getCurrentUser } from '@/lib/auth';
 import { UserRole } from '@/types/auth';
 
 export async function getApiTokensAction() {
   try {
-    const user = await AuthService.getMe();
+    const user = await getCurrentUser();
     if (!user || user.role !== UserRole.MASTER) {
       return { success: false, data: [] };
     }

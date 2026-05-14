@@ -1,15 +1,11 @@
 import { TenantsManager } from '@/components/admin/TenantsManager';
-import { AuthService } from '@/services/auth.service';
+import { getCurrentUser } from '@/lib/auth';
 import { UserRole } from '@/types/auth';
 import { redirect } from 'next/navigation';
 
 export default async function TenantsPage() {
-  try {
-    const user = await AuthService.getMe();
-    if (!user || user.role !== UserRole.MASTER) {
-      redirect('/backoffice');
-    }
-  } catch {
+  const user = await getCurrentUser();
+  if (!user || user.role !== UserRole.MASTER) {
     redirect('/backoffice');
   }
 

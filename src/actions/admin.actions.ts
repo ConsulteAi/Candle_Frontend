@@ -31,14 +31,11 @@ export async function getDashboardOverviewAction(): Promise<
 
 import { redirect } from "next/navigation";
 import { isAxiosError } from "axios";
+import { getCurrentUser } from "@/lib/auth";
 
 async function hasBackofficeAccess(): Promise<boolean> {
-  try {
-    const user = await AuthService.getMe();
-    return !!user && (user.role === UserRole.ADMIN || user.role === UserRole.MASTER);
-  } catch {
-    return false;
-  }
+  const user = await getCurrentUser();
+  return !!user && (user.role === UserRole.ADMIN || user.role === UserRole.MASTER);
 }
 
 export async function getUsersAction(

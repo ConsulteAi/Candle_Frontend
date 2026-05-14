@@ -437,6 +437,11 @@ interface DividasMultiBaseResult {
 
 export interface DividasMultiCpfProResult extends DividasMultiBaseResult {
   person: Pick<BasePerson, 'name' | 'document' | 'birthDate' | 'motherName'>;
+  score?: {
+    value: string;
+    class?: string;
+    riskText?: string;
+  };
 }
 
 export interface DividasMultiCnpjProResult extends DividasMultiBaseResult {

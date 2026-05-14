@@ -210,8 +210,10 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
   };
 
   const canEditRole = 
-    currentUser?.role === UserRole.MASTER || 
-    (currentUser?.role === UserRole.ADMIN && user.role !== UserRole.MASTER && currentUser.email !== user.email);
+    currentUser?.email !== user.email && (
+      currentUser?.role === UserRole.MASTER || 
+      (currentUser?.role === UserRole.ADMIN && user.role !== UserRole.MASTER)
+    );
 
   const roleOptions = currentUser?.role === UserRole.MASTER 
     ? [

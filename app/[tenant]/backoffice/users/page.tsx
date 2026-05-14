@@ -1,6 +1,6 @@
 import { getUsersAction } from '@/actions/admin.actions';
 import { UsersClientView } from '@/components/admin/UsersClientView';
-import { AuthService } from '@/services/auth.service';
+import { getCurrentUser } from '@/lib/auth';
 import { UserRole } from '@/types/auth';
 import { redirect } from 'next/navigation';
 
@@ -9,12 +9,8 @@ export default async function UsersPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  try {
-    const user = await AuthService.getMe();
-    if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER)) {
-      redirect('/backoffice');
-    }
-  } catch {
+  const user = await getCurrentUser();
+  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER)) {
     redirect('/backoffice');
   }
 
