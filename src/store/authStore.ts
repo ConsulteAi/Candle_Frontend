@@ -77,11 +77,12 @@ export const useAuthStore = create<AuthStore>()(
       name: 'candle-auth-storage', // nome da chave no localStorage
       storage: createJSONStorage(() => localStorage), // usa localStorage
       partialize: (state) => ({
-        // Só persiste o necessário
+        // Persiste o necessário para cache de saldo sobreviver a reloads
         user: state.user,
         balance: state.balance,
+        balanceUpdatedAt: state.balanceUpdatedAt,
         isAuthenticated: state.isAuthenticated,
-        // isHydrated e balanceUpdatedAt NÃO são persistidos — são estados runtime
+        // isHydrated NÃO é persistido — é um estado runtime
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

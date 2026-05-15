@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Search, AlertCircle, LogIn, RefreshCw } from 'lucide-react';
+import { Loader2, Search, AlertCircle, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import type { QueryType, ExecuteQueryResponse } from '@/types/query';
 import { QueryCategory } from '@/types/query';
@@ -42,7 +42,6 @@ export function QueryExecutionForm({
     fetchBalance,
     isBalanceLoading,
     isBalanceReady,
-    isRevalidatingBalance,
     isBalanceFresh,
     isAuthenticated,
     isHydrated,
@@ -294,12 +293,6 @@ export function QueryExecutionForm({
               <p className="text-xs text-green-600 font-medium">
                 Cache ativo - Economize R${' '}
                 {(queryType.price - queryType.cachedPrice).toFixed(2)}
-              </p>
-            )}
-            {isRevalidatingBalance && (
-              <p className="text-xs text-blue-400 flex items-center justify-end gap-1 mt-0.5">
-                <RefreshCw className="w-3 h-3 animate-spin" />
-                Atualizando...
               </p>
             )}
           </div>
