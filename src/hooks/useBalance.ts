@@ -2,15 +2,19 @@
 
 /**
  * useBalance Hook
- * Hook para gerenciar e buscar saldo do usuário
+ * Hook para gerenciar e buscar saldo do usuário com stale-while-revalidate
  */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { getBalanceAction } from "@/actions/balance.actions";
 
+/** Tempo de vida do cache do saldo: 5 minutos */
+const BALANCE_TTL_MS = 5 * 60 * 1000;
+
 export function useBalance() {
   const balance = useAuthStore((state) => state.balance);
+  const balanceUpdatedAt = useAuthStore((state) => state.balanceUpdatedAt);
   const updateBalance = useAuthStore((state) => state.updateBalance);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
@@ -18,13 +22,34 @@ export function useBalance() {
 
   const [isBalanceLoading, setIsBalanceLoading] = useState(false);
   const [isBalanceReady, setIsBalanceReady] = useState(false);
+  const [isRevalidatingBalance, setIsRevalidatingBalance] = useState(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const inFlightRef = useRef(false);
 
   /**
-   * Buscar saldo do usuário no backend
+   * Verifica se o saldo em cache está fresco (dentro do TTL)
    */
-  const fetchBalance = useCallback(async () => {
+  const isBalanceFresh = isHydrated
+    && isAuthenticated
+    && balanceUpdatedAt !== null
+    && Date.now() - balanceUpdatedAt < BALANCE_TTL_MS;
+
+  /**
+   * Se o cache está fresco, marcar como pronto imediatamente
+   */
+  useEffect(() => {
+    if (isBalanceFresh && !isBalanceReady) {
+      setIsBalanceReady(true);
+    }
+  }, [isBalanceFresh, isBalanceReady]);
+
+  /**
+   * Buscar saldo do usuário no backend
+   * @param silent - Se true, não seta isBalanceLoading (revalidação silenciosa)
+   */
+  const fetchBalance = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+
     // Aguarda hidratação do Zustand para evitar flash de não autenticado
     if (!isHydrated) {
       return;
@@ -40,7 +65,11 @@ export function useBalance() {
     if (inFlightRef.current) return;
 
     inFlightRef.current = true;
-    setIsBalanceLoading(true);
+    if (!silent) {
+      setIsBalanceLoading(true);
+    } else {
+      setIsRevalidatingBalance(true);
+    }
     setBalanceError(null);
 
     try {
@@ -68,7 +97,11 @@ export function useBalance() {
       }
     } finally {
       inFlightRef.current = false;
-      setIsBalanceLoading(false);
+      if (!silent) {
+        setIsBalanceLoading(false);
+      } else {
+        setIsRevalidatingBalance(false);
+      }
       setIsBalanceReady(true);
     }
   }, [isHydrated, isAuthenticated, updateBalance, logout]);
@@ -85,6 +118,8 @@ export function useBalance() {
     updateBalance,
     isBalanceLoading,
     isBalanceReady,
+    isRevalidatingBalance,
+    isBalanceFresh,
     isAuthenticated,
     isHydrated,
     balanceError,

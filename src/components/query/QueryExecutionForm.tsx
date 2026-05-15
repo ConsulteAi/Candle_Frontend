@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Search, AlertCircle, LogIn } from 'lucide-react';
+import { Loader2, Search, AlertCircle, LogIn, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import type { QueryType, ExecuteQueryResponse } from '@/types/query';
 import { QueryCategory } from '@/types/query';
@@ -42,6 +42,8 @@ export function QueryExecutionForm({
     fetchBalance,
     isBalanceLoading,
     isBalanceReady,
+    isRevalidatingBalance,
+    isBalanceFresh,
     isAuthenticated,
     isHydrated,
     balanceError,
@@ -68,11 +70,21 @@ export function QueryExecutionForm({
   useEffect(() => {
     if (isBalanceReady) return;
     if (!isHydrated) return;
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug('[balance][query-form] validating balance before submit');
+
+    if (isBalanceFresh) {
+      // Cache fresco: revalidar silenciosamente em background
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[balance][query-form] using fresh cache, revalidating silently');
+      }
+      fetchBalance({ silent: true });
+    } else {
+      // Sem cache ou expirado: fetch normal
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[balance][query-form] fetching balance (no fresh cache)');
+      }
+      fetchBalance();
     }
-    fetchBalance();
-  }, [fetchBalance, isBalanceReady, isHydrated]);
+  }, [fetchBalance, isBalanceReady, isHydrated, isBalanceFresh]);
 
   // Determine input configuration based on categories
   const isPerson = queryType.category.includes(QueryCategory.PERSON);
@@ -215,8 +227,7 @@ export function QueryExecutionForm({
   };
 
   const currentPrice = queryType.cachedPrice < queryType.price ? queryType.cachedPrice : queryType.price;
-  const hasSufficientBalance = isBalanceReady && balance >= currentPrice;
-  const shouldShowValidatingBalance = !isBalanceReady && isHydrated && !balanceError;
+  const hasSufficientBalance = (isBalanceReady || isBalanceFresh) && balance >= currentPrice;
 
   useEffect(() => {
     if (!executionError) return;
@@ -285,19 +296,15 @@ export function QueryExecutionForm({
                 {(queryType.price - queryType.cachedPrice).toFixed(2)}
               </p>
             )}
+            {isRevalidatingBalance && (
+              <p className="text-xs text-blue-400 flex items-center justify-end gap-1 mt-0.5">
+                <RefreshCw className="w-3 h-3 animate-spin" />
+                Atualizando...
+              </p>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Balance validating */}
-      {shouldShowValidatingBalance && (
-        <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-          <p className="text-sm text-blue-700 flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Validando saldo disponível...
-          </p>
-        </div>
-      )}
 
       {/* Balance error */}
       {balanceError && isBalanceReady && (
@@ -344,7 +351,7 @@ export function QueryExecutionForm({
       )}
 
       {/* Insufficient balance */}
-      {isAuthenticated && !shouldShowValidatingBalance && !hasSufficientBalance && !balanceError && (
+      {isAuthenticated && !hasSufficientBalance && !balanceError && (
         <div className="p-4 rounded-lg bg-red-50 border border-red-200">
           <p className="text-sm text-red-700 flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />

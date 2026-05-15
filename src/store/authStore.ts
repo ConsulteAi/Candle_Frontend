@@ -6,6 +6,7 @@ interface AuthStore {
   // State
   user: User | null;
   balance: number; // Saldo mantido separado do User
+  balanceUpdatedAt: number | null; // Timestamp da última atualização do saldo
   isAuthenticated: boolean;
   isHydrated: boolean;
 
@@ -14,6 +15,7 @@ interface AuthStore {
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
   updateBalance: (balance: number) => void;
+  resetBalanceUpdatedAt: () => void;
   setHydrated: () => void;
 }
 
@@ -23,6 +25,7 @@ export const useAuthStore = create<AuthStore>()(
       // Initial state
       user: null,
       balance: 0,
+      balanceUpdatedAt: null,
       isAuthenticated: false,
       isHydrated: false,
 
@@ -39,6 +42,7 @@ export const useAuthStore = create<AuthStore>()(
         set({
           user: null,
           balance: 0,
+          balanceUpdatedAt: null,
           isAuthenticated: false,
         });
       },
@@ -55,7 +59,12 @@ export const useAuthStore = create<AuthStore>()(
 
       // Atualizar saldo (usado após consultas e recargas)
       updateBalance: (balance: number) => {
-        set({ balance });
+        set({ balance, balanceUpdatedAt: Date.now() });
+      },
+
+      // Resetar timestamp do saldo (invalidar cache)
+      resetBalanceUpdatedAt: () => {
+        set({ balanceUpdatedAt: null });
       },
 
       // Marcar como hidratado após persistência
@@ -72,7 +81,7 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         balance: state.balance,
         isAuthenticated: state.isAuthenticated,
-        // isHydrated NÃO é persistido — é um estado runtime
+        // isHydrated e balanceUpdatedAt NÃO são persistidos — são estados runtime
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

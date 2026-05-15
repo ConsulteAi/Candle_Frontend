@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, ShieldCheck, Zap, Info, CheckCircle2, FileText } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldCheck, Zap, Info, CheckCircle2, FileText, Wallet } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Header, Footer } from '@/components/layout';
 import { QueryExecutionForm } from '@/components/query/QueryExecutionForm';
 import { QueryResultDisplay } from '@/components/query/QueryResultDisplay';
 import { useQueryByTypeSWR } from '@/hooks/useQueryByTypeSWR';
 import { useQueryExecution } from '@/hooks/useQueryExecution';
+import { useBalance } from '@/hooks/useBalance';
 import { getCategoryConfig } from '@/constants/query-categories';
 import { QueryCategory, type ExecuteQueryResponse, type QueryHistoryEntry } from '@/types/query';
 import { Button, Card, StatsCard, Badge } from '@/design-system/ComponentsTailwind';
@@ -31,6 +32,7 @@ function QueryExecutionContent() {
 
   // Additional state for Query Type view
   const { queryType, isLoading: isTypeLoading, notFound } = useQueryByTypeSWR(isUUID ? '' : code);
+  const { balance, formattedBalance, isBalanceReady, isRevalidatingBalance } = useBalance();
 
   // Effect for UUID fetching
   useEffect(() => {
@@ -229,6 +231,30 @@ function QueryExecutionContent() {
 
         {/* Sidebar (Right) */}
         <div className="lg:col-span-4 space-y-6">
+           {/* Saldo disponível */}
+           <motion.div
+             initial={{ opacity: 0, x: 20 }}
+             animate={{ opacity: 1, x: 0 }}
+             transition={{ delay: 0.15 }}
+           >
+             <StatsCard
+               icon={<Wallet className="w-6 h-6" />}
+               label="Seu Saldo"
+               value={isBalanceReady ? `R$ ${formattedBalance}` : '—'}
+             />
+             {isRevalidatingBalance && (
+               <p className="text-xs text-blue-400 flex items-center gap-1 mt-2 ml-1">
+                 <Loader2 className="w-3 h-3 animate-spin" />
+                 Atualizando...
+               </p>
+             )}
+             <Link href="/carteira" className="block mt-3">
+               <Button variant="outline" size="sm" className="w-full">
+                 + Recarregar
+               </Button>
+             </Link>
+           </motion.div>
+
            <motion.div
              initial={{ opacity: 0, x: 20 }}
              animate={{ opacity: 1, x: 0 }}
@@ -271,7 +297,7 @@ function QueryExecutionContent() {
            <motion.div
              initial={{ opacity: 0, x: 20 }}
              animate={{ opacity: 1, x: 0 }}
-             transition={{ delay: 0.4 }}
+             transition={{ delay: 0.45 }}
            >
              <Card className="bg-amber-50 border-amber-200">
                <h3 className="font-semibold text-amber-900 mb-2 flex items-center gap-2">
