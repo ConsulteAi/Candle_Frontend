@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 import { QueryExecutionService } from '@/services/query-execution.service';
-import { useAuthStore } from '@/store/authStore';
+
 import type {
   ExecuteQueryRequest,
   ExecuteQueryResponse,
@@ -19,16 +19,24 @@ export interface ActionState<T = unknown> {
 
 export async function executeQueryAction(
   request: ExecuteQueryRequest
-): Promise<ActionState<ExecuteQueryResponse>> {
+): Promise<ActionState<ExecuteQueryResponse & { newBalance?: number }>> {
   try {
     const response = await QueryExecutionService.executeQuery(request);
 
     // Atualizar saldo no store (foi debitado)
     // O backend não retorna novo saldo, então precisamos buscar
     const { refreshBalanceAction } = await import('@/actions/payment.actions');
-    await refreshBalanceAction();
+    const refreshResult = await refreshBalanceAction();
 
-    return { success: true, data: response };
+    return {
+      success: true,
+      data: {
+        ...response,
+        newBalance: refreshResult.success && refreshResult.data !== undefined
+          ? refreshResult.data
+          : undefined,
+      },
+    };
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response?.status === 402) {
       return { success: false, error: 'Saldo insuficiente. Recarregue sua carteira.' };

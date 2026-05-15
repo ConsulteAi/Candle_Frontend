@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Search, AlertCircle } from 'lucide-react';
+import { Loader2, Search, AlertCircle, LogIn } from 'lucide-react';
+import Link from 'next/link';
 import type { QueryType, ExecuteQueryResponse } from '@/types/query';
 import { QueryCategory } from '@/types/query';
 import { ValidationService } from '@/lib/consultas/services/ValidationService';
@@ -14,7 +15,6 @@ import { formatCurrency } from '@/lib/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 
 interface QueryExecutionFormProps {
@@ -27,8 +27,6 @@ const createSchema = (queryType: QueryType) => {
   const schemaObj: any = {
     input: z.string().min(1, 'Campo obrigatório'),
   };
-
-
 
   return z.object(schemaObj);
 };
@@ -44,6 +42,10 @@ export function QueryExecutionForm({
     fetchBalance,
     isBalanceLoading,
     isBalanceReady,
+    isBalanceFresh,
+    isAuthenticated,
+    isHydrated,
+    balanceError,
   } = useBalance();
   const { executeQuery, isLoading, error: executionError } = useQueryExecution();
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -66,11 +68,22 @@ export function QueryExecutionForm({
 
   useEffect(() => {
     if (isBalanceReady) return;
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug('[balance][query-form] validating balance before submit');
+    if (!isHydrated) return;
+
+    if (isBalanceFresh) {
+      // Cache fresco: revalidar silenciosamente em background
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[balance][query-form] using fresh cache, revalidating silently');
+      }
+      fetchBalance({ silent: true });
+    } else {
+      // Sem cache ou expirado: fetch normal
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[balance][query-form] fetching balance (no fresh cache)');
+      }
+      fetchBalance();
     }
-    fetchBalance();
-  }, [fetchBalance, isBalanceReady]);
+  }, [fetchBalance, isBalanceReady, isHydrated, isBalanceFresh]);
 
   // Determine input configuration based on categories
   const isPerson = queryType.category.includes(QueryCategory.PERSON);
@@ -120,7 +133,7 @@ export function QueryExecutionForm({
           .replace(/(\d{3})(\d)/, '$1.$2')
           .replace(/(\d{3})(\d)/, '$1.$2')
           .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-          .replace(/(-\d{2})\d+?$/, '$1');
+          .replace(/(-\d{2})\d+?$/,'$1');
       } else if (inputMode === 'cnpj') {
         value = rawValue
           .replace(/^(\d{2})(\d)/, '$1.$2')
@@ -213,8 +226,7 @@ export function QueryExecutionForm({
   };
 
   const currentPrice = queryType.cachedPrice < queryType.price ? queryType.cachedPrice : queryType.price;
-  const hasSufficientBalance = isBalanceReady && balance >= currentPrice;
-  const shouldShowValidatingBalance = !isBalanceReady;
+  const hasSufficientBalance = (isBalanceReady || isBalanceFresh) && balance >= currentPrice;
 
   useEffect(() => {
     if (!executionError) return;
@@ -252,7 +264,7 @@ export function QueryExecutionForm({
           placeholder={placeholder}
           maxLength={inputMode === 'cpf' ? 14 : inputMode === 'cnpj' ? 18 : 18}
           className="h-12 text-lg font-medium tracking-wide"
-          disabled={isLoading || showConfirmation}
+          disabled={isLoading || showConfirmation || !isAuthenticated}
           autoComplete="off"
         />
         {errors.input?.message && (
@@ -268,8 +280,6 @@ export function QueryExecutionForm({
           </p>
         )}
       </div>
-
-
 
       {/* Price info */}
       <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
@@ -289,17 +299,52 @@ export function QueryExecutionForm({
         </div>
       </div>
 
-      {/* Balance warning */}
-      {shouldShowValidatingBalance && (
-        <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-          <p className="text-sm text-blue-700 flex items-center gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Validando saldo disponível...
-          </p>
+      {/* Balance error */}
+      {balanceError && isBalanceReady && (
+        <div className="p-4 rounded-lg bg-red-50 border border-red-200 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex gap-3">
+            <div className="p-2 bg-red-100 rounded-full h-fit">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-red-900 mb-1">
+                Não foi possível verificar seu saldo
+              </h4>
+              <p className="text-sm text-red-800/90 leading-relaxed">
+                {balanceError}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
-      {!shouldShowValidatingBalance && !hasSufficientBalance && (
+      {/* Not authenticated */}
+      {!isAuthenticated && isBalanceReady && !balanceError && (
+        <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex gap-3">
+            <div className="p-2 bg-amber-100 rounded-full h-fit">
+              <LogIn className="h-5 w-5 text-amber-600" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-amber-900 mb-1">
+                Sessão expirada
+              </h4>
+              <p className="text-sm text-amber-800/90 leading-relaxed mb-3">
+                Sua sessão expirou ou você não está autenticado. Faça login para realizar consultas.
+              </p>
+              <Link href="/login">
+                <Button variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Entrar
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Insufficient balance */}
+      {isAuthenticated && !hasSufficientBalance && !balanceError && (
         <div className="p-4 rounded-lg bg-red-50 border border-red-200">
           <p className="text-sm text-red-700 flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
@@ -366,7 +411,7 @@ export function QueryExecutionForm({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || isBalanceLoading || !hasSufficientBalance}
+              disabled={isLoading || isBalanceLoading || !hasSufficientBalance || !isAuthenticated}
               className="flex-1"
             >
               {isLoading ? (
@@ -382,7 +427,7 @@ export function QueryExecutionForm({
         ) : (
           <Button
             type="submit"
-            disabled={isLoading || isBalanceLoading || !inputValue || !hasSufficientBalance}
+            disabled={isLoading || isBalanceLoading || !inputValue || !hasSufficientBalance || !isAuthenticated}
             className="w-full h-12"
           >
             {isLoading ? (
