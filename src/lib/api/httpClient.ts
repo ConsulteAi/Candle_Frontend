@@ -4,7 +4,7 @@
  */
 
 import axios, { AxiosError } from 'axios';
-import { useAuthStore } from '@/store/authStore';
+import { buildLoginRedirectPath, clearClientSession } from '@/lib/auth/client';
 
 // Browser deve falar apenas com o BFF interno.
 const baseURL = '/api/bff';
@@ -52,9 +52,9 @@ httpClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
+      await clearClientSession();
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        window.location.replace(buildLoginRedirectPath(window.location.pathname));
       }
     }
 

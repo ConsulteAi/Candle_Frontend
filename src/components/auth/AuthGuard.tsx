@@ -1,56 +1,73 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { getMeAction } from '@/actions/auth.actions';
+import { buildLoginRedirectPath, clearClientSession } from '@/lib/auth/client';
+import { isPublicRoute } from '@/lib/auth/routes';
 import { Loader2 } from 'lucide-react';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, login, logout } = useAuthStore();
+  const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
   const pathname = usePathname();
+  const publicRoute = isPublicRoute(pathname || '/');
   const [isHydrated, setIsHydrated] = useState(false);
   const [isResolvingSession, setIsResolvingSession] = useState(false);
+  const hasValidatedProtectedSessionRef = useRef(false);
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (!isHydrated || isResolvingSession) return;
+    if (!isHydrated) return;
 
-    // Se já está autenticado no store, não precisa verificar
-    // (o AdminGuard já cuida de refresh de sessão quando necessário)
-    if (isAuthenticated) return;
+    if (publicRoute) {
+      setIsResolvingSession(false);
+      hasValidatedProtectedSessionRef.current = false;
+      return;
+    }
 
-    let cancelled = false;
+    if (hasValidatedProtectedSessionRef.current) {
+      return;
+    }
+
+    let active = true;
     setIsResolvingSession(true);
 
     (async () => {
       const result = await getMeAction();
-      if (cancelled) return;
+      if (!active) return;
 
       if (result.success && result.data) {
         login({ user: result.data });
+        hasValidatedProtectedSessionRef.current = true;
       } else {
         if (process.env.NODE_ENV !== 'production') {
           console.warn('[auth][guard] session resolution failed, redirecting to login', {
             pathname,
           });
         }
-        logout();
-        router.replace(`/login?redirect=${encodeURIComponent(pathname || '/')}`);
+        hasValidatedProtectedSessionRef.current = false;
+        await clearClientSession();
+        if (active) {
+          router.replace(buildLoginRedirectPath(pathname || '/'));
+        }
       }
-      setIsResolvingSession(false);
+      if (active) {
+        setIsResolvingSession(false);
+      }
     })();
 
     return () => {
-      cancelled = true;
+      active = false;
     };
-  }, [isHydrated, isAuthenticated, isResolvingSession, login, logout, pathname, router]);
+  }, [isAuthenticated, isHydrated, login, pathname, publicRoute, router]);
 
-  if (!isHydrated || isResolvingSession) {
+  if (!isHydrated || (!publicRoute && isResolvingSession)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />

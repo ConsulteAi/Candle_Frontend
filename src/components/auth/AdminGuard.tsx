@@ -1,18 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { getMeAction } from '@/actions/auth.actions';
+import { buildLoginRedirectPath, clearClientSession } from '@/lib/auth/client';
 import { UserRole } from '@/types/auth';
 import { Loader2 } from 'lucide-react';
 
 export function AdminGuard({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, login, logout } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const login = useAuthStore((state) => state.login);
   const router = useRouter();
   const pathname = usePathname();
   const [isHydrated, setIsHydrated] = useState(false);
   const [isResolvingSession, setIsResolvingSession] = useState(false);
+  const hasValidatedProtectedSessionRef = useRef(false);
 
   useEffect(() => {
     // Helper to check if hydration is complete
@@ -21,33 +25,49 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!isHydrated || user || isAuthenticated || isResolvingSession) return;
+    if (!isHydrated) return;
 
-    let cancelled = false;
+    if (hasValidatedProtectedSessionRef.current) {
+      return;
+    }
+
+    let active = true;
     setIsResolvingSession(true);
 
     (async () => {
       const result = await getMeAction();
-      if (cancelled) return;
+      if (!active) return;
 
       if (result.success && result.data) {
         login({ user: result.data });
+        hasValidatedProtectedSessionRef.current = true;
       } else {
         if (process.env.NODE_ENV !== 'production') {
           console.warn('[auth][admin-guard] session resolution failed, redirecting to login', {
             pathname,
           });
         }
-        logout();
-        router.replace(`/login?redirect=${encodeURIComponent(pathname || '/backoffice')}`);
+        hasValidatedProtectedSessionRef.current = false;
+        await clearClientSession();
+        if (active) {
+          router.replace(buildLoginRedirectPath(pathname || '/backoffice'));
+        }
       }
-      setIsResolvingSession(false);
+      if (active) {
+        setIsResolvingSession(false);
+      }
     })();
 
     return () => {
-      cancelled = true;
+      active = false;
     };
-  }, [isHydrated, isAuthenticated, isResolvingSession, login, logout, pathname, router, user]);
+  }, [isHydrated, login, pathname, router]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      hasValidatedProtectedSessionRef.current = false;
+    }
+  }, [isAuthenticated]);
 
   // After hydration and session resolution, check role on client-side
   useEffect(() => {
