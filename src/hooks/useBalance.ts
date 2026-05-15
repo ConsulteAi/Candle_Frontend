@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { getBalanceAction } from "@/actions/balance.actions";
+import { clearClientSession } from "@/lib/auth/client";
 
 /** Tempo de vida do cache do saldo: 5 minutos */
 const BALANCE_TTL_MS = 5 * 60 * 1000;
@@ -18,8 +19,6 @@ export function useBalance() {
   const updateBalance = useAuthStore((state) => state.updateBalance);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
-  const logout = useAuthStore((state) => state.logout);
-
   const [isBalanceLoading, setIsBalanceLoading] = useState(false);
   const [isBalanceReady, setIsBalanceReady] = useState(false);
   const [isRevalidatingBalance, setIsRevalidatingBalance] = useState(false);
@@ -77,8 +76,7 @@ export function useBalance() {
       if (result.success && result.data) {
         updateBalance(result.data.available);
       } else if (result.statusCode === 401) {
-        // Sessão expirada — limpa estado e mostra erro amigável
-        logout();
+        await clearClientSession();
         setBalanceError("Sessão expirada. Faça login novamente.");
       } else if (result.error) {
         setBalanceError(result.error);
@@ -90,7 +88,7 @@ export function useBalance() {
         error?.message?.includes("401");
 
       if (isUnauthorized) {
-        logout();
+        await clearClientSession();
         setBalanceError("Sessão expirada. Faça login novamente.");
       } else {
         setBalanceError("Erro ao buscar saldo");
@@ -104,7 +102,7 @@ export function useBalance() {
       }
       setIsBalanceReady(true);
     }
-  }, [isHydrated, isAuthenticated, updateBalance, logout]);
+  }, [isHydrated, isAuthenticated, updateBalance]);
 
   /**
    * Formatar saldo para exibição

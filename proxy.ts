@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getTenantByHost } from "./src/lib/tenant/config";
+import { isPublicRoute } from "./src/lib/auth/routes";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -18,23 +19,6 @@ const withCsrfCookie = (request: NextRequest, response: NextResponse) => {
   return response;
 };
 
-// Public routes that don't require authentication
-const publicRoutes = [
-  "/",
-  "/login",
-  "/register",
-  "/forgot-password",
-  "/reset-password",
-  "/termos",
-  "/politica-de-privacidade",
-  "/lgpd",
-  "/sobre",
-  "/cookies",
-];
-
-// Routes that should redirect to dashboard if already authenticated
-const authRoutes = ["/login", "/register"];
-
 /**
  * Middleware para proteção de rotas e Multi-tenant
  */
@@ -47,23 +31,13 @@ export async function proxy(request: NextRequest) {
   const tenant = await getTenantByHost(hostname);
 
   // 2. Authentication Checks
-  const isPublicRoute = publicRoutes.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`),
-  );
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
-
+  const publicRoute = isPublicRoute(pathname);
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
   const isAuthenticated = !!accessToken || !!refreshToken;
 
-  // Se tentar acessar auth pages (ex: /login) estando logado, manda pra home
-  if (isAuthRoute && isAuthenticated) {
-    url.pathname = "/";
-    return withCsrfCookie(request, NextResponse.redirect(url));
-  }
-
   // Se tentar acessar protected route sem estar logado
-  if (!isPublicRoute && !isAuthenticated) {
+  if (!publicRoute && !isAuthenticated) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return withCsrfCookie(request, NextResponse.redirect(loginUrl));

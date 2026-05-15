@@ -5,27 +5,31 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { getMeAction } from '@/actions/auth.actions';
 import { buildLoginRedirectPath, clearClientSession } from '@/lib/auth/client';
-import { UserRole } from '@/types/auth';
+import { isPublicRoute } from '@/lib/auth/routes';
 import { Loader2 } from 'lucide-react';
 
-export function AdminGuard({ children }: { children: React.ReactNode }) {
-  const user = useAuthStore((state) => state.user);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+export function AuthGuard({ children }: { children: React.ReactNode }) {
   const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const router = useRouter();
   const pathname = usePathname();
+  const publicRoute = isPublicRoute(pathname || '/');
   const [isHydrated, setIsHydrated] = useState(false);
   const [isResolvingSession, setIsResolvingSession] = useState(false);
   const hasValidatedProtectedSessionRef = useRef(false);
 
   useEffect(() => {
-    // Helper to check if hydration is complete
-    // In a real app we might use a custom hook for store hydration or persist.onFinish
     setIsHydrated(true);
   }, []);
 
   useEffect(() => {
     if (!isHydrated) return;
+
+    if (publicRoute) {
+      setIsResolvingSession(false);
+      hasValidatedProtectedSessionRef.current = false;
+      return;
+    }
 
     if (hasValidatedProtectedSessionRef.current) {
       return;
@@ -43,14 +47,14 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
         hasValidatedProtectedSessionRef.current = true;
       } else {
         if (process.env.NODE_ENV !== 'production') {
-          console.warn('[auth][admin-guard] session resolution failed, redirecting to login', {
+          console.warn('[auth][guard] session resolution failed, redirecting to login', {
             pathname,
           });
         }
         hasValidatedProtectedSessionRef.current = false;
         await clearClientSession();
         if (active) {
-          router.replace(buildLoginRedirectPath(pathname || '/backoffice'));
+          router.replace(buildLoginRedirectPath(pathname || '/'));
         }
       }
       if (active) {
@@ -61,33 +65,12 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
     return () => {
       active = false;
     };
-  }, [isHydrated, login, pathname, router]);
+  }, [isAuthenticated, isHydrated, login, pathname, publicRoute, router]);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      hasValidatedProtectedSessionRef.current = false;
-    }
-  }, [isAuthenticated]);
-
-  // After hydration and session resolution, check role on client-side
-  useEffect(() => {
-    if (!isHydrated || isResolvingSession) return;
-
-    const role = user?.role;
-    if (isAuthenticated && role && role !== UserRole.ADMIN && role !== UserRole.MASTER) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[auth][admin-guard] client-side role check failed, redirecting to home', {
-          role,
-        });
-      }
-      router.replace('/');
-    }
-  }, [isHydrated, isResolvingSession, isAuthenticated, user, router]);
-
-  if (!isHydrated || (!isAuthenticated && !user) || isResolvingSession) {
+  if (!isHydrated || (!publicRoute && isResolvingSession)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
