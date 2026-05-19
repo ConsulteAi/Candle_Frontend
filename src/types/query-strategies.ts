@@ -446,6 +446,11 @@ export interface DividasMultiCpfProResult extends DividasMultiBaseResult {
 
 export interface DividasMultiCnpjProResult extends DividasMultiBaseResult {
   company: Pick<BaseCompany, 'cnpj' | 'socialReason'>;
+  score?: {
+    value: string;
+    class?: string;
+    riskText?: string;
+  };
 }
 
 // Raio X Credito Rating SCR
