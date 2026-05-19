@@ -16,6 +16,7 @@ import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
+import { ScoreGauge } from './components/ScoreGauge';
 import {
   Table,
   TableBody,
@@ -42,34 +43,50 @@ export function DividasMultiCnpjProStrategy({
     summary.totalSerasaOccurrences,
   ].some((value) => Number(value || 0) > 0);
 
+  const hasScore = !!data.score?.value;
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
-        <StrategyHeader
-          title={data.company.socialReason}
-          protocol={data.protocol}
-          status={hasOccurrences ? 'COM OCORRENCIAS' : 'SEM OCORRENCIAS'}
-          statusVariant={hasOccurrences ? 'warning' : 'success'}
-          pdfUrl={data.pdf}
-          queryId={queryId}
-          className="mb-6"
-        >
-          <Badge variant="info">Dividas Multi PJ Pro</Badge>
-        </StrategyHeader>
+      <div className="grid md:grid-cols-12 gap-6">
+        {hasScore && (
+          <div className="md:col-span-4">
+            <ScoreGauge
+              value={Number(data.score!.value)}
+              band={data.score!.class}
+              riskText={data.score!.riskText}
+            />
+          </div>
+        )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <InfoBox
-            label="CNPJ"
-            value={formatCpfCnpj(data.company.cnpj)}
-            icon={<Building2 className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Razão Social"
-            value={data.company.socialReason}
-            icon={<Building2 className="w-4 h-4 text-primary" />}
-          />
+        <div className={hasScore ? 'md:col-span-8' : 'md:col-span-12'}>
+          <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
+            <StrategyHeader
+              title={data.company.socialReason}
+              protocol={data.protocol}
+              status={hasOccurrences ? 'COM OCORRENCIAS' : 'SEM OCORRENCIAS'}
+              statusVariant={hasOccurrences ? 'warning' : 'success'}
+              pdfUrl={data.pdf}
+              queryId={queryId}
+              className="mb-6"
+            >
+              <Badge variant="info">Dividas Multi PJ Pro</Badge>
+            </StrategyHeader>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <InfoBox
+                label="CNPJ"
+                value={formatCpfCnpj(data.company.cnpj)}
+                icon={<Building2 className="w-4 h-4 text-primary" />}
+              />
+              <InfoBox
+                label="Razão Social"
+                value={data.company.socialReason}
+                icon={<Building2 className="w-4 h-4 text-primary" />}
+              />
+            </div>
+          </Card>
         </div>
-      </Card>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <SummaryCard
