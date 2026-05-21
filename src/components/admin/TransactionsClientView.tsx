@@ -8,6 +8,9 @@ import {
   FileText,
   CalendarDays,
   X,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -131,6 +134,31 @@ export function TransactionsClientView({ initialData }: TransactionsClientViewPr
   };
 
   const totalPages = Math.ceil(initialData.total / initialData.limit);
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const current = initialData.page;
+    const total = totalPages;
+    
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      
+      if (current > 4) pages.push('...');
+      
+      const start = Math.max(2, current - 2);
+      const end = Math.min(total - 1, current + 2);
+      
+      for (let i = start; i <= end; i++) pages.push(i);
+      
+      if (current < total - 3) pages.push('...');
+      
+      pages.push(total);
+    }
+    
+    return pages;
+  };
 
   return (
     <div className="space-y-6">
@@ -319,26 +347,43 @@ export function TransactionsClientView({ initialData }: TransactionsClientViewPr
             Mostrando <span className="font-medium text-slate-700">{initialData.data.length}</span> de{' '}
             <span className="font-medium text-slate-700">{initialData.total}</span> resultados
           </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+          
+          <div className="flex items-center gap-1">
+            <button
               onClick={() => handlePageChange(initialData.page - 1)}
               disabled={initialData.page <= 1 || isPending}
+              className="flex items-center justify-center w-9 h-9 rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              Anterior
-            </Button>
-            <div className="flex items-center px-4 text-sm font-medium bg-slate-50 rounded-md border border-slate-200">
-              {initialData.page} / {totalPages}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            
+            {getPageNumbers().map((pageNum, index) => (
+              pageNum === '...' ? (
+                <span key={`ellipsis-${index}`} className="flex items-center justify-center w-9 h-9 text-slate-400">
+                  <MoreHorizontal className="h-4 w-4" />
+                </span>
+              ) : (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageChange(pageNum as number)}
+                  className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-medium transition-colors ${
+                    pageNum === initialData.page
+                      ? 'bg-primary text-white hover:bg-primary/90'
+                      : 'text-slate-600 hover:bg-slate-100 border border-transparent hover:border-slate-200'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              )
+            ))}
+            
+            <button
               onClick={() => handlePageChange(initialData.page + 1)}
               disabled={initialData.page >= totalPages || isPending}
+              className="flex items-center justify-center w-9 h-9 rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              Próxima
-            </Button>
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </div>

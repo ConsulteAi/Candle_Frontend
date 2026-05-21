@@ -253,6 +253,7 @@ export interface AdminQuery {
     code: string;
     name: string;
   };
+  input: string;
   providerId: string;
   providerName: string;
   status: "SUCCESS" | "FAILED" | "PENDING" | "PROCESSING";

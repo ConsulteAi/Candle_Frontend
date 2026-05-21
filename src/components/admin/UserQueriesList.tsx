@@ -4,9 +4,10 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Loader2, AlertCircle, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, AlertCircle, Eye, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { formatCpfCnpj } from '@/lib/formatters';
 
 import {
   Table,
@@ -40,6 +41,31 @@ export function UserQueriesList({ userId }: UserQueriesListProps) {
 
   const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 0;
   const isFetching = isLoading && !data;
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const current = page;
+    const total = totalPages;
+    
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      
+      if (current > 4) pages.push('...');
+      
+      const start = Math.max(2, current - 2);
+      const end = Math.min(total - 1, current + 2);
+      
+      for (let i = start; i <= end; i++) pages.push(i);
+      
+      if (current < total - 3) pages.push('...');
+      
+      pages.push(total);
+    }
+    
+    return pages;
+  };
 
   if (isFetching) {
     return (
@@ -75,6 +101,7 @@ export function UserQueriesList({ userId }: UserQueriesListProps) {
             <TableRow>
               <TableHead>Data</TableHead>
               <TableHead>Consulta</TableHead>
+              <TableHead>Documento</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Custo</TableHead>
               <TableHead className="text-right">Ações</TableHead>
@@ -91,6 +118,11 @@ export function UserQueriesList({ userId }: UserQueriesListProps) {
                     <span className="font-medium text-slate-700">{query.queryType.name}</span>
                     <span className="text-xs text-slate-400 font-mono">{query.queryType.code}</span>
                   </div>
+                </TableCell>
+                <TableCell>
+                  <span className="font-mono text-sm text-slate-700">
+                    {formatCpfCnpj(query.input)}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <StatusBadge status={query.status} />
@@ -133,28 +165,43 @@ export function UserQueriesList({ userId }: UserQueriesListProps) {
             </span>{' '}
             de <span className="font-medium text-slate-700">{data.total}</span> consultas
           </p>
+          
           <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={() => setPage((p) => p - 1)}
               disabled={page === 1 || isLoading}
-              className="h-8 w-8 p-0"
+              className="flex items-center justify-center w-9 h-9 rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm text-slate-600 px-2">
-              {page} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            
+            {getPageNumbers().map((pageNum, index) => (
+              pageNum === '...' ? (
+                <span key={`ellipsis-${index}`} className="flex items-center justify-center w-9 h-9 text-slate-400">
+                  <MoreHorizontal className="h-4 w-4" />
+                </span>
+              ) : (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(pageNum as number)}
+                  className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-medium transition-colors ${
+                    pageNum === page
+                      ? 'bg-primary text-white hover:bg-primary/90'
+                      : 'text-slate-600 hover:bg-slate-100 border border-transparent hover:border-slate-200'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              )
+            ))}
+            
+            <button
               onClick={() => setPage((p) => p + 1)}
               disabled={page === totalPages || isLoading}
-              className="h-8 w-8 p-0"
+              className="flex items-center justify-center w-9 h-9 rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRight className="h-4 w-4" />
-            </Button>
+            </button>
           </div>
         </div>
       )}
