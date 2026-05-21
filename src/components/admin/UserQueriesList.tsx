@@ -114,10 +114,9 @@ export function UserQueriesList({ userId }: UserQueriesListProps) {
                   {format(new Date(query.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                 </TableCell>
                 <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium text-slate-700">{query.queryType.name}</span>
-                    <span className="text-xs text-slate-400 font-mono">{query.queryType.code}</span>
-                  </div>
+                  <span className="font-medium text-slate-700 truncate block max-w-[250px]" title={query.queryType.name}>
+                    {query.queryType.name}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <span className="font-mono text-sm text-slate-700">
