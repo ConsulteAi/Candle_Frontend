@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { formatCpfCnpj, formatPhone } from '@/lib/formatters';
 import { UserTransactionsList } from './UserTransactionsList';
 import { UserQueriesList } from './UserQueriesList';
 import { UserPriceBenefitsTab } from './UserPriceBenefitsTab';
@@ -291,20 +292,20 @@ export function UserDetailsView({ user: initialUser }: UserDetailsViewProps) {
                       {user.email}
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-500 uppercase">CPF/CNPJ</label>
-                    <div className="flex items-center gap-2 text-slate-900 font-mono">
-                      <Shield className="w-4 h-4 text-slate-400" />
-                      {user.cpfCnpj}
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium text-slate-500 uppercase">Telefone</label>
-                    <div className="flex items-center gap-2 text-slate-900">
-                      <Phone className="w-4 h-4 text-slate-400" />
-                      {user.phone || 'N/A'}
-                    </div>
-                  </div>
+                   <div className="space-y-1">
+                     <label className="text-xs font-medium text-slate-500 uppercase">CPF/CNPJ</label>
+                     <div className="flex items-center gap-2 text-slate-900 font-mono">
+                       <Shield className="w-4 h-4 text-slate-400" />
+                       {formatCpfCnpj(user.cpfCnpj)}
+                     </div>
+                   </div>
+                   <div className="space-y-1">
+                     <label className="text-xs font-medium text-slate-500 uppercase">Telefone</label>
+                     <div className="flex items-center gap-2 text-slate-900">
+                       <Phone className="w-4 h-4 text-slate-400" />
+                       {user.phone ? formatPhone(user.phone) : 'N/A'}
+                     </div>
+                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-slate-500 uppercase">Data de Cadastro</label>
                     <div className="flex items-center gap-2 text-slate-900">
