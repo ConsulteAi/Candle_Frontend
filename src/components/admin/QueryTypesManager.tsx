@@ -668,7 +668,7 @@ export function QueryTypesManager() {
           </DialogHeader>
 
           {/* Body com scroll independente */}
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="px-6 py-5">
               {loadingDetails ? (
                 <div className="flex min-h-40 items-center justify-center">
