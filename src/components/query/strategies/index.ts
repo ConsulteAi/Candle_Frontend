@@ -28,6 +28,7 @@ import { CadinStrategy } from './CadinStrategy';
 import { ProtestoDetalhadoSpStrategy } from './ProtestoDetalhadoSpStrategy';
 import { CommercialAnalysisPfStrategy } from './CommercialAnalysisPfStrategy';
 import { CommercialAnalysisPjStrategy } from './CommercialAnalysisPjStrategy';
+import { ScrEhmStrategy } from './ScrEhmStrategy';
 import type { QueryStrategyProps } from '@/types/query-strategies';
 import React from 'react';
 
@@ -65,6 +66,8 @@ export const STRATEGIES: Record<string, React.ComponentType<QueryStrategyProps>>
   'RATING_BANCARIO_BOA_VISTA_PJ': CommercialAnalysisPjStrategy,
   'SERASA_PF': CommercialAnalysisPfStrategy,
   'SERASA_PJ': CommercialAnalysisPjStrategy,
+  'SCR_PF': ScrEhmStrategy,
+  'SCR_PJ': ScrEhmStrategy,
 };
 
 export const getStrategyComponent = (code: string): React.ComponentType<QueryStrategyProps> => {
@@ -101,3 +104,4 @@ export * from './CadinStrategy';
 export * from './ProtestoDetalhadoSpStrategy';
 export * from './CommercialAnalysisPfStrategy';
 export * from './CommercialAnalysisPjStrategy';
+export * from './ScrEhmStrategy';

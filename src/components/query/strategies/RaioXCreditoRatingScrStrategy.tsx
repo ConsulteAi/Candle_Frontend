@@ -10,12 +10,18 @@ import {
   FileWarning,
   Landmark,
   ShieldAlert,
+  TrendingDown,
   User,
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
-import type { QueryStrategyProps, RaioXCreditoRatingScrResult } from '@/types/query-strategies';
+import type {
+  QueryStrategyProps,
+  RaioXCreditoRatingScrResult,
+  ScrEhmEnrichment,
+  ScrEhmOperacao,
+} from '@/types/query-strategies';
 import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
-import { formatDisplayDate } from '@/lib/utils';
+import { cn, formatDisplayDate } from '@/lib/utils';
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
@@ -28,6 +34,99 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/glass-table';
+
+// ─── helpers ─────────────────────────────────────────────────────────────────
+
+const fmtBRL = (v: number | undefined) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v ?? 0));
+
+const fmtPct = (v: number | undefined) => `${Number(v ?? 0).toFixed(2)}%`;
+
+function ScrBacenEhmSection({ scrBacen }: { scrBacen: ScrEhmEnrichment }) {
+  const consolidado = scrBacen.consolidado ?? {};
+  const operacoes: ScrEhmOperacao[] = Array.isArray(scrBacen.operacoes) ? scrBacen.operacoes : [];
+  const score = scrBacen.score ?? { pontuacao: 0, faixa: '' };
+
+  return (
+    <div className="space-y-6 p-4">
+      {/* Score badge + resumo info */}
+      <div className="grid md:grid-cols-12 gap-4">
+        <div className="md:col-span-3 flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 text-center">
+          <span className="text-xs uppercase tracking-widest text-gray-500 font-semibold mb-2">Score SCR</span>
+          <span className={cn(
+            'text-4xl font-bold',
+            score.pontuacao > 600 ? 'text-green-600' : score.pontuacao > 300 ? 'text-yellow-600' : 'text-red-600',
+          )}>
+            {score.pontuacao}
+          </span>
+          <span className="text-xs text-gray-500 mb-2">/ 1000</span>
+          <Badge variant={
+            score.pontuacao > 600 ? 'success' :
+            score.pontuacao > 300 ? 'warning' : 'error'
+          }>
+            {score.faixa || '—'}
+          </Badge>
+        </div>
+
+        <div className="md:col-span-9 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <InfoBox label="Base Consultada" value={scrBacen.resumo?.databaseConsultada || '-'} icon={<Calendar className="w-4 h-4 text-primary" />} />
+          <InfoBox label="Início Relac." value={scrBacen.resumo?.dataInicioRelacionamento || '-'} icon={<Clock className="w-4 h-4 text-primary" />} />
+          <InfoBox label="Qtd Instituições" value={String(scrBacen.resumo?.qtdInstituicoes ?? 0)} icon={<Building2 className="w-4 h-4 text-gray-400" />} />
+          <InfoBox label="Qtd Operações" value={String(scrBacen.resumo?.qtdOperacoes ?? 0)} icon={<BarChart3 className="w-4 h-4 text-primary" />} />
+        </div>
+      </div>
+
+      {/* Consolidado */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <SummaryCard title="A Vencer" value={fmtBRL(consolidado.creditoAVencer?.valor)} subtitle={fmtPct(consolidado.creditoAVencer?.percentual)} color="blue" icon={<Clock className="w-5 h-5" />} />
+        <SummaryCard title="Vencido" value={fmtBRL(consolidado.creditoVencido?.valor)} subtitle={fmtPct(consolidado.creditoVencido?.percentual)} color={Number(consolidado.creditoVencido?.valor ?? 0) > 0 ? 'red' : 'green'} icon={<AlertTriangle className="w-5 h-5" />} />
+        <SummaryCard title="Limite" value={fmtBRL(consolidado.limiteCredito?.valor)} subtitle={fmtPct(consolidado.limiteCredito?.percentual)} color="green" icon={<CheckCircle2 className="w-5 h-5" />} />
+        <SummaryCard title="Prejuízo" value={fmtBRL(consolidado.prejuizo?.valor)} subtitle={fmtPct(consolidado.prejuizo?.percentual)} color={Number(consolidado.prejuizo?.valor ?? 0) > 0 ? 'red' : 'gray'} icon={<TrendingDown className="w-5 h-5" />} />
+      </div>
+
+      {/* Operações */}
+      {operacoes.length > 0 && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Modalidade</TableHead>
+              <TableHead>Sub-Modalidade</TableHead>
+              <TableHead className="text-right">% Port.</TableHead>
+              <TableHead className="text-right">Valor</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {operacoes.map((op, idx) => (
+              <>
+                <TableRow key={`scr-op-${idx}`} className="bg-gray-50/60">
+                  <TableCell className="font-semibold">{op.modalidade || '-'}</TableCell>
+                  <TableCell>{op.subModalidade || '-'}</TableCell>
+                  <TableCell className="text-right">{fmtPct(op.percentual)}</TableCell>
+                  <TableCell className="text-right font-bold text-primary">{fmtBRL(op.total)}</TableCell>
+                </TableRow>
+                {(op.vencimentos ?? []).map((v, vi) => {
+                  const isR = v.restritivo === '1' || v.restritivo === 'true' || v.restritivo === 'RESTRITIVO';
+                  return (
+                    <TableRow key={`scr-op-${idx}-v-${vi}`} className={cn('text-xs', isR ? 'bg-red-50 text-red-700' : 'text-gray-500')}>
+                      <TableCell colSpan={2} className="pl-8 italic">
+                        ↳ {v.descricao || '-'}{v.qtdMeses ? ` (${v.qtdMeses} meses)` : ''}
+                        {isR && <span className="ml-2 font-semibold text-red-600 uppercase text-xs">Restritivo</span>}
+                      </TableCell>
+                      <TableCell className="text-right">{fmtPct(v.percentual)}</TableCell>
+                      <TableCell className="text-right font-medium">{fmtBRL(v.valor)}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </>
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </div>
+  );
+}
+
+// ─── main component ───────────────────────────────────────────────────────────
 
 export function RaioXCreditoRatingScrStrategy({
   data,
@@ -207,6 +306,25 @@ export function RaioXCreditoRatingScrStrategy({
         <Card className="p-4 border border-yellow-100 bg-yellow-50">
           <p className="text-sm text-yellow-800 font-medium">
             {data.marketRestrictionsMessage || 'O enriquecimento de mercado não estava disponível para esta consulta.'}
+          </p>
+        </Card>
+      )}
+
+      {/* ── SCR BACEN EHM enrichment ───────────────────────────────────── */}
+      {data.scrBacen && (
+        <StrategySectionWrapper
+          title="SCR BACEN (EHM)"
+          icon={<BarChart3 className="w-5 h-5 text-primary" />}
+          isEmpty={false}
+        >
+          <ScrBacenEhmSection scrBacen={data.scrBacen} />
+        </StrategySectionWrapper>
+      )}
+
+      {data.scrBacenUnavailable && (
+        <Card className="p-4 border border-yellow-100 bg-yellow-50">
+          <p className="text-sm text-yellow-800 font-medium">
+            {data.scrBacenMessage || 'A posição BACEN SCR (EHM) não estava disponível para esta consulta.'}
           </p>
         </Card>
       )}

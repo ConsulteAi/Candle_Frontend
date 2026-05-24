@@ -471,6 +471,72 @@ export interface RaioXCreditoRatingScrResult extends ScrBacenResult {
   marketRestrictions?: RaioXMarketRestrictions;
   marketRestrictionsUnavailable?: boolean;
   marketRestrictionsMessage?: string;
+  scrBacen?: ScrEhmEnrichment;
+  scrBacenUnavailable?: boolean;
+  scrBacenMessage?: string;
+}
+
+// SCR EHM (standalone SCR_PF / SCR_PJ via EHM_CONSULTAS)
+
+export interface ScrEhmVencimento {
+  descricao: string;
+  valor: number;
+  percentual: number;
+  qtdMeses: string;
+  restritivo?: string;
+}
+
+export interface ScrEhmBucket {
+  valor: number;
+  percentual: number;
+  operacoes?: ScrEhmVencimento[];
+}
+
+export interface ScrEhmConsolidado {
+  creditoAVencer: ScrEhmBucket;
+  creditoVencido: ScrEhmBucket;
+  limiteCredito: ScrEhmBucket;
+  prejuizo: ScrEhmBucket;
+}
+
+export interface ScrEhmOperacao {
+  modalidade: string;
+  subModalidade: string;
+  variacaoCambial: string;
+  total: number;
+  percentual: number;
+  vencimentos: ScrEhmVencimento[];
+}
+
+export interface ScrEhmResumo {
+  documento: string;
+  tipoDocumento: string;
+  databaseConsultada: string;
+  dataInicioRelacionamento: string;
+  qtdInstituicoes: number;
+  qtdOperacoes: number;
+  qtdOperacoesDiscordancia: number;
+  qtdOperacoesSubjudice: number;
+}
+
+export interface ScrEhmScore {
+  pontuacao: number;
+  faixa: string;
+}
+
+export interface ScrEhmResult {
+  pdf?: string;
+  resumo: ScrEhmResumo;
+  consolidado: ScrEhmConsolidado;
+  operacoes: ScrEhmOperacao[];
+  score: ScrEhmScore;
+}
+
+/** scrBacen enrichment block inside a Raio X result */
+export interface ScrEhmEnrichment extends ScrEhmResult {
+  sourceQueryTypeCode?: string;
+  sourceProviderCode?: string;
+  available?: boolean;
 }
 
 // Protesto Nacional Plus
