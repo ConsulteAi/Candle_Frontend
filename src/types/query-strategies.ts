@@ -812,3 +812,49 @@ export interface CommercialAnalysisPfResult extends CommercialAnalysisBaseResult
 export interface CommercialAnalysisPjResult extends CommercialAnalysisBaseResult {
   company?: Pick<BaseCompany, 'cnpj' | 'socialReason' | 'fantasyName' | 'foundationDate' | 'status'>;
 }
+
+// CCF — Cheques Sem Fundo via EHM_CONSULTAS
+export interface CcfSummary {
+  totalRegistro: number;
+  sumQteOcorrencias: number;
+  ultimaOcorrencia: string;
+}
+
+export interface CcfHistoricoItem {
+  quantidade: number;
+  dataConsulta: string;
+}
+
+export interface CcfListaItem {
+  banco?: string;
+  agencia?: string;
+  motivo?: string;
+  ultimo?: string;
+  qteOcorrencias?: number;
+}
+
+export interface CcfResult {
+  pdf?: string;
+  erro: boolean;
+  summary: CcfSummary;
+  historico: CcfHistoricoItem[];
+  lista: CcfListaItem[];
+}
+
+export interface CcfEnrichment extends CcfResult {
+  sourceQueryTypeCode?: string;
+  sourceProviderCode?: string;
+  available?: boolean;
+}
+
+// Raio X Financeiro (RAIO_X_FINANCEIRO_RATING_SCR_PF/PJ)
+export interface RaioXFinanceiroResult extends ScrBacenResult {
+  person?: Pick<BasePerson, 'name' | 'document'>;
+  company?: Pick<BaseCompany, 'socialReason' | 'cnpj'>;
+  marketRestrictions?: RaioXMarketRestrictions;
+  marketRestrictionsUnavailable?: boolean;
+  marketRestrictionsMessage?: string;
+  ccf?: CcfEnrichment;
+  ccfUnavailable?: boolean;
+  ccfMessage?: string;
+}

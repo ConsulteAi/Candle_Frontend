@@ -29,6 +29,8 @@ import { ProtestoDetalhadoSpStrategy } from './ProtestoDetalhadoSpStrategy';
 import { CommercialAnalysisPfStrategy } from './CommercialAnalysisPfStrategy';
 import { CommercialAnalysisPjStrategy } from './CommercialAnalysisPjStrategy';
 import { ScrEhmStrategy } from './ScrEhmStrategy';
+import { CcfStrategy } from './CcfStrategy';
+import { RaioXFinanceiroStrategy } from './RaioXFinanceiroStrategy';
 import type { QueryStrategyProps } from '@/types/query-strategies';
 import React from 'react';
 
@@ -68,6 +70,9 @@ export const STRATEGIES: Record<string, React.ComponentType<QueryStrategyProps>>
   'SERASA_PJ': CommercialAnalysisPjStrategy,
   'SCR_PF': ScrEhmStrategy,
   'SCR_PJ': ScrEhmStrategy,
+  'CCF': CcfStrategy,
+  'RAIO_X_FINANCEIRO_RATING_SCR_PF': RaioXFinanceiroStrategy,
+  'RAIO_X_FINANCEIRO_RATING_SCR_PJ': RaioXFinanceiroStrategy,
 };
 
 export const getStrategyComponent = (code: string): React.ComponentType<QueryStrategyProps> => {
@@ -105,3 +110,5 @@ export * from './ProtestoDetalhadoSpStrategy';
 export * from './CommercialAnalysisPfStrategy';
 export * from './CommercialAnalysisPjStrategy';
 export * from './ScrEhmStrategy';
+export * from './CcfStrategy';
+export * from './RaioXFinanceiroStrategy';

@@ -304,7 +304,7 @@ export function QueryTypesManager() {
         <SectionHeader
           icon={SlidersHorizontal}
           title="Composição"
-          description="Controle o primário SCR/BACEN e os enrichments complementares deste produto."
+          description="Controle a composição deste tipo de consulta."
         />
 
         <Alert className="border-amber-200 bg-amber-50">
@@ -319,11 +319,11 @@ export function QueryTypesManager() {
 
         <FieldGroup>
           <Field>
-            <FieldLabel>Primário SCR/BACEN</FieldLabel>
+            <FieldLabel>Primário Rating</FieldLabel>
             <FieldContent>
               <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">BIGTECH / SCR_BACEN</p>
+                  <p className="text-sm font-medium text-foreground">Rating</p>
                   <p className="text-xs text-muted-foreground">
                     Desativado = resposta parcial automática com aviso no payload.
                   </p>
