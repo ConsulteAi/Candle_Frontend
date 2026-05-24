@@ -22,7 +22,6 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Switch } from '@/components/ui/switch';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -668,7 +667,7 @@ export function QueryTypesManager() {
           </DialogHeader>
 
           {/* Body com scroll independente */}
-          <ScrollArea className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <div className="px-6 py-5">
               {loadingDetails ? (
                 <div className="flex min-h-40 items-center justify-center">
@@ -817,7 +816,7 @@ export function QueryTypesManager() {
                 </div>
               )}
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Footer fixo com borda superior */}
           <DialogFooter className="shrink-0 border-t bg-muted/30 px-6 py-4">
