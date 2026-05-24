@@ -38,7 +38,12 @@ import { Search, Edit, Loader2, Info, Save, DollarSign, FileText, Tag, SlidersHo
 const fmt = (v: number) =>
   v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 import { httpClient } from '@/lib/api/httpClient';
-import type { QueryType, PaginatedResponse, Provider } from '@/types/admin';
+import type {
+  QueryType,
+  QueryTypeComposition,
+  PaginatedResponse,
+  Provider,
+} from '@/types/admin';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -51,6 +56,8 @@ type QueryTypeFormState = {
   resellerPrice: number | null;
   cost: number;
 };
+
+type QueryTypeCompositionFormState = QueryTypeComposition;
 
 const emptyFormData: QueryTypeFormState = {
   name: '',
@@ -123,6 +130,9 @@ export function QueryTypesManager() {
   const [selectedProviderId, setSelectedProviderId] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<QueryType | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [composition, setComposition] =
+    useState<QueryTypeCompositionFormState | null>(null);
   const { toast } = useToast();
   const user = useAuthStore(state => state.user);
   const isMaster = user?.role === 'MASTER';
@@ -169,6 +179,11 @@ export function QueryTypesManager() {
   const resolveResellerPrice = (qt: QueryType) => qt.resellerPrice ?? qt.cost;
   const parseOptionalNumber = (value: string) => (value === '' ? null : Number(value));
 
+  const fetchQueryTypeDetails = async (id: string) => {
+    const response = await httpClient.get<QueryType>(`/admin/query-types/${id}`);
+    return response.data;
+  };
+
   const handleSave = async () => {
     if (!editingItem) return;
 
@@ -186,6 +201,18 @@ export function QueryTypesManager() {
         : { price: formData.price };
 
       await httpClient.patch(`/admin/query-types/${editingItem.id}`, payload);
+
+      if (composition) {
+        await httpClient.patch(`/admin/query-types/${editingItem.id}/composition`, {
+          primaryEnabled: composition.primaryEnabled,
+          enrichments: composition.enrichments.map((enrichment) => ({
+            id: enrichment.id,
+            isActive: enrichment.isActive,
+            timeoutMs: enrichment.timeoutMs,
+          })),
+        });
+      }
+
       toast({ title: 'Sucesso', description: 'Tipo de consulta atualizado.' });
       handleModalChange(false);
       fetchQueryTypes();
@@ -221,7 +248,7 @@ export function QueryTypesManager() {
     }
   };
 
-  const openModal = (item: QueryType) => {
+  const openModal = async (item: QueryType) => {
     setEditingItem(item);
     setFormData({
       name: item.name,
@@ -232,6 +259,22 @@ export function QueryTypesManager() {
       cost: item.cost
     });
     setIsModalOpen(true);
+
+    try {
+      setLoadingDetails(true);
+      const details = await fetchQueryTypeDetails(item.id);
+      setEditingItem(details);
+      setComposition(details.composition ?? null);
+    } catch {
+      setComposition(null);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível carregar os detalhes da composição.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
   const handleModalChange = (open: boolean) => {
@@ -239,6 +282,8 @@ export function QueryTypesManager() {
     if (!open) {
       setEditingItem(null);
       setFormData(emptyFormData);
+      setComposition(null);
+      setLoadingDetails(false);
     }
   };
 
@@ -251,6 +296,145 @@ export function QueryTypesManager() {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const tableColSpan = isMaster ? 8 : 5;
+
+  const renderCompositionSection = () => {
+    if (!composition) return null;
+
+    return (
+      <div className="flex flex-col gap-4">
+        <SectionHeader
+          icon={SlidersHorizontal}
+          title="Composição"
+          description="Controle o primário SCR/BACEN e os enrichments complementares deste produto."
+        />
+
+        <Alert className="border-amber-200 bg-amber-50">
+          <Info className="h-4 w-4 text-amber-700" />
+          <AlertTitle className="text-sm font-semibold text-amber-900">
+            Modo parcial automático
+          </AlertTitle>
+          <AlertDescription className="mt-0.5 text-xs text-amber-800">
+            Ao desativar o primário, o Raio X continua ativo em modo parcial e retorna apenas os enrichments habilitados.
+          </AlertDescription>
+        </Alert>
+
+        <FieldGroup>
+          <Field>
+            <FieldLabel>Primário SCR/BACEN</FieldLabel>
+            <FieldContent>
+              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-foreground">BIGTECH / SCR_BACEN</p>
+                  <p className="text-xs text-muted-foreground">
+                    Desativado = resposta parcial automática com aviso no payload.
+                  </p>
+                </div>
+                <Switch
+                  checked={composition.primaryEnabled}
+                  onCheckedChange={(checked) =>
+                    setComposition((current) =>
+                      current
+                        ? { ...current, primaryEnabled: checked, partialModeEnabled: !checked }
+                        : current
+                    )
+                  }
+                />
+              </div>
+            </FieldContent>
+          </Field>
+        </FieldGroup>
+
+        <div className="space-y-3">
+          {composition.enrichments.map((enrichment) => (
+            <div
+              key={enrichment.id}
+              className="rounded-xl border border-border bg-white p-4 shadow-sm"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-semibold text-foreground">
+                      {enrichment.queryTypeName}
+                    </span>
+                    <span className="rounded-full border border-border bg-muted/50 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+                      {enrichment.queryTypeCode}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Role: {enrichment.role} · Ordem: {enrichment.executionOrder}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 self-start rounded-full border border-border bg-muted/30 px-3 py-1.5">
+                  <Switch
+                    checked={enrichment.isActive}
+                    onCheckedChange={(checked) =>
+                      setComposition((current) =>
+                        current
+                          ? {
+                              ...current,
+                              enrichments: current.enrichments.map((item) =>
+                                item.id === enrichment.id
+                                  ? { ...item, isActive: checked }
+                                  : item
+                              ),
+                            }
+                          : current
+                      )
+                    }
+                  />
+                  <span className={cn(
+                    'text-xs font-medium',
+                    enrichment.isActive ? 'text-emerald-600' : 'text-muted-foreground'
+                  )}>
+                    {enrichment.isActive ? 'Ativo' : 'Inativo'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,220px)]">
+                <Field>
+                  <FieldLabel>Timeout (ms)</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      type="number"
+                      min="1000"
+                      step="1000"
+                      value={enrichment.timeoutMs ?? ''}
+                      onChange={(e) =>
+                        setComposition((current) =>
+                          current
+                            ? {
+                                ...current,
+                                enrichments: current.enrichments.map((item) =>
+                                  item.id === enrichment.id
+                                    ? {
+                                        ...item,
+                                        timeoutMs:
+                                          e.target.value === ''
+                                            ? null
+                                            : Number(e.target.value),
+                                      }
+                                    : item
+                                ),
+                              }
+                            : current
+                        )
+                      }
+                      placeholder="Default do runtime"
+                    />
+                    <FieldDescription>
+                      Vazio usa o default do runtime. Ex.: 90000 para 90 segundos.
+                    </FieldDescription>
+                  </FieldContent>
+                </Field>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <TooltipProvider>
@@ -486,7 +670,14 @@ export function QueryTypesManager() {
           {/* Body com scroll independente */}
           <ScrollArea className="flex-1">
             <div className="px-6 py-5">
-              {isMaster ? (
+              {loadingDetails ? (
+                <div className="flex min-h-40 items-center justify-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Carregando detalhes...</span>
+                  </div>
+                </div>
+              ) : isMaster ? (
                 <div className="flex flex-col gap-6">
                   {/* Alerta de regras de herança */}
                   <Alert className="border-blue-200 bg-blue-50">
@@ -589,6 +780,13 @@ export function QueryTypesManager() {
                       </Field>
                     </div>
                   </div>
+
+                  {composition && (
+                    <>
+                      <div className="h-px w-full bg-border" />
+                      {renderCompositionSection()}
+                    </>
+                  )}
                 </div>
               ) : (
                 /* Visão simplificada para admin não-master */
@@ -609,6 +807,13 @@ export function QueryTypesManager() {
                       </FieldContent>
                     </Field>
                   </FieldGroup>
+
+                  {composition && (
+                    <>
+                      <div className="h-px w-full bg-border" />
+                      {renderCompositionSection()}
+                    </>
+                  )}
                 </div>
               )}
             </div>
