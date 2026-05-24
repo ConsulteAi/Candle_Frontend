@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   Clock,
   FileWarning,
+  Gavel,
   Landmark,
   ShieldAlert,
   TrendingDown,
@@ -17,6 +18,7 @@ import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type {
   QueryStrategyProps,
   RaioXCreditoRatingScrResult,
+  RaioXMarketRestrictions,
   ScrEhmEnrichment,
   ScrEhmOperacao,
 } from '@/types/query-strategies';
@@ -41,6 +43,292 @@ const fmtBRL = (v: number | undefined) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v ?? 0));
 
 const fmtPct = (v: number | undefined) => `${Number(v ?? 0).toFixed(2)}%`;
+
+// ─── Market Restrictions section ─────────────────────────────────────────────
+
+function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
+  const summary = mr.summary ?? {};
+  const scpcDebts = mr.scpcDebts ?? [];
+  const refinPefinDebts = mr.refinPefinDebts ?? [];
+  const protests = mr.protests ?? [];
+  const badChecks = mr.badChecks ?? [];
+  const cadin = mr.cadin ?? [];
+  const legalActions = mr.legalActions ?? [];
+
+  const hasAny =
+    scpcDebts.length > 0 ||
+    refinPefinDebts.length > 0 ||
+    protests.length > 0 ||
+    badChecks.length > 0 ||
+    cadin.length > 0 ||
+    legalActions.length > 0;
+
+  return (
+    <div className="space-y-5 p-4">
+      {/* Description */}
+      <p className="text-xs text-gray-500 leading-relaxed border-l-2 border-indigo-300 pl-3">
+        Restrições de mercado consultadas via birôs de crédito — inclui dívidas SCPC, pendências
+        REFIN/PEFIN, protestos em cartório, cheques sem fundo e inscrições em CADIN.{' '}
+        {!hasAny && <span className="font-semibold text-green-700">Nenhuma restrição encontrada.</span>}
+      </p>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <SummaryCard
+          title="SCPC"
+          value={summary.totalScpcDebts || 0}
+          subtitle={(summary.totalScpcDebts || 0) > 0 ? 'Constam registros' : 'Nada consta'}
+          color={(summary.totalScpcDebts || 0) > 0 ? 'red' : 'green'}
+          icon={<AlertTriangle className="w-5 h-5" />}
+        />
+        <SummaryCard
+          title="REFIN / PEFIN"
+          value={summary.totalRefinPefinDebts || 0}
+          subtitle={(summary.totalRefinPefinDebts || 0) > 0 ? 'Constam registros' : 'Nada consta'}
+          color={(summary.totalRefinPefinDebts || 0) > 0 ? 'orange' : 'green'}
+          icon={<FileWarning className="w-5 h-5" />}
+        />
+        <SummaryCard
+          title="Protestos"
+          value={summary.totalProtests || 0}
+          subtitle={(summary.totalProtests || 0) > 0 ? 'Constam registros' : 'Nada consta'}
+          color={(summary.totalProtests || 0) > 0 ? 'yellow' : 'green'}
+          icon={<Landmark className="w-5 h-5" />}
+        />
+        <SummaryCard
+          title="Cheques"
+          value={summary.totalBadChecks || 0}
+          subtitle={(summary.totalBadChecks || 0) > 0 ? 'Constam registros' : 'Nada consta'}
+          color={(summary.totalBadChecks || 0) > 0 ? 'yellow' : 'green'}
+          icon={<CheckCircle2 className="w-5 h-5" />}
+        />
+        <SummaryCard
+          title="CADIN"
+          value={summary.totalCadin || 0}
+          subtitle={(summary.totalCadin || 0) > 0 ? 'Constam registros' : 'Nada consta'}
+          color={(summary.totalCadin || 0) > 0 ? 'purple' : 'green'}
+          icon={<Building2 className="w-5 h-5" />}
+        />
+      </div>
+
+      {/* SERASA summary */}
+      {mr.serasaSummary && (
+        <div className="rounded-lg border border-blue-100 bg-blue-50/50 px-4 py-3 grid grid-cols-3 gap-4">
+          <InfoBox
+            label="1ª Ocorrência SERASA"
+            value={mr.serasaSummary.firstOccurrenceDate || '-'}
+            icon={<Calendar className="w-4 h-4 text-blue-500" />}
+          />
+          <InfoBox
+            label="Última Ocorrência SERASA"
+            value={mr.serasaSummary.lastOccurrenceDate || '-'}
+            icon={<Calendar className="w-4 h-4 text-blue-500" />}
+          />
+          <InfoBox
+            label="Total SERASA"
+            value={String(mr.serasaSummary.totalOccurrences || 0)}
+            icon={<FileWarning className="w-4 h-4 text-blue-500" />}
+          />
+        </div>
+      )}
+
+      {/* SCPC */}
+      {scpcDebts.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-red-600 flex items-center gap-2 px-1">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            Ocorrências SCPC ({scpcDebts.length})
+          </p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Credor</TableHead>
+                <TableHead>Cidade / UF</TableHead>
+                <TableHead>Contrato</TableHead>
+                <TableHead>Disponível em</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {scpcDebts.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{item.occurrenceDate || '-'}</TableCell>
+                  <TableCell className="font-medium">{item.creditorName || '-'}</TableCell>
+                  <TableCell>{item.city && item.state ? `${item.city} / ${item.state}` : item.city || item.state || '-'}</TableCell>
+                  <TableCell>{item.contract || '-'}</TableCell>
+                  <TableCell>{item.availabilityDate || '-'}</TableCell>
+                  <TableCell className="text-right font-bold text-red-600">
+                    {formatCurrency(String(item.value || 0))}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* REFIN / PEFIN */}
+      {refinPefinDebts.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-orange-600 flex items-center gap-2 px-1">
+            <FileWarning className="w-3.5 h-3.5" />
+            Ocorrências REFIN / PEFIN ({refinPefinDebts.length})
+          </p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Origem</TableHead>
+                <TableHead>Informante</TableHead>
+                <TableHead>Contrato</TableHead>
+                <TableHead>Doc. Instituição</TableHead>
+                <TableHead>Garantidor</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {refinPefinDebts.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{item.date || '-'}</TableCell>
+                  <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                  <TableCell>{item.informant || '-'}</TableCell>
+                  <TableCell>{item.contract || '-'}</TableCell>
+                  <TableCell>{item.institutionDocument || '-'}</TableCell>
+                  <TableCell>{item.guarantor || '-'}</TableCell>
+                  <TableCell className="text-right font-bold text-orange-600">
+                    {formatCurrency(String(item.value || 0))}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Protestos */}
+      {protests.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600 flex items-center gap-2 px-1">
+            <Landmark className="w-3.5 h-3.5" />
+            Protestos ({protests.length})
+          </p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Origem</TableHead>
+                <TableHead>Cartório</TableHead>
+                <TableHead>Cidade / UF</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {protests.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{item.date || '-'}</TableCell>
+                  <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                  <TableCell>{item.notary || '-'}</TableCell>
+                  <TableCell>{item.city && item.state ? `${item.city} / ${item.state}` : item.city || item.state || '-'}</TableCell>
+                  <TableCell className="text-right font-bold text-indigo-600">
+                    {formatCurrency(String(item.value || 0))}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Cheques sem fundo */}
+      {badChecks.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-yellow-700 flex items-center gap-2 px-1">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            Cheques Sem Fundo ({badChecks.length})
+          </p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Banco</TableHead>
+                <TableHead>Agência</TableHead>
+                <TableHead>Alínea</TableHead>
+                <TableHead>Última Ocorrência</TableHead>
+                <TableHead>Cidade / UF</TableHead>
+                <TableHead className="text-right">Qtd</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {badChecks.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="font-medium">{item.bankNumber || '-'}</TableCell>
+                  <TableCell>{item.branch || '-'}</TableCell>
+                  <TableCell>{item.alinea || '-'}</TableCell>
+                  <TableCell>{item.lastOccurrence || '-'}</TableCell>
+                  <TableCell>{item.city && item.state ? `${item.city} / ${item.state}` : item.city || item.state || '-'}</TableCell>
+                  <TableCell className="text-right font-bold text-yellow-700">{item.quantity || 0}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* CADIN */}
+      {cadin.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-purple-600 flex items-center gap-2 px-1">
+            <Building2 className="w-3.5 h-3.5" />
+            CADIN ({cadin.length})
+          </p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Entidade</TableHead>
+                <TableHead>Unidade</TableHead>
+                <TableHead>Nº Inscrição</TableHead>
+                <TableHead>Data Inscrição</TableHead>
+                <TableHead>UF</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {cadin.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="font-medium">{item.entity || '-'}</TableCell>
+                  <TableCell>{item.unit || '-'}</TableCell>
+                  <TableCell>{item.registrationNumber || '-'}</TableCell>
+                  <TableCell>{item.registrationDate || '-'}</TableCell>
+                  <TableCell>{item.state || '-'}</TableCell>
+                  <TableCell className="text-right font-bold text-purple-600">
+                    {formatCurrency(String(item.value || 0))}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Ações Judiciais */}
+      {legalActions.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-600 flex items-center gap-2 px-1">
+            <Gavel className="w-3.5 h-3.5" />
+            Ações Judiciais ({legalActions.length})
+          </p>
+          <div className="space-y-2">
+            {legalActions.map((item, idx) => (
+              <pre key={idx} className="text-xs bg-gray-50 border border-gray-100 rounded-lg p-3 overflow-x-auto">
+                {JSON.stringify(item, null, 2)}
+              </pre>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── SCR BACEN enrichment section ────────────────────────────────────────────
 
@@ -302,7 +590,7 @@ export function RaioXCreditoRatingScrStrategy({
     ? data.person?.document || data.document
     : data.company?.cnpj || data.document;
 
-  const marketSummary = data.marketRestrictions?.summary;
+  const marketRestrictions = data.marketRestrictions;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -427,38 +715,13 @@ export function RaioXCreditoRatingScrStrategy({
         </Table>
       </StrategySectionWrapper>
 
-      {marketSummary && (
+      {marketRestrictions && (
         <StrategySectionWrapper
           title="Restrições de Mercado"
           icon={<Landmark className="w-5 h-5 text-indigo-500" />}
           isEmpty={false}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
-            <SummaryCard
-              title="SCPC"
-              value={marketSummary.totalScpcDebts || 0}
-              color={(marketSummary.totalScpcDebts || 0) > 0 ? 'red' : 'green'}
-              icon={<AlertTriangle className="w-5 h-5" />}
-            />
-            <SummaryCard
-              title="REFIN/PEFIN"
-              value={marketSummary.totalRefinPefinDebts || 0}
-              color={(marketSummary.totalRefinPefinDebts || 0) > 0 ? 'orange' : 'green'}
-              icon={<FileWarning className="w-5 h-5" />}
-            />
-            <SummaryCard
-              title="Protestos"
-              value={marketSummary.totalProtests || 0}
-              color={(marketSummary.totalProtests || 0) > 0 ? 'yellow' : 'green'}
-              icon={<Landmark className="w-5 h-5" />}
-            />
-            <SummaryCard
-              title="CADIN"
-              value={marketSummary.totalCadin || 0}
-              color={(marketSummary.totalCadin || 0) > 0 ? 'purple' : 'green'}
-              icon={<Building2 className="w-5 h-5" />}
-            />
-          </div>
+          <MarketRestrictionsSection mr={marketRestrictions} />
         </StrategySectionWrapper>
       )}
 

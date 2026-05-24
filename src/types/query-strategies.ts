@@ -458,11 +458,22 @@ export interface RaioXMarketRestrictionsSummary {
   totalScpcDebts?: number;
   totalRefinPefinDebts?: number;
   totalProtests?: number;
+  totalBadChecks?: number;
   totalCadin?: number;
+  totalLegalActions?: number;
+  totalSerasaOccurrences?: number;
+  hasCommercialRestrictions?: boolean;
 }
 
 export interface RaioXMarketRestrictions {
   summary?: RaioXMarketRestrictionsSummary;
+  serasaSummary?: DividasMultiSerasaSummary;
+  scpcDebts?: DividasMultiScpcDebt[];
+  refinPefinDebts?: DividasMultiRefinPefinDebt[];
+  protests?: DividasMultiProtest[];
+  badChecks?: DividasMultiBadCheck[];
+  cadin?: DividasMultiCadinItem[];
+  legalActions?: Array<Record<string, unknown>>;
 }
 
 export interface RaioXCreditoRatingScrResult extends ScrBacenResult {
