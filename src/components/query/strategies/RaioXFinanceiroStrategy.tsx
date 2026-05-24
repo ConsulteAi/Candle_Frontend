@@ -12,7 +12,6 @@ import {
   Hash,
   Landmark,
   ShieldAlert,
-  TrendingDown,
   User,
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
@@ -69,8 +68,6 @@ import {
 
 const fmtBRL = (v: number | undefined) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v ?? 0));
-
-const fmtPct = (v: number | undefined) => `${Number(v ?? 0).toFixed(2)}%`;
 
 // ─── Market Restrictions section ─────────────────────────────────────────────
 
@@ -509,26 +506,6 @@ export function RaioXFinanceiroStrategy({
     : data.company?.cnpj || data.document;
 
   const marketRestrictions = data.marketRestrictions;
-
-  const scoreValue = Number(data.score?.value || 0);
-  const scoreColor =
-    scoreValue > 600 ? 'text-green-600' : scoreValue > 300 ? 'text-yellow-600' : 'text-red-600';
-  const scoreBorderColor =
-    scoreValue > 600 ? 'border-green-200' : scoreValue > 300 ? 'border-yellow-200' : 'border-red-200';
-  const scoreBg =
-    scoreValue > 600
-      ? 'from-green-50 to-emerald-50'
-      : scoreValue > 300
-        ? 'from-yellow-50 to-amber-50'
-        : 'from-red-50 to-rose-50';
-  const badgeVariant: 'success' | 'warning' | 'error' =
-    scoreValue > 600 ? 'success' : scoreValue > 300 ? 'warning' : 'error';
-  const strokeColor =
-    scoreValue > 600 ? '#22C55E' : scoreValue > 300 ? '#F59E0B' : '#EF4444';
-
-  const circumference = 2 * Math.PI * 52;
-  const dashOffset = circumference - (circumference * Math.min(scoreValue, 1000)) / 1000;
-
   const hasCcf = Boolean(data.ccf);
   const ccfHasOccurrences =
     hasCcf &&
@@ -541,43 +518,24 @@ export function RaioXFinanceiroStrategy({
       {/* ── Header row ─────────────────────────────────────────────────────── */}
       <div className="grid md:grid-cols-12 gap-6">
 
-        {/* Score gauge */}
+        {/* Score card */}
         <div className="md:col-span-4">
-          <Card className={cn(
-            'h-full p-6 flex flex-col items-center justify-center text-center border bg-gradient-to-br',
-            scoreBg, scoreBorderColor,
-          )}>
-            <span className="text-[10px] uppercase tracking-widest text-gray-500 font-semibold mb-3">
-              Score SCR — BACEN
-            </span>
-
-            <div className="relative mb-2">
-              <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
-                <circle cx="60" cy="60" r="52" stroke="#E5E7EB" strokeWidth="9" fill="transparent" />
-                <circle
-                  cx="60" cy="60" r="52"
-                  stroke={strokeColor}
-                  strokeWidth="9" fill="transparent"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={dashOffset}
-                  strokeLinecap="round"
-                  style={{ transition: 'stroke-dashoffset 1.2s ease-out' }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={cn('text-3xl font-bold tabular-nums', scoreColor)}>
-                  {scoreValue}
-                </span>
-                <span className="text-[10px] text-gray-400 font-medium">/ 1000</span>
-              </div>
+          <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Score SCR</h3>
             </div>
-
-            <Badge variant={badgeVariant} className="mb-1">
-              {data.score?.band || '—'}
-            </Badge>
-            <p className="text-[10px] text-gray-400 mt-1 leading-snug">
-              ≤300 alto · 301–600 médio · &gt;600 baixo
-            </p>
+            <div className="text-5xl font-bold text-gray-900 dark:text-white">
+              {Number(data.score?.value || 0)}
+            </div>
+            <div className="mt-3">
+              <Badge variant={data.hasRestrictions ? 'warning' : 'success'}>
+                {data.score?.band || 'Sem faixa'}
+              </Badge>
+            </div>
+            <div className="mt-4 text-sm text-gray-500">
+              {data.hasRestrictions ? 'Foram identificadas restrições no SCR.' : 'Sem restrições no SCR.'}
+            </div>
           </Card>
         </div>
 
@@ -606,7 +564,7 @@ export function RaioXFinanceiroStrategy({
                 icon={<Calendar className="w-4 h-4 text-primary" />}
               />
               <InfoBox
-                label="Data Base SCR"
+                label="Data Base"
                 value={data.databaseDate || '-'}
                 icon={<Clock className="w-4 h-4 text-primary" />}
               />
@@ -621,34 +579,34 @@ export function RaioXFinanceiroStrategy({
       </div>
 
       {/* ── Summary cards ───────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <SummaryCard
-          title="Operações SCR"
+          title="Operações"
           value={data.operationsCount || 0}
-          subtitle="Total registrado no BACEN"
+          subtitle="Total no SCR"
           color="blue"
           icon={<BarChart3 className="w-5 h-5" />}
         />
         <SummaryCard
           title="Valor Restritivo"
-          value={fmtBRL(data.totalRestrictiveValue)}
+          value={formatCurrency(String(data.totalRestrictiveValue || 0))}
           subtitle={Number(data.totalRestrictiveValue || 0) > 0 ? 'Constam restrições' : 'Nada consta'}
           color={Number(data.totalRestrictiveValue || 0) > 0 ? 'red' : 'green'}
           icon={<ShieldAlert className="w-5 h-5" />}
         />
         <SummaryCard
           title="Crédito Vencido"
-          value={fmtBRL(data.creditSummary?.expiredCredit?.value)}
-          subtitle={Number(data.creditSummary?.expiredCredit?.value || 0) > 0 ? `${fmtPct(data.creditSummary?.expiredCredit?.percentage)} · atenção` : 'Nada consta'}
-          color={Number(data.creditSummary?.expiredCredit?.value || 0) > 0 ? 'orange' : 'green'}
+          value={formatCurrency(String(data.creditSummary?.expiredCredit?.value || 0))}
+          subtitle="Resumo SCR"
+          color="orange"
           icon={<AlertTriangle className="w-5 h-5" />}
         />
         <SummaryCard
           title="Prejuízo"
-          value={fmtBRL(data.creditSummary?.loss?.value)}
-          subtitle={Number(data.creditSummary?.loss?.value || 0) > 0 ? `${fmtPct(data.creditSummary?.loss?.percentage)} · restritivo` : 'Nada consta'}
-          color={Number(data.creditSummary?.loss?.value || 0) > 0 ? 'red' : 'gray'}
-          icon={<TrendingDown className="w-5 h-5" />}
+          value={formatCurrency(String(data.creditSummary?.loss?.value || 0))}
+          subtitle="Resumo SCR"
+          color="gray"
+          icon={<FileWarning className="w-5 h-5" />}
         />
       </div>
 
