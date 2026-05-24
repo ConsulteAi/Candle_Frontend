@@ -24,6 +24,30 @@ import type {
 } from '@/types/query-strategies';
 import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
 import { cn, formatDisplayDate } from '@/lib/utils';
+
+// ─── CCF motivo map ──────────────────────────────────────────────────────────
+const CCF_MOTIVOS: Record<string, string> = {
+  '11': 'Insuficiência de fundos – 1ª apresentação',
+  '12': 'Insuficiência de fundos – 2ª apresentação',
+  '13': 'Conta encerrada',
+  '14': 'Prática espúria',
+  '21': 'Cheque prescrito',
+  '22': 'Divergência ou insuficiência de assinatura',
+  '23': 'Emitente menor',
+  '24': 'Contraordem do emitente',
+  '25': 'Cancelamento de talonário pelo banco',
+  '26': 'Bloqueio judicial / BCB',
+  '27': 'Furto ou roubo de malotes',
+  '28': 'Encerramento de conta corrente',
+  '29': 'Conta encerrada pelo BCB',
+};
+
+function formatMotivo(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  const code = raw.replace(/^motivo\s*/i, '').trim();
+  if (CCF_MOTIVOS[code]) return `${code} – ${CCF_MOTIVOS[code]}`;
+  return raw;
+}
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
@@ -367,7 +391,7 @@ function CcfSection({ ccf }: { ccf: CcfEnrichment }) {
         />
         <InfoBox
           label="Última Ocorrência"
-          value={summary.ultimaOcorrencia || 'Sem registros'}
+          value={formatDisplayDate(summary.ultimaOcorrencia) || 'Sem registros'}
           icon={<Calendar className="w-4 h-4 text-primary" />}
         />
       </div>
@@ -409,10 +433,10 @@ function CcfSection({ ccf }: { ccf: CcfEnrichment }) {
                   <TableCell>{item.agencia || '-'}</TableCell>
                   <TableCell>
                     {item.motivo ? (
-                      <Badge variant="error" className="text-[10px]">{item.motivo}</Badge>
+                      <Badge variant="error" className="text-[10px]">{formatMotivo(item.motivo)}</Badge>
                     ) : '-'}
                   </TableCell>
-                  <TableCell>{item.ultimo || '-'}</TableCell>
+                  <TableCell>{formatDisplayDate(item.ultimo) || '-'}</TableCell>
                   <TableCell className="text-right font-bold text-red-600">
                     {item.qteOcorrencias ?? 0}
                   </TableCell>
@@ -443,7 +467,7 @@ function CcfSection({ ccf }: { ccf: CcfEnrichment }) {
                   <TableCell className="font-medium">
                     <span className="flex items-center gap-2">
                       <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                      {item.dataConsulta || '-'}
+                      {formatDisplayDate(item.dataConsulta) || '-'}
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
