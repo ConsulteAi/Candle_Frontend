@@ -44,9 +44,12 @@ const CCF_MOTIVOS: Record<string, string> = {
 
 function formatMotivo(raw?: string): string | undefined {
   if (!raw) return undefined;
-  // Normalize: strip prefix like "MOTIVO " and extract the numeric code
-  const code = raw.replace(/^motivo\s*/i, '').trim();
-  if (CCF_MOTIVOS[code]) return `${code} – ${CCF_MOTIVOS[code]}`;
+  // Provider returns "12 - MOTIVO 12" — extract the leading numeric code
+  const match = raw.match(/^(\d+)/);
+  if (match) {
+    const code = match[1];
+    if (CCF_MOTIVOS[code]) return `${code} – ${CCF_MOTIVOS[code]}`;
+  }
   return raw; // fallback: show as-is
 }
 
