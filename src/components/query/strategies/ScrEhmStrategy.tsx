@@ -7,9 +7,10 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Info,
   TrendingDown,
 } from 'lucide-react';
-import { Card, Badge } from '@/design-system/ComponentsTailwind';
+import { Badge } from '@/design-system/ComponentsTailwind';
 import type {
   QueryStrategyProps,
   ScrEhmResult,
@@ -20,6 +21,7 @@ import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { SummaryCard } from './components/SummaryCard';
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
+import { ScoreGauge } from './components/ScoreGauge';
 import {
   Table,
   TableBody,
@@ -39,13 +41,7 @@ const formatBRL = (val: number | undefined) =>
 const formatPct = (val: number | undefined) =>
   `${Number(val ?? 0).toFixed(2)}%`;
 
-function scoreBadgeVariant(faixa: string): 'success' | 'warning' | 'error' | 'info' {
-  const f = (faixa || '').toUpperCase();
-  if (['EXCELENTE', 'MUITO BOM', 'BOM'].some((k) => f.includes(k))) return 'success';
-  if (['REGULAR', 'MÉDIO', 'MEDIO'].some((k) => f.includes(k))) return 'warning';
-  if (['ALTO RISCO', 'RUIM', 'PESSIMO', 'PÉSSIMO'].some((k) => f.includes(k))) return 'error';
-  return 'info';
-}
+// ─── operações table ──────────────────────────────────────────────────────────
 
 function OperacoesTable({ operacoes }: { operacoes: ScrEhmOperacao[] }) {
   if (!operacoes || operacoes.length === 0) return null;
@@ -80,9 +76,7 @@ function OperacoesTable({ operacoes }: { operacoes: ScrEhmOperacao[] }) {
                   key={`op-${idx}-v-${vi}`}
                   className={cn(
                     'text-xs',
-                    isRestritivo
-                      ? 'bg-red-50 text-red-700'
-                      : 'bg-white text-gray-500',
+                    isRestritivo ? 'bg-red-50 text-red-700' : 'bg-white text-gray-500',
                   )}
                 >
                   <TableCell colSpan={2} className="pl-8 italic">
@@ -120,85 +114,61 @@ export function ScrEhmStrategy({
   const score = data.score ?? { pontuacao: 0, faixa: '' };
   const operacoes = Array.isArray(data.operacoes) ? data.operacoes : [];
 
-  const hasRestrictions =
-    Number(consolidado.creditoVencido?.valor ?? 0) > 0 ||
-    Number(consolidado.prejuizo?.valor ?? 0) > 0;
+  const hasVencido = Number(consolidado.creditoVencido?.valor ?? 0) > 0;
+  const hasPrejuizo = Number(consolidado.prejuizo?.valor ?? 0) > 0;
+  const hasDiscordancia = Number(resumo.qtdOperacoesDiscordancia ?? 0) > 0;
+  const hasSubJudice = Number(resumo.qtdOperacoesSubjudice ?? 0) > 0;
+  const hasRestrictions = hasVencido || hasPrejuizo;
 
-  const isPj =
-    (resumo.tipoDocumento || '').toUpperCase() === 'JURIDICA';
+  const isPj = (resumo.tipoDocumento || '').toUpperCase() === 'JURIDICA';
+
+  const riskLabel =
+    score.pontuacao > 600
+      ? 'Baixo risco sistêmico'
+      : score.pontuacao > 300
+        ? 'Risco moderado de inadimplência'
+        : 'Alto risco de inadimplência';
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+
       {/* ── Header row ────────────────────────────────────────────────── */}
       <div className="grid md:grid-cols-12 gap-6">
-        {/* Score badge */}
+
+        {/* Score gauge */}
         <div className="md:col-span-4">
-          <Card className="h-full relative overflow-hidden border-2 border-primary/20 dark:border-primary/80 bg-gradient-to-br from-white to-primary/10 dark:from-gray-900 dark:to-gray-800">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
-            <div className="relative z-10 flex flex-col items-center justify-center py-8 gap-3">
-              <div className="flex items-center gap-2 mb-2">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                <span className="text-xs font-semibold uppercase tracking-widest text-gray-500">
-                  Score SCR BACEN
-                </span>
-              </div>
-
-              {/* Arc gauge */}
-              <div className="relative">
-                <svg className="w-36 h-36 transform -rotate-90">
-                  <circle cx="72" cy="72" r="62" stroke="currentColor" strokeWidth="10" fill="transparent" className="text-gray-200 dark:text-gray-700" />
-                  <circle
-                    cx="72" cy="72" r="62"
-                    stroke="currentColor" strokeWidth="10" fill="transparent"
-                    strokeDasharray={390}
-                    strokeDashoffset={390 - (390 * Math.min(score.pontuacao, 1000)) / 1000}
-                    className={cn(
-                      'transition-all duration-1000 ease-out',
-                      score.pontuacao > 600 ? 'text-green-500' :
-                      score.pontuacao > 300 ? 'text-yellow-500' : 'text-red-500',
-                    )}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {score.pontuacao}
-                  </span>
-                  <span className="text-xs text-gray-500 font-medium">/ 1000</span>
-                </div>
-              </div>
-
-              <Badge variant={scoreBadgeVariant(score.faixa)}>
-                {score.faixa || 'Sem faixa'}
-              </Badge>
-
-              <p className="text-xs text-gray-400 text-center px-4">
-                Faixas: até 300 = alto risco · 301–600 = médio · acima de 600 = baixo risco
-              </p>
-            </div>
-          </Card>
+          <ScoreGauge
+            value={score.pontuacao}
+            max={1000}
+            band={score.faixa || undefined}
+            riskText={riskLabel}
+            label="/ 1000"
+          />
         </div>
 
-        {/* Resumo Info */}
+        {/* Resumo info */}
         <div className="md:col-span-8">
-          <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
+          <div className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary rounded-xl flex flex-col gap-5">
             <StrategyHeader
-              title="SCR BACEN via EHM"
+              title="SCR BACEN"
               subtitle={`Documento: ${resumo.documento || '-'}`}
               status={hasRestrictions ? 'COM RESTRIÇÕES' : 'SEM RESTRIÇÕES'}
               statusVariant={hasRestrictions ? 'warning' : 'success'}
               pdfUrl={data.pdf}
               queryId={queryId}
-              className="mb-6"
             >
               <Badge variant="info">{isPj ? 'Pessoa Jurídica' : 'Pessoa Física'}</Badge>
             </StrategyHeader>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <InfoBox
-                label="Tipo"
-                value={resumo.tipoDocumento || '-'}
-                icon={<Building2 className="w-4 h-4 text-primary" />}
-              />
+            {/* Description */}
+            <p className="text-xs text-gray-500 leading-relaxed border-l-2 border-primary/30 pl-3">
+              Posição consolidada do <strong>Sistema de Informações de Créditos (SCR)</strong> do
+              Banco Central do Brasil — inclui todas as operações de crédito registradas por
+              instituições financeiras autorizadas pelo BACEN.
+            </p>
+
+            {/* Info grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <InfoBox
                 label="Base Consultada"
                 value={resumo.databaseConsultada || '-'}
@@ -210,27 +180,50 @@ export function ScrEhmStrategy({
                 icon={<Clock className="w-4 h-4 text-primary" />}
               />
               <InfoBox
-                label="Qtd Instituições"
+                label="Instituições"
                 value={String(resumo.qtdInstituicoes ?? 0)}
                 icon={<Building2 className="w-4 h-4 text-gray-400" />}
               />
               <InfoBox
-                label="Qtd Operações"
+                label="Operações"
                 value={String(resumo.qtdOperacoes ?? 0)}
                 icon={<BarChart3 className="w-4 h-4 text-primary" />}
               />
               <InfoBox
                 label="Discordâncias"
                 value={String(resumo.qtdOperacoesDiscordancia ?? 0)}
-                icon={<AlertTriangle className="w-4 h-4 text-yellow-500" />}
+                icon={
+                  <AlertTriangle
+                    className={cn('w-4 h-4', hasDiscordancia ? 'text-yellow-500' : 'text-gray-300')}
+                  />
+                }
               />
               <InfoBox
                 label="Sub Judice"
                 value={String(resumo.qtdOperacoesSubjudice ?? 0)}
-                icon={<AlertTriangle className="w-4 h-4 text-orange-500" />}
+                icon={
+                  <AlertTriangle
+                    className={cn('w-4 h-4', hasSubJudice ? 'text-orange-500' : 'text-gray-300')}
+                  />
+                }
               />
             </div>
-          </Card>
+
+            {/* Alertas de discordância/sub judice */}
+            {(hasDiscordancia || hasSubJudice) && (
+              <div className="rounded-md bg-yellow-50 border border-yellow-200 px-3 py-2 text-xs text-yellow-800 leading-relaxed flex gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-yellow-600" />
+                <span>
+                  {hasDiscordancia && (
+                    <><strong>{resumo.qtdOperacoesDiscordancia}</strong> operação(ões) com discordância registrada pelo tomador.{' '}</>
+                  )}
+                  {hasSubJudice && (
+                    <><strong>{resumo.qtdOperacoesSubjudice}</strong> operação(ões) em disputa judicial (sub judice).</>
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -239,15 +232,15 @@ export function ScrEhmStrategy({
         <SummaryCard
           title="Crédito a Vencer"
           value={formatBRL(consolidado.creditoAVencer?.valor)}
-          subtitle={formatPct(consolidado.creditoAVencer?.percentual)}
+          subtitle={`${formatPct(consolidado.creditoAVencer?.percentual)} · não restritivo`}
           color="blue"
           icon={<Clock className="w-5 h-5" />}
         />
         <SummaryCard
           title="Crédito Vencido"
           value={formatBRL(consolidado.creditoVencido?.valor)}
-          subtitle={formatPct(consolidado.creditoVencido?.percentual)}
-          color={Number(consolidado.creditoVencido?.valor ?? 0) > 0 ? 'red' : 'green'}
+          subtitle={hasVencido ? `${formatPct(consolidado.creditoVencido?.percentual)} · atenção` : 'Nada consta'}
+          color={hasVencido ? 'red' : 'green'}
           icon={<AlertTriangle className="w-5 h-5" />}
         />
         <SummaryCard
@@ -260,15 +253,22 @@ export function ScrEhmStrategy({
         <SummaryCard
           title="Prejuízo"
           value={formatBRL(consolidado.prejuizo?.valor)}
-          subtitle={formatPct(consolidado.prejuizo?.percentual)}
-          color={Number(consolidado.prejuizo?.valor ?? 0) > 0 ? 'red' : 'gray'}
+          subtitle={hasPrejuizo ? `${formatPct(consolidado.prejuizo?.percentual)} · restritivo` : 'Nada consta'}
+          color={hasPrejuizo ? 'red' : 'gray'}
           icon={<TrendingDown className="w-5 h-5" />}
         />
       </div>
 
-      {/* Contextual note */}
-      <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-xs text-primary/80 leading-relaxed">
-        <strong>Nota:</strong> Crédito a Vencer = parcelas futuras em aberto (não restritivo). Crédito Vencido = parcelas em atraso não baixadas (fator de atenção). Prejuízo = operações baixadas definitivamente (fator restritivo de maior peso). Percentual de prejuízo acima de 50% indica exposição financeira elevada.
+      {/* Legenda */}
+      <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-xs text-primary/80 leading-relaxed flex gap-2">
+        <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+        <span>
+          <strong>Legenda:</strong>{' '}
+          <span className="text-blue-700">Crédito a Vencer</span> = parcelas futuras em aberto (não restritivo).{' '}
+          <span className="text-red-600">Crédito Vencido</span> = atraso não baixado (fator de atenção).{' '}
+          <span className="text-red-700 font-semibold">Prejuízo</span> = operações baixadas definitivamente — fator restritivo de maior peso.
+          Prejuízo &gt; 50% indica exposição financeira elevada.
+        </span>
       </div>
 
       {/* ── Operações por modalidade ───────────────────────────────────── */}
