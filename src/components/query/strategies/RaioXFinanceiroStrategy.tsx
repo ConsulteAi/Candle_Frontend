@@ -9,21 +9,48 @@ import {
   Clock,
   FileWarning,
   Gavel,
+  Hash,
   Landmark,
   ShieldAlert,
-  TrendingDown,
   User,
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type {
   QueryStrategyProps,
-  RaioXCreditoRatingScrResult,
+  RaioXFinanceiroResult,
   RaioXMarketRestrictions,
-  ScrEhmEnrichment,
-  ScrEhmOperacao,
+  CcfEnrichment,
 } from '@/types/query-strategies';
 import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
 import { cn, formatDisplayDate } from '@/lib/utils';
+
+// ─── CCF motivo map ──────────────────────────────────────────────────────────
+const CCF_MOTIVOS: Record<string, string> = {
+  '11': 'Insuficiência de fundos – 1ª apresentação',
+  '12': 'Insuficiência de fundos – 2ª apresentação',
+  '13': 'Conta encerrada',
+  '14': 'Prática espúria',
+  '21': 'Cheque prescrito',
+  '22': 'Divergência ou insuficiência de assinatura',
+  '23': 'Emitente menor',
+  '24': 'Contraordem do emitente',
+  '25': 'Cancelamento de talonário pelo banco',
+  '26': 'Bloqueio judicial / BCB',
+  '27': 'Furto ou roubo de malotes',
+  '28': 'Encerramento de conta corrente',
+  '29': 'Conta encerrada pelo BCB',
+};
+
+function formatMotivo(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  // Provider returns "12 - MOTIVO 12" — extract the leading numeric code
+  const match = raw.match(/^(\d+)/);
+  if (match) {
+    const code = match[1];
+    if (CCF_MOTIVOS[code]) return `${code} – ${CCF_MOTIVOS[code]}`;
+  }
+  return raw; // fallback: show as-is
+}
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
@@ -41,8 +68,6 @@ import {
 
 const fmtBRL = (v: number | undefined) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v ?? 0));
-
-const fmtPct = (v: number | undefined) => `${Number(v ?? 0).toFixed(2)}%`;
 
 // ─── Market Restrictions section ─────────────────────────────────────────────
 
@@ -330,241 +355,131 @@ function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
   );
 }
 
-// ─── SCR BACEN enrichment section ────────────────────────────────────────────
+// ─── CCF enrichment section ───────────────────────────────────────────────────
 
-function ScrBacenSection({ scrBacen }: { scrBacen: ScrEhmEnrichment }) {
-  const resumo = scrBacen.resumo ?? {};
-  const consolidado = scrBacen.consolidado ?? {};
-  const operacoes: ScrEhmOperacao[] = Array.isArray(scrBacen.operacoes) ? scrBacen.operacoes : [];
-  const score = scrBacen.score ?? { pontuacao: 0, faixa: '' };
-
-  const hasVencido = Number(consolidado.creditoVencido?.valor ?? 0) > 0;
-  const hasPrejuizo = Number(consolidado.prejuizo?.valor ?? 0) > 0;
-  const hasDiscordancia = Number(resumo.qtdOperacoesDiscordancia ?? 0) > 0;
-  const hasSubJudice = Number(resumo.qtdOperacoesSubjudice ?? 0) > 0;
-
-  const pontuacao = score.pontuacao ?? 0;
-  const scoreColor =
-    pontuacao > 600 ? 'text-green-600' : pontuacao > 300 ? 'text-yellow-600' : 'text-red-600';
-  const scoreBorderColor =
-    pontuacao > 600 ? 'border-green-200' : pontuacao > 300 ? 'border-yellow-200' : 'border-red-200';
-  const scoreBg =
-    pontuacao > 600
-      ? 'from-green-50 to-emerald-50'
-      : pontuacao > 300
-        ? 'from-yellow-50 to-amber-50'
-        : 'from-red-50 to-rose-50';
-  const badgeVariant: 'success' | 'warning' | 'error' =
-    pontuacao > 600 ? 'success' : pontuacao > 300 ? 'warning' : 'error';
-  const strokeColor =
-    pontuacao > 600 ? '#22C55E' : pontuacao > 300 ? '#F59E0B' : '#EF4444';
-  const riskLabel =
-    pontuacao > 600
-      ? 'Baixo risco sistêmico'
-      : pontuacao > 300
-        ? 'Risco moderado'
-        : 'Alto risco de inadimplência';
-
-  const circumference = 2 * Math.PI * 52;
-  const dashOffset = circumference - (circumference * Math.min(pontuacao, 1000)) / 1000;
+function CcfSection({ ccf }: { ccf: CcfEnrichment }) {
+  const summary = ccf.summary ?? { totalRegistro: 0, sumQteOcorrencias: 0, ultimaOcorrencia: '' };
+  const historico = Array.isArray(ccf.historico) ? ccf.historico : [];
+  const lista = Array.isArray(ccf.lista) ? ccf.lista : [];
+  const hasOccurrences = summary.totalRegistro > 0 || summary.sumQteOcorrencias > 0;
 
   return (
     <div className="space-y-5 p-4">
+      {/* Description */}
+      <p className="text-xs text-gray-500 leading-relaxed border-l-2 border-red-300 pl-3">
+        Consulta ao <strong>CCF (Cadastro de Cheques sem Fundos)</strong> do Banco Central do Brasil —
+        registra devolução de cheques por insuficiência de fundos e outros motivos bancários.{' '}
+        {!hasOccurrences && (
+          <span className="font-semibold text-green-700">Nenhum registro encontrado.</span>
+        )}
+      </p>
 
-      {/* ── Score + Resumo ── */}
-      <div className="grid md:grid-cols-12 gap-4">
-
-        {/* Score gauge */}
-        <div className={cn(
-          'md:col-span-3 flex flex-col items-center justify-center rounded-xl p-5 text-center border bg-gradient-to-br',
-          scoreBg, scoreBorderColor,
-        )}>
-          <span className="text-[10px] uppercase tracking-widest text-gray-500 font-semibold mb-3">
-            Score SCR BACEN
-          </span>
-
-          <div className="relative mb-2">
-            <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" stroke="#E5E7EB" strokeWidth="9" fill="transparent" />
-              <circle
-                cx="60" cy="60" r="52"
-                stroke={strokeColor}
-                strokeWidth="9" fill="transparent"
-                strokeDasharray={circumference}
-                strokeDashoffset={dashOffset}
-                strokeLinecap="round"
-                style={{ transition: 'stroke-dashoffset 1.2s ease-out' }}
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={cn('text-3xl font-bold tabular-nums', scoreColor)}>
-                {pontuacao}
-              </span>
-              <span className="text-[10px] text-gray-400 font-medium">/ 1000</span>
-            </div>
-          </div>
-
-          <Badge variant={badgeVariant} className="mb-1">
-            {score.faixa || '—'}
-          </Badge>
-          <p className="text-[10px] text-gray-500 leading-tight font-medium">{riskLabel}</p>
-          <p className="text-[10px] text-gray-400 mt-1 leading-snug">
-            ≤300 alto · 301–600 médio · &gt;600 baixo
-          </p>
-        </div>
-
-        {/* Resumo info */}
-        <div className="md:col-span-9 flex flex-col gap-3">
-          <p className="text-xs text-gray-500 leading-relaxed border-l-2 border-primary/30 pl-3">
-            Posição consolidada do <strong>Sistema de Informações de Créditos (SCR)</strong> do Banco Central
-            do Brasil — reflete todas as operações de crédito registradas por instituições financeiras
-            autorizadas pelo BACEN para este documento.
-          </p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <InfoBox
-              label="Base Consultada"
-              value={resumo.databaseConsultada || '-'}
-              icon={<Calendar className="w-4 h-4 text-primary" />}
-            />
-            <InfoBox
-              label="Início Relacionamento"
-              value={resumo.dataInicioRelacionamento || '-'}
-              icon={<Clock className="w-4 h-4 text-primary" />}
-            />
-            <InfoBox
-              label="Instituições"
-              value={String(resumo.qtdInstituicoes ?? 0)}
-              icon={<Building2 className="w-4 h-4 text-gray-400" />}
-            />
-            <InfoBox
-              label="Operações"
-              value={String(resumo.qtdOperacoes ?? 0)}
-              icon={<BarChart3 className="w-4 h-4 text-primary" />}
-            />
-            <InfoBox
-              label="Discordâncias"
-              value={String(resumo.qtdOperacoesDiscordancia ?? 0)}
-              icon={
-                <AlertTriangle
-                  className={cn('w-4 h-4', hasDiscordancia ? 'text-yellow-500' : 'text-gray-300')}
-                />
-              }
-            />
-            <InfoBox
-              label="Sub Judice"
-              value={String(resumo.qtdOperacoesSubjudice ?? 0)}
-              icon={
-                <AlertTriangle
-                  className={cn('w-4 h-4', hasSubJudice ? 'text-orange-500' : 'text-gray-300')}
-                />
-              }
-            />
-          </div>
-
-          {(hasDiscordancia || hasSubJudice) && (
-            <div className="rounded-md bg-yellow-50 border border-yellow-200 px-3 py-2 text-xs text-yellow-800 leading-relaxed">
-              <strong>Atenção:</strong>{' '}
-              {hasDiscordancia && `${resumo.qtdOperacoesDiscordancia} operação(ões) com discordância registrada pelo tomador. `}
-              {hasSubJudice && `${resumo.qtdOperacoesSubjudice} operação(ões) em disputa judicial (sub judice).`}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Consolidado ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <SummaryCard
-          title="Crédito a Vencer"
-          value={fmtBRL(consolidado.creditoAVencer?.valor)}
-          subtitle={`${fmtPct(consolidado.creditoAVencer?.percentual)} · não restritivo`}
-          color="blue"
-          icon={<Clock className="w-5 h-5" />}
+          title="Registros"
+          value={summary.totalRegistro || 0}
+          subtitle={(summary.totalRegistro || 0) > 0 ? 'Bancos com ocorrência' : 'Nenhum registro'}
+          color={(summary.totalRegistro || 0) > 0 ? 'red' : 'green'}
+          icon={<Landmark className="w-5 h-5" />}
         />
         <SummaryCard
-          title="Crédito Vencido"
-          value={fmtBRL(consolidado.creditoVencido?.valor)}
-          subtitle={hasVencido ? `${fmtPct(consolidado.creditoVencido?.percentual)} · atenção` : 'Nada consta'}
-          color={hasVencido ? 'red' : 'green'}
+          title="Total de Ocorrências"
+          value={summary.sumQteOcorrencias || 0}
+          subtitle={(summary.sumQteOcorrencias || 0) > 0 ? 'Cheques devolvidos' : 'Nenhuma ocorrência'}
+          color={(summary.sumQteOcorrencias || 0) > 0 ? 'red' : 'green'}
           icon={<AlertTriangle className="w-5 h-5" />}
         />
-        <SummaryCard
-          title="Limite de Crédito"
-          value={fmtBRL(consolidado.limiteCredito?.valor)}
-          subtitle={fmtPct(consolidado.limiteCredito?.percentual)}
-          color="green"
-          icon={<CheckCircle2 className="w-5 h-5" />}
-        />
-        <SummaryCard
-          title="Prejuízo"
-          value={fmtBRL(consolidado.prejuizo?.valor)}
-          subtitle={hasPrejuizo ? `${fmtPct(consolidado.prejuizo?.percentual)} · restritivo` : 'Nada consta'}
-          color={hasPrejuizo ? 'red' : 'gray'}
-          icon={<TrendingDown className="w-5 h-5" />}
+        <InfoBox
+          label="Última Ocorrência"
+          value={formatDisplayDate(summary.ultimaOcorrencia) || 'Sem registros'}
+          icon={<Calendar className="w-4 h-4 text-primary" />}
         />
       </div>
 
-      {/* Legenda */}
-      <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-xs text-primary/80 leading-relaxed">
-        <strong>Legenda:</strong>{' '}
-        <span className="text-blue-700">Crédito a Vencer</span> = parcelas futuras em aberto (não restritivo).{' '}
-        <span className="text-red-600">Crédito Vencido</span> = atraso não baixado (fator de atenção).{' '}
-        <span className="text-red-700 font-semibold">Prejuízo</span> = operações baixadas definitivamente — fator restritivo de maior peso.
-        Prejuízo &gt; 50% indica exposição elevada.
-      </div>
+      {/* No occurrences banner */}
+      {!hasOccurrences && (
+        <div className="rounded-lg border border-green-100 bg-green-50/50 flex items-center gap-3 p-4">
+          <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-green-800">Nada consta no CCF</p>
+            <p className="text-xs text-green-700 mt-0.5">
+              Este documento não possui registros de cheques devolvidos no Banco Central.
+            </p>
+          </div>
+        </div>
+      )}
 
-      {/* ── Operações ── */}
-      {operacoes.length > 0 && (
+      {/* Lista por banco */}
+      {lista.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 flex items-center gap-2 px-1">
-            <BarChart3 className="w-3.5 h-3.5" />
-            Operações por Modalidade ({operacoes.length})
+          <p className="text-xs font-semibold uppercase tracking-wide text-red-600 flex items-center gap-2 px-1">
+            <Landmark className="w-3.5 h-3.5" />
+            Ocorrências por Banco ({lista.length})
           </p>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Modalidade</TableHead>
-                <TableHead>Sub-Modalidade</TableHead>
-                <TableHead className="text-right">% Port.</TableHead>
-                <TableHead className="text-right">Valor</TableHead>
+                <TableHead>Banco</TableHead>
+                <TableHead>Agência</TableHead>
+                <TableHead>Motivo</TableHead>
+                <TableHead>Última Ocorrência</TableHead>
+                <TableHead className="text-right">Qtd Cheques</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {operacoes.map((op, idx) => (
-                <>
-                  <TableRow key={`scr-op-${idx}`} className="bg-gray-50/60">
-                    <TableCell className="font-semibold">{op.modalidade || '-'}</TableCell>
-                    <TableCell>{op.subModalidade || '-'}</TableCell>
-                    <TableCell className="text-right">{fmtPct(op.percentual)}</TableCell>
-                    <TableCell className="text-right font-bold text-primary">
-                      {fmtBRL(op.total)}
-                    </TableCell>
-                  </TableRow>
-                  {(op.vencimentos ?? []).map((v, vi) => {
-                    const isR =
-                      v.restritivo === '1' ||
-                      v.restritivo === 'true' ||
-                      v.restritivo === 'RESTRITIVO';
-                    return (
-                      <TableRow
-                        key={`scr-op-${idx}-v-${vi}`}
-                        className={cn('text-xs', isR ? 'bg-red-50 text-red-700' : 'text-gray-500')}
-                      >
-                        <TableCell colSpan={2} className="pl-8 italic">
-                          ↳ {v.descricao || '-'}
-                          {v.qtdMeses ? ` (${v.qtdMeses} meses)` : ''}
-                          {isR && (
-                            <span className="ml-2 font-semibold text-red-600 uppercase text-[10px]">
-                              Restritivo
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">{fmtPct(v.percentual)}</TableCell>
-                        <TableCell className="text-right font-medium">{fmtBRL(v.valor)}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </>
+              {lista.map((item, idx) => (
+                <TableRow key={idx} className="text-sm">
+                  <TableCell className="font-medium">{item.banco || '-'}</TableCell>
+                  <TableCell>{item.agencia || '-'}</TableCell>
+                  <TableCell>
+                    {item.motivo ? (
+                      <Badge variant="error" className="text-[10px]">{formatMotivo(item.motivo)}</Badge>
+                    ) : '-'}
+                  </TableCell>
+                  <TableCell>{formatDisplayDate(item.ultimo) || '-'}</TableCell>
+                  <TableCell className="text-right font-bold text-red-600">
+                    {item.qteOcorrencias ?? 0}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {/* Histórico mensal */}
+      {historico.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 flex items-center gap-2 px-1">
+            <BarChart3 className="w-3.5 h-3.5" />
+            Histórico Mensal ({historico.length} meses)
+          </p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Período</TableHead>
+                <TableHead className="text-right">Quantidade</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {historico.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="font-medium">
+                    <span className="flex items-center gap-2">
+                      <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                      {formatDisplayDate(item.dataConsulta) || '-'}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <span className="inline-flex items-center gap-1">
+                      <Hash className="w-3 h-3 text-gray-400" />
+                      <span className={item.quantidade > 0 ? 'font-bold text-red-600' : 'text-gray-500'}>
+                        {item.quantidade}
+                      </span>
+                    </span>
+                  </TableCell>
+                </TableRow>
               ))}
             </TableBody>
           </Table>
@@ -576,25 +491,34 @@ function ScrBacenSection({ scrBacen }: { scrBacen: ScrEhmEnrichment }) {
 
 // ─── main component ───────────────────────────────────────────────────────────
 
-export function RaioXCreditoRatingScrStrategy({
+export function RaioXFinanceiroStrategy({
   data,
   queryId,
-}: QueryStrategyProps<RaioXCreditoRatingScrResult>) {
+}: QueryStrategyProps<RaioXFinanceiroResult>) {
   if (!data) return null;
 
   const isPf = Boolean(data.person);
   const displayName = isPf
-    ? data.person?.name || 'Consulta SCR PF'
-    : data.company?.socialReason || 'Consulta SCR PJ';
+    ? data.person?.name || 'Raio X Financeiro PF'
+    : data.company?.socialReason || 'Raio X Financeiro PJ';
   const document = isPf
     ? data.person?.document || data.document
     : data.company?.cnpj || data.document;
 
   const marketRestrictions = data.marketRestrictions;
+  const hasCcf = Boolean(data.ccf);
+  const ccfHasOccurrences =
+    hasCcf &&
+    ((data.ccf!.summary?.totalRegistro ?? 0) > 0 ||
+      (data.ccf!.summary?.sumQteOcorrencias ?? 0) > 0);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+
+      {/* ── Header row ─────────────────────────────────────────────────────── */}
       <div className="grid md:grid-cols-12 gap-6">
+
+        {/* Score card */}
         <div className="md:col-span-4">
           <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg">
             <div className="flex items-center gap-2 mb-4">
@@ -615,6 +539,7 @@ export function RaioXCreditoRatingScrStrategy({
           </Card>
         </div>
 
+        {/* Main header */}
         <div className="md:col-span-8">
           <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
             <StrategyHeader
@@ -653,6 +578,7 @@ export function RaioXCreditoRatingScrStrategy({
         </div>
       </div>
 
+      {/* ── Summary cards ───────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <SummaryCard
           title="Operações"
@@ -684,6 +610,7 @@ export function RaioXCreditoRatingScrStrategy({
         />
       </div>
 
+      {/* ── Operações SCR ────────────────────────────────────────────────────── */}
       <StrategySectionWrapper
         title="Operações SCR"
         icon={<BarChart3 className="w-5 h-5 text-primary" />}
@@ -707,7 +634,7 @@ export function RaioXCreditoRatingScrStrategy({
                 <TableCell>{item.subModalityDescription || '-'}</TableCell>
                 <TableCell className="text-right">{item.percentage || 0}%</TableCell>
                 <TableCell className="text-right font-bold text-primary">
-                  {formatCurrency(String(item.totalValue || 0))}
+                  {fmtBRL(item.totalValue)}
                 </TableCell>
               </TableRow>
             ))}
@@ -715,6 +642,7 @@ export function RaioXCreditoRatingScrStrategy({
         </Table>
       </StrategySectionWrapper>
 
+      {/* ── Restrições de Mercado ────────────────────────────────────────────── */}
       {marketRestrictions && (
         <StrategySectionWrapper
           title="Restrições de Mercado"
@@ -728,26 +656,32 @@ export function RaioXCreditoRatingScrStrategy({
       {data.marketRestrictionsUnavailable && (
         <Card className="p-4 border border-yellow-100 bg-yellow-50">
           <p className="text-sm text-yellow-800 font-medium">
-            {data.marketRestrictionsMessage || 'O enriquecimento de mercado não estava disponível para esta consulta.'}
+            {data.marketRestrictionsMessage ||
+              'O enriquecimento de restrições de mercado não estava disponível para esta consulta.'}
           </p>
         </Card>
       )}
 
-      {/* ── Posição SCR BACEN (enrichment) ───────────────────────────────── */}
-      {data.scrBacen && (
+      {/* ── CCF — Cheques Sem Fundo ──────────────────────────────────────────── */}
+      {hasCcf && (
         <StrategySectionWrapper
-          title="Posição SCR — Banco Central"
-          icon={<BarChart3 className="w-5 h-5 text-primary" />}
+          title="CCF — Cheques Sem Fundo"
+          icon={
+            <Landmark
+              className={cn('w-5 h-5', ccfHasOccurrences ? 'text-red-500' : 'text-green-500')}
+            />
+          }
           isEmpty={false}
         >
-          <ScrBacenSection scrBacen={data.scrBacen} />
+          <CcfSection ccf={data.ccf!} />
         </StrategySectionWrapper>
       )}
 
-      {data.scrBacenUnavailable && (
+      {data.ccfUnavailable && (
         <Card className="p-4 border border-yellow-100 bg-yellow-50">
           <p className="text-sm text-yellow-800 font-medium">
-            {data.scrBacenMessage || 'A posição SCR do Banco Central não estava disponível para esta consulta.'}
+            {data.ccfMessage ||
+              'A consulta CCF (Cheques Sem Fundo) não estava disponível para esta consulta.'}
           </p>
         </Card>
       )}

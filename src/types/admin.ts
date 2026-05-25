@@ -182,6 +182,24 @@ export interface QueryType {
     totalRevenue: number;
     cacheHitRate: number;
   };
+  composition?: QueryTypeComposition;
+}
+
+export interface QueryTypeCompositionEnrichment {
+  id: string;
+  queryTypeId: string;
+  queryTypeCode: string;
+  queryTypeName: string;
+  role: string;
+  executionOrder: number;
+  timeoutMs: number | null;
+  isActive: boolean;
+}
+
+export interface QueryTypeComposition {
+  primaryEnabled: boolean;
+  partialModeEnabled: boolean;
+  enrichments: QueryTypeCompositionEnrichment[];
 }
 
 export interface QueryTypeFilters {

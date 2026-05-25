@@ -38,7 +38,8 @@ const allowedRoutes: AllowedRoute[] = [
   { pattern: /^\/admin\/providers\/[a-zA-Z0-9-]+\/health$/, methods: ["GET"] },
 
   { pattern: /^\/admin\/query-types$/, methods: ["GET", "POST"] },
-  { pattern: /^\/admin\/query-types\/[a-zA-Z0-9-]+$/, methods: ["PATCH"] },
+  { pattern: /^\/admin\/query-types\/[a-zA-Z0-9-]+$/, methods: ["GET", "PATCH"] },
+  { pattern: /^\/admin\/query-types\/[a-zA-Z0-9-]+\/composition$/, methods: ["PATCH"] },
   { pattern: /^\/admin\/query-types\/[a-zA-Z0-9-]+\/toggle$/, methods: ["POST"] },
 
   { pattern: /^\/admin\/audit-events$/, methods: ["GET"] },

@@ -458,11 +458,22 @@ export interface RaioXMarketRestrictionsSummary {
   totalScpcDebts?: number;
   totalRefinPefinDebts?: number;
   totalProtests?: number;
+  totalBadChecks?: number;
   totalCadin?: number;
+  totalLegalActions?: number;
+  totalSerasaOccurrences?: number;
+  hasCommercialRestrictions?: boolean;
 }
 
 export interface RaioXMarketRestrictions {
   summary?: RaioXMarketRestrictionsSummary;
+  serasaSummary?: DividasMultiSerasaSummary;
+  scpcDebts?: DividasMultiScpcDebt[];
+  refinPefinDebts?: DividasMultiRefinPefinDebt[];
+  protests?: DividasMultiProtest[];
+  badChecks?: DividasMultiBadCheck[];
+  cadin?: DividasMultiCadinItem[];
+  legalActions?: Array<Record<string, unknown>>;
 }
 
 export interface RaioXCreditoRatingScrResult extends ScrBacenResult {
@@ -471,6 +482,72 @@ export interface RaioXCreditoRatingScrResult extends ScrBacenResult {
   marketRestrictions?: RaioXMarketRestrictions;
   marketRestrictionsUnavailable?: boolean;
   marketRestrictionsMessage?: string;
+  scrBacen?: ScrEhmEnrichment;
+  scrBacenUnavailable?: boolean;
+  scrBacenMessage?: string;
+}
+
+// SCR EHM (standalone SCR_PF / SCR_PJ via EHM_CONSULTAS)
+
+export interface ScrEhmVencimento {
+  descricao: string;
+  valor: number;
+  percentual: number;
+  qtdMeses: string;
+  restritivo?: string;
+}
+
+export interface ScrEhmBucket {
+  valor: number;
+  percentual: number;
+  operacoes?: ScrEhmVencimento[];
+}
+
+export interface ScrEhmConsolidado {
+  creditoAVencer: ScrEhmBucket;
+  creditoVencido: ScrEhmBucket;
+  limiteCredito: ScrEhmBucket;
+  prejuizo: ScrEhmBucket;
+}
+
+export interface ScrEhmOperacao {
+  modalidade: string;
+  subModalidade: string;
+  variacaoCambial: string;
+  total: number;
+  percentual: number;
+  vencimentos: ScrEhmVencimento[];
+}
+
+export interface ScrEhmResumo {
+  documento: string;
+  tipoDocumento: string;
+  databaseConsultada: string;
+  dataInicioRelacionamento: string;
+  qtdInstituicoes: number;
+  qtdOperacoes: number;
+  qtdOperacoesDiscordancia: number;
+  qtdOperacoesSubjudice: number;
+}
+
+export interface ScrEhmScore {
+  pontuacao: number;
+  faixa: string;
+}
+
+export interface ScrEhmResult {
+  pdf?: string;
+  resumo: ScrEhmResumo;
+  consolidado: ScrEhmConsolidado;
+  operacoes: ScrEhmOperacao[];
+  score: ScrEhmScore;
+}
+
+/** scrBacen enrichment block inside a Raio X result */
+export interface ScrEhmEnrichment extends ScrEhmResult {
+  sourceQueryTypeCode?: string;
+  sourceProviderCode?: string;
+  available?: boolean;
 }
 
 // Protesto Nacional Plus
@@ -734,4 +811,50 @@ export interface CommercialAnalysisPfResult extends CommercialAnalysisBaseResult
 
 export interface CommercialAnalysisPjResult extends CommercialAnalysisBaseResult {
   company?: Pick<BaseCompany, 'cnpj' | 'socialReason' | 'fantasyName' | 'foundationDate' | 'status'>;
+}
+
+// CCF — Cheques Sem Fundo via EHM_CONSULTAS
+export interface CcfSummary {
+  totalRegistro: number;
+  sumQteOcorrencias: number;
+  ultimaOcorrencia: string;
+}
+
+export interface CcfHistoricoItem {
+  quantidade: number;
+  dataConsulta: string;
+}
+
+export interface CcfListaItem {
+  banco?: string;
+  agencia?: string;
+  motivo?: string;
+  ultimo?: string;
+  qteOcorrencias?: number;
+}
+
+export interface CcfResult {
+  pdf?: string;
+  erro: boolean;
+  summary: CcfSummary;
+  historico: CcfHistoricoItem[];
+  lista: CcfListaItem[];
+}
+
+export interface CcfEnrichment extends CcfResult {
+  sourceQueryTypeCode?: string;
+  sourceProviderCode?: string;
+  available?: boolean;
+}
+
+// Raio X Financeiro (RAIO_X_FINANCEIRO_RATING_SCR_PF/PJ)
+export interface RaioXFinanceiroResult extends ScrBacenResult {
+  person?: Pick<BasePerson, 'name' | 'document'>;
+  company?: Pick<BaseCompany, 'socialReason' | 'cnpj'>;
+  marketRestrictions?: RaioXMarketRestrictions;
+  marketRestrictionsUnavailable?: boolean;
+  marketRestrictionsMessage?: string;
+  ccf?: CcfEnrichment;
+  ccfUnavailable?: boolean;
+  ccfMessage?: string;
 }
