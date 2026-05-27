@@ -23,6 +23,9 @@ export interface BaseCompany {
   fantasyName: string;
   foundationDate: string;
   status: string;
+  email?: string;
+  phone?: string;
+  address?: BaseAddress;
 }
 
 export interface BaseAddress {
@@ -146,18 +149,23 @@ export interface LocalizaResult {
   pdf?: string;
   basicInfo: Omit<BasePerson, 'revenueStatus' | 'email'> & { gender: string };
   contact: {
-    mainPhone: string;
+    mainPhone: string | null;
     mobilePhones: string[];
     landlinePhones: string[];
     businessPhones: string[];
     emails: string[];
   };
   addresses: LocalizaAddressItem[];
+  companyParticipations: Array<{
+    cnpj: string;
+    socialReason: string;
+    participation: string;
+  }>;
   relations: {
     relatives: RelativeItem[];
-    residents: any[];
-    neighbors: any[];
-    partners: any[];
+    residents: RelativeItem[];
+    neighbors: RelativeItem[];
+    partners: RelativeItem[];
   };
 }
 interface LocalizaAddressItem extends Omit<BaseAddress, 'zip'> { zipCode: string; number: string; complement: string; neighborhood: string; source: string; }
@@ -178,7 +186,9 @@ export interface CompletaPlusCpfResult extends BaseStandardResult {
     riskText?: string;
     informant?: string;
   };
-  queries: Array<{ date: string; entity: string }>;
+  queries: Array<{ date: string; entity: string; cityState?: string }>;
+  alerts?: BaseAlert[];
+  protests: BaseProtest[];
   legalActions?: BaseLegalAction[];
   veicular: any;
 }
@@ -195,7 +205,11 @@ export interface CompletaPlusCnpjResult extends Omit<BaseStandardResult, 'addres
     value: string;
     class: string;
     riskText: string;
+    informant?: string;
   };
+  alerts?: BaseAlert[];
+  protests: BaseProtest[];
+  badChecks?: BaseBadCheck[];
   queries: Array<{ date: string; entity: string; cityState: string }>;
   legalActions?: BaseLegalAction[];
 }

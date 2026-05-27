@@ -26,6 +26,7 @@ import { SummaryCard } from './components/SummaryCard';
 import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { StrategyContacts } from './components/StrategyContacts';
+import { AlertsGrid } from './components/AlertsGrid';
 
 export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<CompletaPlusCpfResult>) {
   if (!data) return null;
@@ -116,6 +117,8 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
          }))}
       />
 
+      <AlertsGrid alerts={data.alerts || []} />
+
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
          <SummaryCard 
@@ -189,6 +192,36 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
               <TableRow key={idx}>
                 <TableCell>{q.date}</TableCell>
                 <TableCell>{q.entity}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </StrategySectionWrapper>
+
+      <StrategySectionWrapper
+         title={`Detalhamento de Protestos (${data.protests.length})`}
+         icon={<AlertTriangle className="w-5 h-5 text-orange-500" />}
+         isEmpty={data.protests.length === 0}
+         emptyMessage="Nenhum protesto registrado."
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+               <TableHead>Data</TableHead>
+               <TableHead>Cartório</TableHead>
+               <TableHead>Origem</TableHead>
+               <TableHead className="text-right">Valor</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.protests.map((protest, idx) => (
+              <TableRow key={idx}>
+                <TableCell>{protest.date}</TableCell>
+                <TableCell className="font-medium">{protest.notary || '-'}</TableCell>
+                <TableCell>{protest.origin || '-'}</TableCell>
+                <TableCell className="text-right font-bold text-orange-600">
+                  {formatCurrency(String(protest.value))}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

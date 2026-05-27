@@ -29,6 +29,7 @@ import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
 import { StrategyContacts } from './components/StrategyContacts';
+import { AlertsGrid } from './components/AlertsGrid';
 
 export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<CompletaPlusCnpjResult>) {
   if (!data) return null;
@@ -115,6 +116,8 @@ export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<C
             zip: data.company.address.zip
          }] : []}
       />
+
+      <AlertsGrid alerts={data.alerts || []} />
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -234,6 +237,33 @@ export function CompletaPlusCnpjStrategy({ data, queryId }: QueryStrategyProps<C
                 <TableCell>{q.date}</TableCell>
                 <TableCell>{q.entity}</TableCell>
                 <TableCell>{q.cityState}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </StrategySectionWrapper>
+
+      <StrategySectionWrapper
+         title={`Cheques sem Fundo (${data.badChecks?.length || 0})`}
+         icon={<CheckCircle2 className="w-5 h-5 text-yellow-500" />}
+         count={data.badChecks?.length || 0}
+         isEmpty={!data.badChecks || data.badChecks.length === 0}
+         emptyMessage="Nenhuma ocorrência de cheque sem fundo encontrada."
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+               <TableHead>Banco</TableHead>
+               <TableHead>Quantidade</TableHead>
+               <TableHead>Última Ocorrência</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.badChecks?.map((check, idx) => (
+              <TableRow key={idx}>
+                <TableCell className="font-medium">{check.bankNumber}</TableCell>
+                <TableCell>{check.quantity}</TableCell>
+                <TableCell>{check.lastOccurrence}</TableCell>
               </TableRow>
             ))}
           </TableBody>

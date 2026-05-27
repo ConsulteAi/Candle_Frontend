@@ -7,7 +7,8 @@ import {
   Users, 
   Mail, 
   Smartphone,
-  Calendar
+  Calendar,
+  Building2
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import { formatDisplayDate } from '@/lib/utils';
@@ -140,6 +141,76 @@ export function LocalizaStrategy({ data, queryId }: QueryStrategyProps<LocalizaR
             </div>
         </Card>
       </div>
+
+      {(data.companyParticipations.length > 0 || data.relations.partners.length > 0) && (
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card className="p-6 h-full border border-gray-100 shadow-lg">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-blue-500" />
+              Participações em Empresas
+            </h3>
+
+            {data.companyParticipations.length > 0 ? (
+              <div className="space-y-3">
+                {data.companyParticipations.map((company, i) => (
+                  <div
+                    key={i}
+                    className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700"
+                  >
+                    <p className="font-bold text-gray-900 dark:text-white text-sm">
+                      {company.socialReason}
+                    </p>
+                    <div className="flex items-center justify-between mt-2 gap-3">
+                      <span className="text-xs text-gray-500 font-mono">{company.cnpj}</span>
+                      <Badge variant="outline" className="text-[10px] uppercase">
+                        Participação {company.participation || '0'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 text-center text-gray-500 flex flex-col items-center justify-center h-full">
+                <Building2 className="w-12 h-12 text-gray-300 mb-2" />
+                <p>Nenhuma participação societária encontrada.</p>
+              </div>
+            )}
+          </Card>
+
+          <Card className="p-6 h-full border border-gray-100 shadow-lg">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-indigo-500" />
+              Sócios e Vínculos Empresariais
+            </h3>
+
+            {data.relations.partners.length > 0 ? (
+              <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                {data.relations.partners.map((partner, i) => (
+                  <li key={i} className="py-3 first:pt-0">
+                    <p className="font-bold text-gray-900 dark:text-white text-sm">{partner.name}</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <Badge variant="outline" className="text-[10px] uppercase">
+                        {partner.type}
+                      </Badge>
+                      {partner.relation && (
+                        <span className="text-xs text-gray-500">{partner.relation}</span>
+                      )}
+                      {partner.document && (
+                        <span className="text-xs text-gray-400 font-mono">{partner.document}</span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="p-8 text-center text-gray-500 flex flex-col items-center justify-center h-full">
+                <Users className="w-12 h-12 text-gray-300 mb-2" />
+                <p>Nenhum sócio encontrado.</p>
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
 
       {/* Addresses */}
       <Card className="p-6 border border-gray-100 shadow-lg">
