@@ -31,6 +31,8 @@ import { CommercialAnalysisPjStrategy } from './CommercialAnalysisPjStrategy';
 import { ScrEhmStrategy } from './ScrEhmStrategy';
 import { CcfStrategy } from './CcfStrategy';
 import { RaioXFinanceiroStrategy } from './RaioXFinanceiroStrategy';
+import { DadosCpfStrategy } from './DadosCpfStrategy';
+import { DadosCnpjStrategy } from './DadosCnpjStrategy';
 import type { QueryStrategyProps } from '@/types/query-strategies';
 import React from 'react';
 
@@ -73,6 +75,8 @@ export const STRATEGIES: Record<string, React.ComponentType<QueryStrategyProps>>
   'CCF': CcfStrategy,
   'RAIO_X_FINANCEIRO_RATING_SCR_PF': RaioXFinanceiroStrategy,
   'RAIO_X_FINANCEIRO_RATING_SCR_PJ': RaioXFinanceiroStrategy,
+  'DADOS_CPF': DadosCpfStrategy,
+  'DADOS_CNPJ': DadosCnpjStrategy,
 };
 
 export const getStrategyComponent = (code: string): React.ComponentType<QueryStrategyProps> => {
@@ -112,3 +116,5 @@ export * from './CommercialAnalysisPjStrategy';
 export * from './ScrEhmStrategy';
 export * from './CcfStrategy';
 export * from './RaioXFinanceiroStrategy';
+export * from './DadosCpfStrategy';
+export * from './DadosCnpjStrategy';

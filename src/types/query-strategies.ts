@@ -872,3 +872,141 @@ export interface RaioXFinanceiroResult extends ScrBacenResult {
   ccfUnavailable?: boolean;
   ccfMessage?: string;
 }
+
+// ─── DADOS_CPF ────────────────────────────────────────────────────────────────
+
+export interface DadosCpfPerson {
+  name: string;
+  document: string;
+  birthDate?: string;
+  gender?: string;
+  motherName?: string;
+  fatherName?: string;
+  maritalStatus?: string;
+  rg?: string;
+  issuer?: string;
+  issuerState?: string;
+  nationality?: string;
+  tituloEleitor?: string;
+  cbo?: string;
+  codigoMosaic?: string;
+  codigoMosaicNovo?: string;
+  codigoMosaicSecundario?: string;
+  educationLevel?: string;
+}
+
+export interface DadosCpfScoreItem {
+  serasaScore?: string;
+  serasaFaixa?: string;
+  boaVistaScore?: string;
+  boaVistaFaixa?: string;
+}
+
+export interface DadosCpfScores {
+  base?: DadosCpfScoreItem;
+  novoSerasaScore?: string;
+  antigo?: DadosCpfScoreItem;
+}
+
+export interface DadosCpfSocialClass {
+  classe?: string;
+  subClasse?: string;
+}
+
+export interface DadosCpfRelative {
+  name: string;
+  cpf?: string;
+  relationship: string;
+}
+
+export interface DadosCpfPhone {
+  fullNumber: string;
+  classification?: string;
+}
+
+export interface DadosCpfEmail {
+  email: string;
+  score?: string;
+  isPersonal?: string;
+  blacklist?: string;
+  domain?: string;
+}
+
+export interface DadosCpfPis {
+  pis: string;
+  inclusionDate?: string;
+}
+
+export interface DadosCpfIrpf {
+  bank?: string;
+  agency?: string;
+  lot?: string;
+  referenceYear?: string;
+  status?: string;
+}
+
+export interface DadosCpfCompanyParticipation {
+  cnpj: string;
+  socialReason?: string;
+  fantasyName?: string;
+  participation?: string;
+}
+
+export interface DadosCpfResult {
+  person: DadosCpfPerson;
+  scores?: DadosCpfScores;
+  socialClass?: DadosCpfSocialClass;
+  relatives: DadosCpfRelative[];
+  companyParticipations: DadosCpfCompanyParticipation[];
+  addresses: BaseAddress[];
+  phones: DadosCpfPhone[];
+  emails: DadosCpfEmail[];
+  pis: DadosCpfPis[];
+  irpf: DadosCpfIrpf[];
+}
+
+// ─── DADOS_CNPJ ───────────────────────────────────────────────────────────────
+
+export interface DadosCnpjCompany {
+  cnpj: string;
+  socialReason: string;
+  fantasyName?: string;
+  foundationDate?: string;
+  status?: string;
+  legalNature?: string;
+  cnae?: string;
+  size?: string;
+  revenueSize?: string;
+  capital?: string;
+  employees?: string;
+  segment?: string;
+  mosaicBusiness?: string;
+  risk?: string;
+  isMatrix?: boolean;
+  registrationDate?: string;
+  registrationReason?: string;
+  specialSituation?: string;
+  specialSituationDate?: string;
+}
+
+export interface DadosCnpjSimplesNacional {
+  statusSimples?: string;
+  statusSimei?: string;
+  dateSimples?: string;
+  dateSimei?: string;
+}
+
+export interface DadosCnpjPartner {
+  name: string;
+  cpf?: string;
+  participation?: string;
+}
+
+export interface DadosCnpjResult {
+  company: DadosCnpjCompany;
+  addresses: BaseAddress[];
+  phones: string[];
+  emails: string[];
+  simplesNacional?: DadosCnpjSimplesNacional;
+  partners: DadosCnpjPartner[];
+}
