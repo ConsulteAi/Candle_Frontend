@@ -873,6 +873,69 @@ export interface RaioXFinanceiroResult extends ScrBacenResult {
   ccfMessage?: string;
 }
 
+// ─── RAIO_X_BACEN_PLUS_PF / RAIO_X_BACEN_PLUS_PJ ───────────────────────────
+
+export interface BoaVistaRatingEnrichment {
+  sourceQueryTypeCode?: string;
+  sourceProviderCode?: string;
+  available: boolean;
+  person?: CommercialAnalysisPfResult['person'];
+  company?: CommercialAnalysisPjResult['company'];
+  score?: CommercialAnalysisScore;
+  decision?: CommercialAnalysisDecision;
+  creditLimitSuggestion?: CommercialAnalysisCreditLimitSuggestion;
+  financialSummary?: CommercialAnalysisFinancialSummary;
+  queries?: CommercialAnalysisQuery[];
+  protests?: CommercialAnalysisProtest[];
+  debts?: CommercialAnalysisDebt[];
+  location?: {
+    phones?: Array<{ areaCode?: string; number?: string; type?: string }>;
+    addresses?: BaseAddress[];
+  };
+  estimatedIncome?: { range?: string; annualIncome?: string | number; message?: string; description?: string };
+  estimatedRevenue?: { range?: string; annualIncome?: string | number; message?: string; description?: string };
+  dashboardSummary?: Record<string, unknown>;
+}
+
+export interface RaioXBacenPlusResult {
+  protocol?: string;
+  pdf?: string;
+  // PF primary (SerasaCrednet) fields
+  person?: BasePerson & { companyParticipations?: Array<{ cnpj: string; socialReason: string; participation: string }> };
+  companyParticipations?: Array<{ cnpj: string; socialReason: string; participation: string }>;
+  // PJ primary (RealtimePremiumScorePj) fields
+  company?: BaseCompany;
+  partners?: BasePartner[];
+  // Common credit fields
+  score?: { value?: string; class?: string; riskText?: string; informant?: string };
+  debts?: Array<{ value?: string; contract?: string; origin?: string; date?: string; informant?: string }>;
+  protests?: Array<{ value?: string; date?: string; origin?: string; notary?: string }>;
+  badChecks?: Array<{ bankNumber?: string; quantity?: string; lastOccurrence?: string }>;
+  phones?: BasePhone[];
+  addresses?: BaseAddress[];
+  alerts?: Array<{ title?: string; description?: string }>;
+  // Boa Vista Rating enrichment
+  boaVistaRating?: BoaVistaRatingEnrichment;
+  boaVistaRatingUnavailable?: boolean;
+  boaVistaRatingMessage?: string;
+}
+
+// ─── RAIO_X_PRO_PF / RAIO_X_PRO_PJ ──────────────────────────────────────────
+
+export interface RaioXProResult extends ScrBacenResult {
+  person?: Pick<BasePerson, 'name' | 'document'>;
+  company?: Pick<BaseCompany, 'socialReason' | 'cnpj'>;
+  marketRestrictions?: RaioXMarketRestrictions;
+  marketRestrictionsUnavailable?: boolean;
+  marketRestrictionsMessage?: string;
+  ccf?: CcfEnrichment;
+  ccfUnavailable?: boolean;
+  ccfMessage?: string;
+  scrBacen?: ScrEhmEnrichment;
+  scrBacenUnavailable?: boolean;
+  scrBacenMessage?: string;
+}
+
 // ─── DADOS_CPF ────────────────────────────────────────────────────────────────
 
 export interface DadosCpfPerson {
