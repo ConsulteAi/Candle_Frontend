@@ -6,9 +6,11 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  Clock,
   FileWarning,
   Landmark,
   Star,
+  TrendingDown,
   TrendingUp,
   User,
 } from 'lucide-react';
@@ -18,9 +20,11 @@ import type {
   RaioXBacenPlusResult,
   BoaVistaRatingEnrichment,
   CommercialAnalysisScore,
+  ScrEhmEnrichment,
+  ScrEhmOperacao,
 } from '@/types/query-strategies';
+import { cn, formatDisplayDate } from '@/lib/utils';
 import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
-import { formatDisplayDate } from '@/lib/utils';
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';

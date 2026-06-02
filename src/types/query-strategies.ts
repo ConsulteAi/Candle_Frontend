@@ -918,6 +918,10 @@ export interface RaioXBacenPlusResult {
   boaVistaRating?: BoaVistaRatingEnrichment;
   boaVistaRatingUnavailable?: boolean;
   boaVistaRatingMessage?: string;
+  // SCR BACEN enrichment
+  scrBacen?: ScrEhmEnrichment;
+  scrBacenUnavailable?: boolean;
+  scrBacenMessage?: string;
 }
 
 // ─── RAIO_X_PRO_PF / RAIO_X_PRO_PJ ──────────────────────────────────────────
