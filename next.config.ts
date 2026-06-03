@@ -98,6 +98,9 @@ if (!isDev) {
 }
 
 const nextConfig: NextConfig = {
+  // Enable source maps on staging/preview so we get readable crash stack traces.
+  // Remove once React error #310 is identified and fixed.
+  productionBrowserSourceMaps: isVercelPreview,
   async headers() {
     return [
       {
