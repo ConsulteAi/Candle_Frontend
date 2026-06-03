@@ -608,7 +608,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   ehmScrResumo: {
     name: 'resumo',
-    description: 'Resumo consolidado da posicao SCR via EHM.',
+    description: 'Resumo consolidado da posicao SCR.',
     fields: [
       { name: 'documento', type: 'string', description: 'CPF/CNPJ consultado.' },
       { name: 'tipoDocumento', type: 'string', description: 'Tipo do documento: FISICA ou JURIDICA.' },
@@ -622,7 +622,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   ehmScrConsolidado: {
     name: 'consolidado',
-    description: 'Buckets consolidados da posicao SCR via EHM.',
+    description: 'Buckets consolidados da posicao SCR.',
     fields: [
       { name: 'creditoAVencer', type: '{ valor, percentual, operacoes[] }', description: 'Parcelas futuras em aberto.' },
       { name: 'creditoVencido', type: '{ valor, percentual, operacoes[] }', description: 'Parcelas em atraso nao baixadas.' },
@@ -644,7 +644,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   ehmScrScore: {
     name: 'score',
-    description: 'Pontuacao consolidada da consulta SCR via EHM.',
+    description: 'Pontuacao consolidada da consulta SCR.',
     fields: [
       { name: 'pontuacao', type: 'number', description: 'Pontuacao SCR (0-1000).' },
       { name: 'faixa', type: 'string', description: 'Faixa textual do score SCR.' },
@@ -664,7 +664,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
   },
   scrBacenEnrichment: {
     name: 'scrBacen',
-    description: 'Posicao consolidada SCR via EHM usada como enriquecimento.',
+    description: 'Posicao consolidada SCR usada como enriquecimento.',
     fields: [
       { name: 'sourceQueryTypeCode', type: 'string', description: 'Query type complementar que originou o bloco.' },
       { name: 'sourceProviderCode', type: 'string', description: 'Provider da consulta complementar.' },
@@ -732,7 +732,7 @@ const raioXFinanceiroRoot: FieldDoc[] = [
 
 const raioXProRoot: FieldDoc[] = [
   ...raioXFinanceiroRoot,
-  { name: 'scrBacenUnavailable', type: 'boolean | undefined', description: 'Sinaliza indisponibilidade da consulta complementar SCR via EHM.' },
+  { name: 'scrBacenUnavailable', type: 'boolean | undefined', description: 'Sinaliza indisponibilidade da consulta complementar SCR.' },
   { name: 'scrBacenMessage', type: 'string | undefined', description: 'Mensagem resumida explicando indisponibilidade do enriquecimento SCR.' },
 ];
 
@@ -794,8 +794,8 @@ const queryTypeDocs: QueryTypeDoc[] = [
   { code: 'RAIO_X_CREDITO_RATING_SCR_PJ', title: 'Raio X Credito Rating SCR PJ', input: 'CNPJ', summary: 'Consulta SCR detalhada PJ com enriquecimento complementar de restricoes de mercado via DIVIDAS_MULTI quando disponivel.', rootFields: raioXScrEnhancedRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions']) },
   { code: 'RAIO_X_FINANCEIRO_RATING_SCR_PF', title: 'Raio X Financeiro Rating SCR PF', input: 'CPF', summary: 'Consulta SCR PF com enriquecimento complementar de mercado e bloco CCF quando disponivel.', rootFields: raioXFinanceiroRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXPerson', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment']) },
   { code: 'RAIO_X_FINANCEIRO_RATING_SCR_PJ', title: 'Raio X Financeiro Rating SCR PJ', input: 'CNPJ', summary: 'Consulta SCR PJ com enriquecimento complementar de mercado e bloco CCF quando disponivel.', rootFields: raioXFinanceiroRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment']) },
-  { code: 'RAIO_X_PRO_PF', title: 'Raio X Pro PF', input: 'CPF', summary: 'Consulta SCR PF com tres camadas complementares: mercado, CCF e SCR consolidado via EHM.', rootFields: raioXProRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXPerson', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment', 'scrBacenEnrichment']) },
-  { code: 'RAIO_X_PRO_PJ', title: 'Raio X Pro PJ', input: 'CNPJ', summary: 'Consulta SCR PJ com tres camadas complementares: mercado, CCF e SCR consolidado via EHM.', rootFields: raioXProRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment', 'scrBacenEnrichment']) },
+  { code: 'RAIO_X_PRO_PF', title: 'Raio X Pro PF', input: 'CPF', summary: 'Consulta SCR PF com tres camadas complementares: mercado, CCF e SCR consolidado.', rootFields: raioXProRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXPerson', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment', 'scrBacenEnrichment']) },
+  { code: 'RAIO_X_PRO_PJ', title: 'Raio X Pro PJ', input: 'CNPJ', summary: 'Consulta SCR PJ com tres camadas complementares: mercado, CCF e SCR consolidado.', rootFields: raioXProRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment', 'scrBacenEnrichment']) },
   { code: 'DIVIDAS_MULTI_CPF_PRO', title: 'Dividas Multi CPF Pro', input: 'CPF', summary: 'Consulta agregada (PF) com SCPC, REFIN/PEFIN, protestos, cheques, CADIN, acoes legais e resumo SERASA.', rootFields: [], blocks: getBlocks(['person', 'ehmFinancialSummary', 'scpcDebts', 'refinPefinDebts', 'protests', 'badChecks', 'ehmCadin', 'legalActions', 'serasaSummary', 'rawSections']) },
   { code: 'DIVIDAS_MULTI_CNPJ_PRO', title: 'Dividas Multi CNPJ Pro', input: 'CNPJ', summary: 'Consulta agregada (PJ) com SCPC, REFIN/PEFIN, protestos, cheques, CADIN, acoes legais e resumo SERASA.', rootFields: [], blocks: getBlocks(['company', 'ehmFinancialSummary', 'scpcDebts', 'refinPefinDebts', 'protests', 'badChecks', 'ehmCadin', 'legalActions', 'serasaSummary', 'rawSections']) },
   { code: 'CCF', title: 'CCF', input: 'CPF/CNPJ', summary: 'Consulta EHM de cheques sem fundo com resumo, historico e lista detalhada por banco/agencia.', rootFields: [{ name: 'erro', type: 'boolean', description: 'Indica se a consulta retornou erro.' }], blocks: getBlocks(['ccfSummary', 'ccfHistorico', 'ccfLista']) },
@@ -891,8 +891,8 @@ const queryTypeDocs: QueryTypeDoc[] = [
   { code: 'SERASA_PJ', title: 'Serasa PJ', input: 'CNPJ', summary: 'Consulta Serasa PJ com score opcional, dividas analiticas e protestos.', rootFields: [], blocks: getBlocks(['company', 'score', 'ehmFinancialSummary', 'serasaDebts', 'protests']) },
   { code: 'LOCALIZA_CPF_CNPJ', title: 'Localiza CPF CNPJ', input: 'CPF/CNPJ', summary: 'Consulta de enriquecimento cadastral e relacional.', rootFields: [{ name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' }], blocks: getBlocks(['basicInfo', 'contact', 'addresses', 'relations']) },
   { code: 'SCR_BACEN_PREMIUM_SCORE', title: 'SCR Bacen Premium Score', input: 'CPF/CNPJ', summary: 'Consulta SCR padrao com score e operacoes.', rootFields: scrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations']) },
-  { code: 'SCR_PF', title: 'SCR PF', input: 'CPF', summary: 'Posicao consolidada SCR BACEN via EHM para CPF.', rootFields: [], blocks: getBlocks(['ehmScrResumo', 'ehmScrConsolidado', 'ehmScrOperations', 'ehmScrScore']) },
-  { code: 'SCR_PJ', title: 'SCR PJ', input: 'CNPJ', summary: 'Posicao consolidada SCR BACEN via EHM para CNPJ.', rootFields: [], blocks: getBlocks(['ehmScrResumo', 'ehmScrConsolidado', 'ehmScrOperations', 'ehmScrScore']) },
+  { code: 'SCR_PF', title: 'SCR PF', input: 'CPF', summary: 'Posicao consolidada SCR BACEN para CPF.', rootFields: [], blocks: getBlocks(['ehmScrResumo', 'ehmScrConsolidado', 'ehmScrOperations', 'ehmScrScore']) },
+  { code: 'SCR_PJ', title: 'SCR PJ', input: 'CNPJ', summary: 'Posicao consolidada SCR BACEN para CNPJ.', rootFields: [], blocks: getBlocks(['ehmScrResumo', 'ehmScrConsolidado', 'ehmScrOperations', 'ehmScrScore']) },
   { code: 'COMPLETA_PLUS_BVS_ACOES_CPF', title: 'Completa Plus BVS Acoes CPF', input: 'CPF', summary: 'Consulta CPF com score, alertas, dividas, protestos, acoes legais e passagens comerciais.', rootFields: [
     { name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' },
     { name: 'totalDebts', type: 'number', description: 'Total de pendencias.' },
