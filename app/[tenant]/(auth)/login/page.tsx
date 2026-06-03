@@ -169,8 +169,10 @@ export default function LoginPage() {
                   {focusedField === 'email' && (
                     <motion.div
                       className="absolute inset-0 bg-gradient-primary rounded-xl opacity-20 blur-md"
-                      layoutId="input-glow"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
                     />
                   )}
                   <Input
@@ -210,8 +212,10 @@ export default function LoginPage() {
                   {focusedField === 'password' && (
                     <motion.div
                       className="absolute inset-0 bg-gradient-primary rounded-xl opacity-20 blur-md"
-                      layoutId="input-glow"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
                     />
                   )}
                   <Input

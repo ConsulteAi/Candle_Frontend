@@ -51,7 +51,9 @@ const cspDirectives = [
   "style-src 'self' 'unsafe-inline' https:",
   `connect-src ${connectSrc.join(" ")}`,
   "worker-src 'self' blob:",
-  "frame-src 'none'",
+  allowVercelLiveFeedback
+    ? "frame-src https://vercel.live https://*.vercel.live"
+    : "frame-src 'none'",
 ]
   .join("; ")
   .replace(/\s{2,}/g, " ")
