@@ -40,7 +40,7 @@ serverAxios.interceptors.request.use(async (config) => {
     }
 
     if (config.headers) {
-      if (token && !isRefreshRequest(config.url)) {
+      if (token && !isRefreshRequest(config.url) && !config.headers.Authorization) {
         config.headers.Authorization = `Bearer ${token}`;
       }
       if (userAgent) {

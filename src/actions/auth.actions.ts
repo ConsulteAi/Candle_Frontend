@@ -57,35 +57,35 @@ export async function loginAction(
 
     const accessToken = data.accessToken;
 
-    // Se o login retornou token mas não user, buscamos o user
-    if (accessToken && !data.user) {
-        try {
+    // Set httpOnly cookies FIRST so subsequent requests (getMe) use the fresh token
+    const cookieStore = await cookies();
+    cookieStore.set('accessToken', accessToken, {
+      ...authCookieOptions,
+      maxAge: 60 * 60 * 24,
+    });
+    cookieStore.set('refreshToken', data.refreshToken, {
+      ...authCookieOptions,
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    cookieStore.set('csrfToken', generateCsrfToken(), {
+      ...csrfCookieOptions,
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    // Se o login não retornou user, buscamos após cookies já estarem setados
+    if (!data.user) {
+      try {
         const user = await AuthService.getMe(accessToken);
-            data.user = user;
-        } catch (error) {
-            // ignore error
-        }
+        data.user = user;
+      } catch (error) {
+        // ignore error
+      }
     }
 
     // Sanitize user data
     if (data.user) {
       data.user = sanitizeUser(data.user);
     }
-
-    // Set httpOnly cookies for authentication
-    const cookieStore = await cookies();
-    cookieStore.set('accessToken', accessToken, {
-      ...authCookieOptions,
-      maxAge: 60 * 60 * 24, // 24 hours (access token expiry)
-    });
-    cookieStore.set('refreshToken', data.refreshToken, {
-      ...authCookieOptions,
-      maxAge: 60 * 60 * 24 * 7, // 7 days (refresh token expiry)
-    });
-    cookieStore.set('csrfToken', generateCsrfToken(), {
-      ...csrfCookieOptions,
-      maxAge: 60 * 60 * 24 * 7,
-    });
 
     // Invalidate cache so next request fetches fresh user
     invalidateCurrentUserCache();
