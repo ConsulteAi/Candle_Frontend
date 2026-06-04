@@ -1,5 +1,6 @@
 import { AxiosError } from "axios";
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { serverHttpClient } from "@/lib/api/serverHttpClient";
 
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -205,6 +206,13 @@ async function forward(request: NextRequest, context: RouteContext, method: Meth
 
   const targetPath = `${targetPathname}${request.nextUrl.search}`;
 
+  // Snapshot the current access token. If serverHttpClient's 401 interceptor
+  // refreshes tokens mid-flight, those cookies().set() calls are NOT
+  // automatically included in a manually-constructed NextResponse — we detect
+  // the change and add explicit Set-Cookie headers below.
+  const cookieStore = await cookies();
+  const prevAccessToken = cookieStore.get("accessToken")?.value;
+
   try {
     const response = await serverHttpClient.request<ArrayBuffer>({
       method,
@@ -236,6 +244,34 @@ async function forward(request: NextRequest, context: RouteContext, method: Meth
         }
       } else if (typeof value === "string") {
         responseHeaders.set(key, value);
+      }
+    }
+
+    // If the access token changed during the request (a refresh happened),
+    // propagate the updated tokens to the browser via explicit Set-Cookie
+    // headers. Next.js does not automatically merge cookies().set() mutations
+    // into a manually-constructed NextResponse.
+    const newAccessToken = cookieStore.get("accessToken")?.value;
+    if (newAccessToken && newAccessToken !== prevAccessToken) {
+      const isProduction = process.env.NODE_ENV === "production";
+      const sec = isProduction ? "; Secure" : "";
+      const newRefreshToken = cookieStore.get("refreshToken")?.value;
+      const newCsrfToken = cookieStore.get("csrfToken")?.value;
+      responseHeaders.append(
+        "Set-Cookie",
+        `accessToken=${newAccessToken}; HttpOnly; SameSite=Lax; Path=/${sec}; Max-Age=${60 * 60 * 24}`,
+      );
+      if (newRefreshToken) {
+        responseHeaders.append(
+          "Set-Cookie",
+          `refreshToken=${newRefreshToken}; HttpOnly; SameSite=Lax; Path=/${sec}; Max-Age=${60 * 60 * 24 * 7}`,
+        );
+      }
+      if (newCsrfToken) {
+        responseHeaders.append(
+          "Set-Cookie",
+          `csrfToken=${newCsrfToken}; SameSite=Lax; Path=/${sec}; Max-Age=${60 * 60 * 24 * 7}`,
+        );
       }
     }
 
