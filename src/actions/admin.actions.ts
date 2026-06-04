@@ -48,7 +48,10 @@ export async function getUsersAction(
     const data = await AdminService.getUsers(filters);
     return { success: true, data };
   } catch (error: any) {
-    return { success: false, error: "Erro ao listar usuários" };
+    const status = error?.response?.status;
+    const detail = error?.response?.data?.message ?? error?.message ?? "desconhecido";
+    console.error(`[admin] getUsers falhou — status=${status} detalhe=${JSON.stringify(detail)}`);
+    return { success: false, error: `Erro ao listar usuários (${status ?? "sem status"}: ${typeof detail === "string" ? detail : JSON.stringify(detail)})` };
   }
 }
 
