@@ -1,9 +1,7 @@
-import { 
-  getDashboardOverviewAction,
-  getProviderStatsAction,
-  getDashboardQueriesAction
-} from '@/actions/admin.actions';
-import { DashboardView } from '@/components/admin/DashboardView';
+import { Suspense } from 'react';
+import { DashboardHeader } from './_components/DashboardHeader';
+import { DashboardMainSection } from './_components/DashboardMainSection';
+import { DashboardSkeleton } from './_components/DashboardSkeleton';
 
 interface BackofficePageProps {
   searchParams: Promise<{ period?: string }>;
@@ -13,19 +11,13 @@ export default async function BackofficePage({ searchParams }: BackofficePagePro
   const { period } = await searchParams;
   const initialPeriod = Number(period) || 30;
 
-  // Revenue is now fetched client-side in DashboardView (SWR)
-  const [overviewRes, providersRes, queriesRes] = await Promise.all([
-    getDashboardOverviewAction(),
-    getProviderStatsAction(),
-    getDashboardQueriesAction()
-  ]);
-
   return (
-    <DashboardView 
-      overview={overviewRes.success ? overviewRes.data! : null}
-      providerStats={providersRes.success ? providersRes.data! : null}
-      queriesStats={queriesRes.success ? queriesRes.data! : null}
-      initialPeriod={initialPeriod}
-    />
+    <div className="space-y-8">
+      <DashboardHeader initialPeriod={initialPeriod} />
+
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardMainSection initialPeriod={initialPeriod} />
+      </Suspense>
+    </div>
   );
 }

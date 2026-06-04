@@ -29,6 +29,20 @@ export async function getDashboardOverviewAction(): Promise<
   }
 }
 
+export async function getDashboardMainAction(): Promise<
+  ActionState<{ overview: DashboardOverview; queries: DashboardQueries }>
+> {
+  try {
+    const [overview, queries] = await Promise.all([
+      AdminService.getDashboardOverview(),
+      AdminService.getDashboardQueries(),
+    ]);
+    return { success: true, data: { overview, queries } };
+  } catch (error: any) {
+    return { success: false, error: "Erro ao carregar dashboard" };
+  }
+}
+
 import { redirect } from "next/navigation";
 import { isAxiosError } from "axios";
 import { getCurrentUser } from "@/lib/auth";
