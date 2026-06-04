@@ -147,9 +147,14 @@ serverAxios.interceptors.response.use(
       // This request is the one that will perform the refresh
       isRefreshing = true;
 
+      // Capture the refresh token we're about to use so we can compare it
+      // later in the failure path.
+      let usedRefreshToken: string | undefined;
+
       try {
         const cookieStore = await cookies();
         const refreshToken = cookieStore.get("refreshToken")?.value;
+        usedRefreshToken = refreshToken;
 
         if (!refreshToken) {
           try {
@@ -222,13 +227,18 @@ serverAxios.interceptors.response.use(
         }
         return serverAxios(originalRequest);
       } catch (refreshError) {
-        // Refresh failed — reject all queued requests and clear the session
         rejectQueue(refreshError);
         try {
           const cookieStore = await cookies();
-          cookieStore.delete("accessToken");
-          cookieStore.delete("refreshToken");
-          cookieStore.delete("csrfToken");
+          const currentRefreshToken = cookieStore.get("refreshToken")?.value;
+          // Only wipe the session if no other concurrent request has already
+          // refreshed successfully (i.e. the token in the cookie is still the
+          // same one we tried — and failed — to use).
+          if (currentRefreshToken === usedRefreshToken) {
+            cookieStore.delete("accessToken");
+            cookieStore.delete("refreshToken");
+            cookieStore.delete("csrfToken");
+          }
         } catch (e) {
           // ignore
         }
