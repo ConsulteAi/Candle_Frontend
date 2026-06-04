@@ -1,8 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { isAxiosError } from "axios";
-
 import { AdminService } from "@/services/admin.service";
 import type {
   AdminUser,
@@ -51,9 +48,6 @@ export async function getUsersAction(
     const data = await AdminService.getUsers(filters);
     return { success: true, data };
   } catch (error: any) {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      redirect("/login");
-    }
     return { success: false, error: "Erro ao listar usuários" };
   }
 }
@@ -66,9 +60,6 @@ export async function getRevenueStatsAction(params?: {
     const data = await AdminService.getRevenueStats(params);
     return { success: true, data };
   } catch (error: any) {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      redirect("/login");
-    }
     return { success: false, error: "Erro ao carregar receita" };
   }
 }
@@ -80,9 +71,6 @@ export async function getProviderStatsAction(): Promise<
     const data = await AdminService.getProviderStats();
     return { success: true, data };
   } catch (error: any) {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      redirect("/login");
-    }
     return { success: false, error: "Erro ao carregar status de providers" };
   }
 }
@@ -94,9 +82,6 @@ export async function getDashboardQueriesAction(): Promise<
     const data = await AdminService.getDashboardQueries();
     return { success: true, data };
   } catch (error: any) {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      redirect("/login");
-    }
     return {
       success: false,
       error: "Erro ao carregar estatísticas de consultas",
@@ -111,9 +96,6 @@ export async function getTransactionsAction(
     const data = await AdminService.getTransactions(filters);
     return { success: true, data };
   } catch (error: any) {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      redirect("/login");
-    }
     return { success: false, error: "Erro ao listar transações" };
   }
 }
@@ -125,9 +107,6 @@ export async function getQueryTypesAction(
     const data = await AdminService.getQueryTypes(filters);
     return { success: true, data };
   } catch (error: any) {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      redirect("/login");
-    }
     return { success: false, error: "Erro ao listar tipos de consulta" };
   }
 }
@@ -139,9 +118,6 @@ export async function toggleQueryTypeAction(
     await AdminService.toggleQueryType(id);
     return { success: true };
   } catch (error: any) {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      redirect("/login");
-    }
     return { success: false, error: "Erro ao alterar status da consulta" };
   }
 }
