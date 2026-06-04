@@ -38,9 +38,4 @@ export function isAuthRoute(pathname: string): boolean {
   );
 }
 
-export function extractTenantFromPathname(pathname: string): string | null {
-  const parts = pathname.split('/').filter(Boolean);
-  return parts[0] ?? null;
-}
-
 export { AUTH_ROUTES, PUBLIC_ROUTES };

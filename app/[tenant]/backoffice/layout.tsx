@@ -9,20 +9,17 @@ export const dynamic = 'force-dynamic';
 
 export default async function BackofficeLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ tenant: string }>;
 }) {
-  const { tenant } = await params;
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect(`/${tenant}/login`);
+    redirect('/login');
   }
 
   if (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER) {
-    redirect(`/${tenant}`);
+    redirect('/');
   }
 
   return (
