@@ -23,6 +23,38 @@ const isRefreshRequest = (url?: string) => {
 
 const generateCsrfToken = () => crypto.randomUUID().replace(/-/g, "");
 
+// ---------------------------------------------------------------------------
+// Refresh-token mutex
+//
+// Multiple concurrent Server Actions (e.g. Promise.all) can all receive 401
+// at the same time. Without coordination, every one of them would attempt a
+// token refresh — burning the single-use refresh token and logging the user
+// out.  The mutex ensures only the FIRST request actually refreshes; the rest
+// queue up and receive the new access token once refresh is done.
+// ---------------------------------------------------------------------------
+
+let isRefreshing = false;
+let pendingQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (err: unknown) => void;
+}> = [];
+
+function enqueueRefreshWaiter(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    pendingQueue.push({ resolve, reject });
+  });
+}
+
+function drainQueue(newAccessToken: string) {
+  pendingQueue.forEach(({ resolve }) => resolve(newAccessToken));
+  pendingQueue = [];
+}
+
+function rejectQueue(err: unknown) {
+  pendingQueue.forEach(({ reject }) => reject(err));
+  pendingQueue = [];
+}
+
 // Request Interceptor: Add Access Token from Cookies & User-Agent & Tenant Domain
 serverAxios.interceptors.request.use(async (config) => {
   try {
@@ -91,7 +123,7 @@ serverAxios.interceptors.response.use(
       }
     }
 
-    // If 401 Unauthorized and not already retried
+    // If 401 Unauthorized and not a refresh request itself
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
@@ -99,23 +131,38 @@ serverAxios.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
+      // If another request is already refreshing, queue this one and wait
+      if (isRefreshing) {
+        try {
+          const newToken = await enqueueRefreshWaiter();
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          }
+          return serverAxios(originalRequest);
+        } catch (queueErr) {
+          return Promise.reject(queueErr);
+        }
+      }
+
+      // This request is the one that will perform the refresh
+      isRefreshing = true;
+
       try {
         const cookieStore = await cookies();
         const refreshToken = cookieStore.get("refreshToken")?.value;
 
         if (!refreshToken) {
-          // No refresh token, clear session and throw
           try {
             cookieStore.delete("accessToken");
             cookieStore.delete("refreshToken");
             cookieStore.delete("csrfToken");
           } catch (e) {
-            // Ignore cookie errors (e.g. inside Server Component)
+            // Ignore cookie errors inside Server Components
           }
+          rejectQueue(error);
           return Promise.reject(error);
         }
 
-        // Use the same axios instance so tenant and request-context headers are preserved.
         const refreshResponse = await serverAxios.post<{
           accessToken: string;
           refreshToken: string;
@@ -131,7 +178,7 @@ serverAxios.interceptors.response.use(
           throw new Error("Refresh failed: No access token returned");
         }
 
-        // Update Cookies
+        // Update cookies
         const isProduction = process.env.NODE_ENV === "production";
         const cookieOptions = {
           httpOnly: true,
@@ -150,35 +197,33 @@ serverAxios.interceptors.response.use(
         };
 
         try {
-          // Access Token (24 hours)
           cookieStore.set("accessToken", newAccessToken, {
             ...cookieOptions,
             maxAge: 60 * 60 * 24,
           });
-
-          // Refresh Token (7 days)
           cookieStore.set("refreshToken", newRefreshToken, {
             ...cookieOptions,
             maxAge: 60 * 60 * 24 * 7,
           });
-
           cookieStore.set("csrfToken", generateCsrfToken(), {
             ...csrfCookieOptions,
             maxAge: 60 * 60 * 24 * 7,
           });
         } catch (e) {
-          // Ignore cookie errors (e.g. inside Server Component)
-          // The current request will still succeed due to header update below
+          // Ignore cookie errors — the retry below will succeed via header
         }
 
-        // Update Authorization header and retry
+        // Wake up all queued requests with the new token
+        drainQueue(newAccessToken);
+
+        // Retry the original request that triggered the refresh
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         }
-
         return serverAxios(originalRequest);
       } catch (refreshError) {
-        // Clear session on failure
+        // Refresh failed — reject all queued requests and clear the session
+        rejectQueue(refreshError);
         try {
           const cookieStore = await cookies();
           cookieStore.delete("accessToken");
@@ -188,6 +233,8 @@ serverAxios.interceptors.response.use(
           // ignore
         }
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
