@@ -4,9 +4,10 @@
  */
 
 import { useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { loginAction, registerAction, logoutAction } from '@/actions/auth.actions';
+import { extractTenantFromPathname } from '@/lib/auth/routes';
 import type { LoginDTO, RegisterDTO } from '@/types';
 
 function sanitizeRedirectPath(redirectTo?: string): string {
@@ -17,6 +18,8 @@ function sanitizeRedirectPath(redirectTo?: string): string {
 
 export function useAuth() {
   const router = useRouter();
+  const pathname = usePathname();
+  const tenant = extractTenantFromPathname(pathname ?? '');
   const {
     user,
     isAuthenticated,
@@ -61,7 +64,7 @@ export function useAuth() {
 
         if (result.success && result.data) {
           setAuth(result.data);
-          router.push('/');
+          router.push(tenant ? `/${tenant}` : '/');
           return { success: true };
         }
 
@@ -81,16 +84,16 @@ export function useAuth() {
    * Logout
    */
   const logout = useCallback(async () => {
+    const loginPath = tenant ? `/${tenant}/login` : '/login';
     try {
       await logoutAction();
       clearAuth();
-      router.push('/login');
+      router.push(loginPath);
     } catch (error) {
-      // Mesmo com erro, limpa o estado local
       clearAuth();
-      router.push('/login');
+      router.push(loginPath);
     }
-  }, [clearAuth, router]);
+  }, [clearAuth, router, tenant]);
 
   return {
     user,

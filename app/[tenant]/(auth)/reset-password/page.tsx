@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -66,6 +66,8 @@ const STRENGTH_COLOR = ['', 'text-red-500', 'text-orange-500', 'text-amber-500',
 export default function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const router       = useRouter();
+  const pathname     = usePathname();
+  const tenant       = pathname?.split('/').filter(Boolean)[0];
   const token        = searchParams.get('token');
 
   const [isLoading,        setIsLoading]        = useState(false);
@@ -138,7 +140,7 @@ export default function ResetPasswordPage() {
               Entre em contato com um administrador para solicitar um novo link.
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.push('/login')} className="rounded-xl">
+          <Button variant="outline" onClick={() => router.push(tenant ? `/${tenant}/login` : '/login')} className="rounded-xl">
             Voltar ao login
           </Button>
         </motion.div>

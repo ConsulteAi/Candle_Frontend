@@ -1,7 +1,7 @@
 'use client';
 
 import { logoutAction } from '@/actions/auth.actions';
-import { isAuthRoute, isPublicRoute } from '@/lib/auth/routes';
+import { extractTenantFromPathname, isAuthRoute, isPublicRoute } from '@/lib/auth/routes';
 import { useAuthStore } from '@/store/authStore';
 
 let sessionResetPromise: Promise<void> | null = null;
@@ -16,12 +16,14 @@ function normalizePathname(pathname?: string): string {
 
 export function buildLoginRedirectPath(pathname?: string): string {
   const normalizedPathname = normalizePathname(pathname);
+  const tenant = extractTenantFromPathname(normalizedPathname);
+  const loginBase = tenant ? `/${tenant}/login` : '/login';
 
   if (isAuthRoute(normalizedPathname) || isPublicRoute(normalizedPathname)) {
-    return '/login';
+    return loginBase;
   }
 
-  return `/login?redirect=${encodeURIComponent(normalizedPathname)}`;
+  return `${loginBase}?redirect=${encodeURIComponent(normalizedPathname)}`;
 }
 
 export async function clearClientSession(): Promise<void> {
