@@ -74,26 +74,11 @@ export function useBalance() {
       const result = await getBalanceAction();
       if (result.success && result.data) {
         updateBalance(result.data.available);
-      } else if (result.statusCode === 401) {
-        // Clear local auth state so AuthGuard re-validates; avoid revoking the
-        // DB session here — a concurrent RSC refresh may have already healed it.
-        useAuthStore.getState().logout();
-        setBalanceError("Sessão expirada. Faça login novamente.");
       } else if (result.error) {
         setBalanceError(result.error);
       }
     } catch (error: any) {
-      const isUnauthorized =
-        error?.response?.status === 401 ||
-        error?.status === 401 ||
-        error?.message?.includes("401");
-
-      if (isUnauthorized) {
-        useAuthStore.getState().logout();
-        setBalanceError("Sessão expirada. Faça login novamente.");
-      } else {
-        setBalanceError("Erro ao buscar saldo");
-      }
+      setBalanceError("Erro ao buscar saldo");
     } finally {
       inFlightRef.current = false;
       if (!silent) {

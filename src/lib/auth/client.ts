@@ -1,6 +1,6 @@
 'use client';
 
-import { logoutAction } from '@/actions/auth.actions';
+import { clearSessionCookiesAction } from '@/actions/auth.actions';
 import { isAuthRoute, isPublicRoute } from '@/lib/auth/routes';
 import { useAuthStore } from '@/store/authStore';
 
@@ -24,6 +24,8 @@ export function buildLoginRedirectPath(pathname?: string): string {
   return `/login?redirect=${encodeURIComponent(normalizedPathname)}`;
 }
 
+// Clears local auth state (cookies + Zustand) WITHOUT revoking the backend session.
+// Revoking is reserved for explicit user-initiated logout (useAuth.logout).
 export async function clearClientSession(): Promise<void> {
   if (sessionResetPromise) {
     return sessionResetPromise;
@@ -31,9 +33,9 @@ export async function clearClientSession(): Promise<void> {
 
   sessionResetPromise = (async () => {
     try {
-      await logoutAction();
+      await clearSessionCookiesAction();
     } catch {
-      // Ignore server-side logout failures; local cleanup still needs to happen.
+      // ignore
     } finally {
       useAuthStore.getState().logout();
     }

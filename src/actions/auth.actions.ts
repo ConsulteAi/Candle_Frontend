@@ -226,6 +226,19 @@ export async function getMeAction(): Promise<ActionState<User>> {
 }
 
 /**
+ * Clears auth cookies server-side WITHOUT revoking the session in the backend.
+ * Use this for implicit auth failures (expired tokens, concurrent refresh errors).
+ * Only call logoutAction() for explicit user-initiated logout.
+ */
+export async function clearSessionCookiesAction(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete('accessToken');
+  cookieStore.delete('refreshToken');
+  cookieStore.delete('csrfToken');
+  invalidateCurrentUserCache();
+}
+
+/**
  * Action de Logout
  */
 export async function logoutAction(): Promise<ActionState<void>> {

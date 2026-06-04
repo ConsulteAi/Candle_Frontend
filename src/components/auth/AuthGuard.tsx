@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { getMeAction } from '@/actions/auth.actions';
-import { buildLoginRedirectPath, clearClientSession } from '@/lib/auth/client';
+import { buildLoginRedirectPath } from '@/lib/auth/client';
 import { isPublicRoute } from '@/lib/auth/routes';
 import { Loader2 } from 'lucide-react';
 
@@ -55,12 +55,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       if (result.success && result.data) {
         login({ user: result.data });
       } else {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('[auth][guard] session resolution failed, redirecting to login', {
-            pathname,
-          });
-        }
-        await clearClientSession();
         if (active) {
           router.replace(buildLoginRedirectPath(pathname || '/'));
         }
