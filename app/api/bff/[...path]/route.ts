@@ -212,7 +212,10 @@ async function forward(request: NextRequest, context: RouteContext, method: Meth
       data: await parseRequestBody(request, method),
       headers: pickRequestHeaders(request),
       responseType: "arraybuffer",
-      validateStatus: () => true,
+      // Reject only on 401 so serverHttpClient's interceptor can refresh the
+      // token and retry. All other status codes (4xx, 5xx) resolve normally
+      // so their exact response bodies are forwarded to the browser.
+      validateStatus: (status) => status !== 401,
     });
 
     const responseHeaders = new Headers();
