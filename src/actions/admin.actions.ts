@@ -64,7 +64,7 @@ export async function getUsersAction(
     return { success: true, data };
   } catch (error: any) {
     if (isAxiosError(error) && error.response?.status === 401) {
-      redirect("/auth/login");
+      redirect("/login");
     }
     return { success: false, error: "Erro ao listar usuários" };
   }

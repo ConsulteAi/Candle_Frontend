@@ -1,19 +1,11 @@
 import { getUsersAction } from '@/actions/admin.actions';
 import { UsersClientView } from '@/components/admin/UsersClientView';
-import { getCurrentUser } from '@/lib/auth';
-import { UserRole } from '@/types/auth';
-import { redirect } from 'next/navigation';
 
 export default async function UsersPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const user = await getCurrentUser();
-  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER)) {
-    redirect('/backoffice');
-  }
-
   const resolvedParams = await searchParams;
   const page = typeof resolvedParams.page === 'string' ? parseInt(resolvedParams.page) : 1;
   const limit = 10;

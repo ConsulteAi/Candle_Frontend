@@ -1,20 +1,12 @@
 import { getTransactionsAction } from '@/actions/admin.actions';
 import { TransactionsClientView } from '@/components/admin/TransactionsClientView';
-import { getCurrentUser } from '@/lib/auth';
 import type { TransactionFilters } from '@/types/admin';
-import { UserRole } from '@/types/auth';
-import { redirect } from 'next/navigation';
 
 export default async function TransactionsPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const user = await getCurrentUser();
-  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER)) {
-    redirect('/backoffice');
-  }
-
   const p = await searchParams;
 
   const getString = (key: string) =>
