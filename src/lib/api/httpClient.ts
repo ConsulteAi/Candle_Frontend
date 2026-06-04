@@ -44,14 +44,57 @@ httpClient.interceptors.request.use((config) => {
   return config;
 });
 
+// Serialise refresh attempts: only one in-flight at a time.
+let clientRefreshPromise: Promise<boolean> | null = null;
+
+async function tryClientRefresh(): Promise<boolean> {
+  if (clientRefreshPromise) return clientRefreshPromise;
+
+  clientRefreshPromise = (async () => {
+    try {
+      // Dynamic import avoids circular-dependency issues at module init time.
+      const { refreshTokenAction } = await import('@/actions/auth.actions');
+      const result = await refreshTokenAction();
+      return result.success;
+    } catch {
+      return false;
+    }
+  })().finally(() => {
+    clientRefreshPromise = null;
+  });
+
+  return clientRefreshPromise;
+}
+
 /**
  * Response Interceptor
- * Sessão inválida no BFF -> limpa estado local e redireciona para login
+ *
+ * On 401: the BFF's server-side refresh already ran but may have failed to
+ * propagate new cookies to the browser (race or propagation bug).  Try one
+ * more refresh via a server action — which DOES correctly set browser cookies
+ * — then retry the original request.  Only if the refresh itself fails do we
+ * clear the session and redirect to login.
  */
 httpClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
+      const originalRequest = error.config as any;
+
+      // Avoid infinite retry loops.
+      if (!originalRequest._clientRetry) {
+        originalRequest._clientRetry = true;
+
+        const refreshed = await tryClientRefresh();
+
+        if (refreshed) {
+          // Cookies updated; the browser will send the new accessToken cookie
+          // on the retry automatically (httpOnly, withCredentials).
+          return httpClient(originalRequest);
+        }
+      }
+
+      // Refresh failed or already retried — session is truly invalid.
       await clearClientSession();
       if (typeof window !== 'undefined') {
         window.location.replace(buildLoginRedirectPath(window.location.pathname));
