@@ -188,7 +188,7 @@ export async function DashboardMainSection({ initialPeriod }: { initialPeriod: n
           <RevenueChartCard initialPeriod={initialPeriod} />
 
           <SectionTitle>Performance por Produto</SectionTitle>
-          <TopQueriesTablePaginated />
+          <TopQueriesTablePaginated data={queries.topQueryTypes} />
         </div>
 
         {/* Right 1/3 */}

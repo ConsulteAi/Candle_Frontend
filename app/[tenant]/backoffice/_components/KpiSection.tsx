@@ -7,9 +7,9 @@ import {
   Users,
   DollarSign,
   TrendingUp,
+  BarChart3,
   Zap,
   Wallet,
-  Clock,
   ArrowUpRight,
   CheckCircle2,
   type LucideIcon,
@@ -95,7 +95,7 @@ function KpiCard({
             </div>
           )}
         </div>
-        {subtext && !loading && (
+        {!loading && subtext && (
           <p className={`text-xs font-medium leading-snug mt-auto ${highlight ? 'text-white/65' : 'text-slate-400'}`}>
             {subtext}
           </p>
@@ -133,6 +133,8 @@ export function KpiSection({ initialPeriod, overview, queries }: KpiSectionProps
   const searchParams = useSearchParams();
   const period = Number(searchParams.get('period')) || initialPeriod;
   const pLabel = PERIOD_LABELS[period] ?? `${period} dias`;
+  const isToday = period === 1;
+  const isMonth = period === 30;
 
   const { data: revenueStats, isLoading: revenueLoading } = useSWR<RevenueStats>(
     ['kpi-revenue', period],
@@ -144,16 +146,26 @@ export function KpiSection({ initialPeriod, overview, queries }: KpiSectionProps
     { keepPreviousData: true, revalidateOnFocus: false },
   );
 
-  const isToday = period === 1;
+  // Revenue: period-aware from revenueStats; fallback to server data
+  const revenue = revenueStats?.totalRevenue
+    ?? (isToday ? overview.revenueToday : overview.revenueThisMonth);
 
-  // Revenue is period-aware (from revenueStats)
-  const revenue = revenueStats?.totalRevenue ?? (isToday ? overview.revenueToday : overview.revenueThisMonth);
+  // Profit: use exact values for today/month; estimate via avg margin for other periods
+  const avgMargin = queries.totalRevenue > 0
+    ? queries.totalProfit / queries.totalRevenue
+    : 0;
 
-  // Profit: use today's or this month's (not period-aware from backend)
-  const profit = isToday ? overview.profitToday : overview.profitThisMonth;
+  const profit = isToday
+    ? overview.profitToday
+    : isMonth
+    ? overview.profitThisMonth
+    : revenue * avgMargin;
+
+  const isEstimatedProfit = !isToday && !isMonth;
+
   const profitMargin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : '0';
 
-  // Queries: today's or this month's (not period-aware from backend)
+  // Queries: today's or this month's (backend doesn't support period filtering yet)
   const queriesValue = isToday ? overview.queriesToday : overview.queriesThisMonth;
   const queriesLabel = isToday ? 'Consultas Hoje' : 'Consultas Este Mês';
 
@@ -161,7 +173,8 @@ export function KpiSection({ initialPeriod, overview, queries }: KpiSectionProps
     <>
       <SectionTitle>Indicadores — {pLabel}</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-        {/* Receita — period-aware via SWR */}
+
+        {/* Receita — period-aware */}
         <KpiCard
           title="Receita"
           value={fmtCompact(revenue)}
@@ -185,15 +198,20 @@ export function KpiSection({ initialPeriod, overview, queries }: KpiSectionProps
           delay={0}
         />
 
-        {/* Lucro */}
+        {/* Lucro — period-aware via margem média */}
         <KpiCard
           title="Lucro Líquido"
           value={fmtCompact(profit)}
-          subtext={`Margem de ${profitMargin}% sobre a receita`}
+          subtext={
+            isEstimatedProfit
+              ? `Margem média de ${profitMargin}% — estimativa`
+              : `Margem de ${profitMargin}% sobre a receita`
+          }
           icon={DollarSign}
           iconBg="bg-emerald-100"
           iconColor="text-emerald-600"
           highlight
+          loading={revenueLoading}
           delay={80}
         />
 
@@ -255,23 +273,17 @@ export function KpiSection({ initialPeriod, overview, queries }: KpiSectionProps
           delay={320}
         />
 
-        {/* Aguardando Verificação */}
+        {/* Receita Acumulada (all-time) */}
         <KpiCard
-          title="Aguardando Verificação"
-          value={(overview.usersByStatus?.PENDING_VERIFICATION ?? 0).toLocaleString('pt-BR')}
-          subtext="Usuários com cadastro pendente"
-          icon={Clock}
-          iconBg="bg-amber-50"
-          iconColor="text-amber-500"
-          badge={
-            (overview.usersByStatus?.PENDING_VERIFICATION ?? 0) > 0 ? (
-              <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-2 py-1 rounded-full bg-amber-50 text-amber-600">
-                Atenção
-              </span>
-            ) : undefined
-          }
+          title="Receita Acumulada"
+          value={fmtCompact(overview.totalRevenue)}
+          subtext="Total desde o início da operação"
+          icon={BarChart3}
+          iconBg="bg-slate-100"
+          iconColor="text-slate-600"
           delay={400}
         />
+
       </div>
     </>
   );

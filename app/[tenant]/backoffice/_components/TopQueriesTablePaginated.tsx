@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import useSWR from 'swr';
 import {
   ChevronLeft,
   ChevronRight,
@@ -9,11 +8,8 @@ import {
   ArrowDown,
   ChevronsUpDown,
   Search,
-  AlertCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { getQueryTypesAction } from '@/actions/admin.actions';
-import type { QueryType } from '@/types/admin';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -33,23 +29,18 @@ const MEDAL_CONFIG = [
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export interface QueryTypeRow {
+  id: string;
+  code: string;
+  name: string;
+  totalQueries: number;
+  revenue: number;
+  cost: number;
+  profit: number;
+}
+
 type SortField = 'revenue' | 'volume' | 'margin' | 'name';
 type SortDir = 'asc' | 'desc';
-
-interface Enriched extends QueryType {
-  _totalQueries: number;
-  _revenue: number;
-  _profit: number;
-  _margin: number;
-}
-
-function enrich(qt: QueryType): Enriched {
-  const _totalQueries = qt.stats?.totalQueries ?? 0;
-  const _revenue = qt.stats?.totalRevenue ?? 0;
-  const _profit = _revenue - qt.cost * _totalQueries;
-  const _margin = _revenue > 0 ? (_profit / _revenue) * 100 : 0;
-  return { ...qt, _totalQueries, _revenue, _profit, _margin };
-}
 
 // ─── Sort button ──────────────────────────────────────────────────────────────
 
@@ -81,48 +72,43 @@ function SortBtn({
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function TopQueriesTablePaginated() {
+interface Props {
+  data: QueryTypeRow[];
+}
+
+export function TopQueriesTablePaginated({ data }: Props) {
   const [page, setPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>('revenue');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [search, setSearch] = useState('');
 
-  const { data, isLoading, error } = useSWR(
-    ['admin-query-types', page, PAGE_SIZE],
-    () =>
-      getQueryTypesAction({ page, limit: PAGE_SIZE }).then((res) => {
-        if (res.success && res.data) return res.data;
-        throw new Error((res as any).error ?? 'Erro ao carregar consultas');
-      }),
-    { keepPreviousData: true, revalidateOnFocus: false },
-  );
+  const filtered = useMemo(() => {
+    if (!search.trim()) return data;
+    const q = search.toLowerCase();
+    return data.filter(
+      (e) => e.name.toLowerCase().includes(q) || e.code.toLowerCase().includes(q),
+    );
+  }, [data, search]);
 
-  const enriched = useMemo(() => (data?.data ?? []).map(enrich), [data]);
-
-  // Top-3 medals are based on current page rank
   const sorted = useMemo(() => {
-    const copy = [...enriched];
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      return copy.filter(
-        (e) => e.name.toLowerCase().includes(q) || e.code.toLowerCase().includes(q),
-      );
-    }
+    const copy = [...filtered];
     copy.sort((a, b) => {
       let cmp = 0;
-      if (sortField === 'revenue') cmp = a._revenue - b._revenue;
-      else if (sortField === 'volume') cmp = a._totalQueries - b._totalQueries;
-      else if (sortField === 'margin') cmp = a._margin - b._margin;
+      const marginA = a.revenue > 0 ? a.profit / a.revenue : 0;
+      const marginB = b.revenue > 0 ? b.profit / b.revenue : 0;
+      if (sortField === 'revenue') cmp = a.revenue - b.revenue;
+      else if (sortField === 'volume') cmp = a.totalQueries - b.totalQueries;
+      else if (sortField === 'margin') cmp = marginA - marginB;
       else if (sortField === 'name') cmp = a.name.localeCompare(b.name, 'pt-BR');
       return sortDir === 'desc' ? -cmp : cmp;
     });
     return copy;
-  }, [enriched, sortField, sortDir, search]);
+  }, [filtered, sortField, sortDir]);
 
-  const maxVolume = Math.max(...sorted.map((q) => q._totalQueries), 1);
-
-  const totalItems = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const maxVolume = Math.max(...sorted.map((q) => q.totalQueries), 1);
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageItems = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   function toggleSort(field: SortField) {
     if (sortField === field) {
@@ -130,18 +116,21 @@ export function TopQueriesTablePaginated() {
     } else {
       setSortField(field);
       setSortDir('desc');
+      setPage(1);
     }
   }
 
   function handleSearch(val: string) {
     setSearch(val);
+    setPage(1);
   }
 
   function pageNumbers(): number[] {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
-    if (page <= 3) return [1, 2, 3, 4, 5];
-    if (page >= totalPages - 2) return [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-    return [page - 2, page - 1, page, page + 1, page + 2];
+    if (currentPage <= 3) return [1, 2, 3, 4, 5];
+    if (currentPage >= totalPages - 2)
+      return [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
   }
 
   return (
@@ -152,8 +141,8 @@ export function TopQueriesTablePaginated() {
             <CardTitle className="text-base font-bold">Todas as Consultas</CardTitle>
             <CardDescription className="text-xs">
               Performance por tipo de consulta
-              {totalItems > 0 && (
-                <span className="text-slate-400 ml-1">— {totalItems} produtos</span>
+              {sorted.length > 0 && (
+                <span className="text-slate-400 ml-1">— {sorted.length} produtos</span>
               )}
             </CardDescription>
           </div>
@@ -172,198 +161,145 @@ export function TopQueriesTablePaginated() {
       </CardHeader>
 
       <CardContent className="p-0">
-        {/* Error state */}
-        {error && !isLoading && (
-          <div className="flex items-center gap-3 px-5 py-8 text-slate-400">
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-slate-600">Erro ao carregar consultas</p>
-              <p className="text-xs text-slate-400 mt-0.5">{error.message}</p>
-            </div>
-          </div>
-        )}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead>
+              <tr className="bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <th className="px-5 py-3.5 w-12">#</th>
+                <th className="px-5 py-3.5">
+                  <div className="flex items-center gap-1">
+                    Consulta
+                    <SortBtn field="name" current={sortField} dir={sortDir} onToggle={toggleSort} />
+                  </div>
+                </th>
+                <th className="px-5 py-3.5">
+                  <div className="flex items-center gap-1">
+                    Volume
+                    <SortBtn field="volume" current={sortField} dir={sortDir} onToggle={toggleSort} />
+                  </div>
+                </th>
+                <th className="px-5 py-3.5 text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    Receita
+                    <SortBtn field="revenue" current={sortField} dir={sortDir} onToggle={toggleSort} />
+                  </div>
+                </th>
+                <th className="px-5 py-3.5 text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    Margem
+                    <SortBtn field="margin" current={sortField} dir={sortDir} onToggle={toggleSort} />
+                  </div>
+                </th>
+                <th className="px-5 py-3.5 text-right">Lucro</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageItems.map((query, index) => {
+                const globalIdx = (currentPage - 1) * PAGE_SIZE + index;
+                const medal =
+                  globalIdx < 3 && sortField === 'revenue' && sortDir === 'desc'
+                    ? MEDAL_CONFIG[globalIdx]
+                    : null;
+                const displayRank = (currentPage - 1) * PAGE_SIZE + index + 1;
+                const margin = query.revenue > 0 ? (query.profit / query.revenue) * 100 : 0;
+                const volumePct = (query.totalQueries / maxVolume) * 100;
 
-        {!error && (
-          <div className={`overflow-x-auto transition-opacity duration-200 ${isLoading ? 'opacity-40' : 'opacity-100'}`}>
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  <th className="px-5 py-3.5 w-12">#</th>
-                  <th className="px-5 py-3.5">
-                    <div className="flex items-center gap-1">
-                      Consulta
-                      <SortBtn field="name" current={sortField} dir={sortDir} onToggle={toggleSort} />
-                    </div>
-                  </th>
-                  <th className="px-5 py-3.5">
-                    <div className="flex items-center gap-1">
-                      Volume
-                      <SortBtn field="volume" current={sortField} dir={sortDir} onToggle={toggleSort} />
-                    </div>
-                  </th>
-                  <th className="px-5 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      Receita
-                      <SortBtn field="revenue" current={sortField} dir={sortDir} onToggle={toggleSort} />
-                    </div>
-                  </th>
-                  <th className="px-5 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      Margem
-                      <SortBtn field="margin" current={sortField} dir={sortDir} onToggle={toggleSort} />
-                    </div>
-                  </th>
-                  <th className="px-5 py-3.5 text-right">Lucro Est.</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Loading skeletons */}
-                {isLoading &&
-                  Array.from({ length: PAGE_SIZE }).map((_, i) => (
-                    <tr key={`sk-${i}`} className="border-b border-slate-50">
-                      <td className="px-5 py-4">
-                        <div className="w-7 h-7 bg-slate-100 rounded-lg animate-pulse" />
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="h-4 w-40 bg-slate-100 rounded animate-pulse mb-1.5" />
-                        <div className="h-3 w-24 bg-slate-100 rounded animate-pulse" />
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="h-3 w-12 bg-slate-100 rounded animate-pulse mb-1.5" />
-                        <div className="h-1.5 w-20 bg-slate-100 rounded-full animate-pulse" />
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="h-4 w-16 bg-slate-100 rounded animate-pulse ml-auto" />
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="h-5 w-12 bg-slate-100 rounded-full animate-pulse ml-auto" />
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="h-4 w-16 bg-slate-100 rounded animate-pulse ml-auto" />
-                      </td>
-                    </tr>
-                  ))}
-
-                {/* Data rows */}
-                {!isLoading &&
-                  sorted.map((query, index) => {
-                    const globalIdx = (page - 1) * PAGE_SIZE + index;
-                    const medal = globalIdx < 3 && sortField === 'revenue' && sortDir === 'desc'
-                      ? MEDAL_CONFIG[globalIdx]
-                      : null;
-                    const displayRank = (page - 1) * PAGE_SIZE + index + 1;
-                    const volumePct = (query._totalQueries / maxVolume) * 100;
-
-                    return (
-                      <tr
-                        key={query.id}
-                        className={`border-b border-slate-50 last:border-0 transition-colors ${
-                          query.isActive ? 'hover:bg-slate-50/60' : 'opacity-50 hover:bg-slate-50/40'
+                return (
+                  <tr
+                    key={query.id}
+                    className="border-b border-slate-50 last:border-0 hover:bg-slate-50/60 transition-colors"
+                  >
+                    <td className="px-5 py-4">
+                      {medal ? (
+                        <span
+                          className={`w-7 h-7 rounded-lg ${medal.bg} ${medal.text} flex items-center justify-center text-xs font-black`}
+                        >
+                          {displayRank}°
+                        </span>
+                      ) : (
+                        <span className="w-7 h-7 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center text-xs font-semibold">
+                          {displayRank}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="font-semibold text-slate-800 text-sm leading-none mb-0.5">
+                        {query.name}
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono">{query.code}</div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs font-bold text-slate-700">
+                          {query.totalQueries.toLocaleString('pt-BR')}
+                        </span>
+                        <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary/50 rounded-full transition-all duration-700"
+                            style={{ width: `${volumePct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <span className="text-sm font-semibold text-slate-700">
+                        {fmtCompact(query.revenue)}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <span
+                        className={`inline-flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                          margin >= 40
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : margin >= 20
+                            ? 'bg-amber-50 text-amber-700'
+                            : 'bg-red-50 text-red-600'
                         }`}
                       >
-                        <td className="px-5 py-4">
-                          {medal ? (
-                            <span className={`w-7 h-7 rounded-lg ${medal.bg} ${medal.text} flex items-center justify-center text-xs font-black`}>
-                              {displayRank}°
-                            </span>
-                          ) : (
-                            <span className="w-7 h-7 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center text-xs font-semibold">
-                              {displayRank}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            <div>
-                              <div className="font-semibold text-slate-800 text-sm leading-none mb-0.5">
-                                {query.name}
-                              </div>
-                              <div className="text-[11px] text-slate-400 font-mono">{query.code}</div>
-                            </div>
-                            {!query.isActive && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 uppercase tracking-wide shrink-0">
-                                Inativo
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-xs font-bold text-slate-700">
-                              {query._totalQueries.toLocaleString('pt-BR')}
-                            </span>
-                            <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-primary/50 rounded-full transition-all duration-700"
-                                style={{ width: `${volumePct}%` }}
-                              />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <span className="text-sm font-semibold text-slate-700">
-                            {fmtCompact(query._revenue)}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <span
-                            className={`inline-flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                              query._totalQueries === 0
-                                ? 'bg-slate-50 text-slate-400'
-                                : query._margin >= 40
-                                ? 'bg-emerald-50 text-emerald-700'
-                                : query._margin >= 20
-                                ? 'bg-amber-50 text-amber-700'
-                                : 'bg-red-50 text-red-600'
-                            }`}
-                          >
-                            {query._totalQueries === 0 ? '—' : `${query._margin.toFixed(0)}%`}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <span
-                            className={`font-bold text-sm ${
-                              query._totalQueries === 0
-                                ? 'text-slate-300'
-                                : query._profit >= 0
-                                ? 'text-emerald-600'
-                                : 'text-red-500'
-                            }`}
-                          >
-                            {query._totalQueries === 0 ? '—' : fmtCompact(query._profit)}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-
-                {!isLoading && sorted.length === 0 && !error && (
-                  <tr>
-                    <td colSpan={6} className="px-5 py-10 text-center text-slate-300 text-sm">
-                      {search
-                        ? 'Nenhuma consulta encontrada para essa busca.'
-                        : 'Nenhuma consulta cadastrada.'}
+                        {margin.toFixed(0)}%
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <span
+                        className={`font-bold text-sm ${
+                          query.profit >= 0 ? 'text-emerald-600' : 'text-red-500'
+                        }`}
+                      >
+                        {fmtCompact(query.profit)}
+                      </span>
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                );
+              })}
 
-        {/* Pagination */}
-        {!error && totalPages > 1 && (
+              {pageItems.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-5 py-10 text-center text-slate-300 text-sm">
+                    {search
+                      ? 'Nenhuma consulta encontrada para essa busca.'
+                      : 'Nenhuma consulta realizada neste período.'}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-3.5 border-t border-slate-100 bg-slate-50/50">
             <span className="text-xs text-slate-400 font-medium">
-              {totalItems === 0
+              {sorted.length === 0
                 ? '0 resultados'
-                : `${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, totalItems)} de ${totalItems}`}
+                : `${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(
+                    currentPage * PAGE_SIZE,
+                    sorted.length,
+                  )} de ${sorted.length}`}
             </span>
 
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
+                disabled={currentPage === 1}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -374,7 +310,7 @@ export function TopQueriesTablePaginated() {
                   key={p}
                   onClick={() => setPage(p)}
                   className={`w-7 h-7 rounded-lg text-xs font-semibold transition-all ${
-                    p === page
+                    p === currentPage
                       ? 'bg-primary text-white shadow-sm'
                       : 'text-slate-500 hover:bg-white hover:text-slate-800'
                   }`}
@@ -385,7 +321,7 @@ export function TopQueriesTablePaginated() {
 
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
+                disabled={currentPage === totalPages}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronRight className="w-4 h-4" />
