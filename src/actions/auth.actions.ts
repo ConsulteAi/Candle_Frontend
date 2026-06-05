@@ -13,15 +13,6 @@ import { invalidateCurrentUserCache } from '@/lib/auth';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-function decodeJwtSessionId(token: string): string {
-  try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'));
-    return payload.sessionId ?? 'sem-sessionId';
-  } catch {
-    return 'decode-error';
-  }
-}
-
 const authCookieOptions = {
   httpOnly: true,
   secure: isProduction,
@@ -81,8 +72,6 @@ export async function loginAction(
       ...csrfCookieOptions,
       maxAge: 60 * 60 * 24 * 7,
     });
-
-    console.log(`[loginAction] cookies definidos: at_session=${decodeJwtSessionId(accessToken)} rt_session=${decodeJwtSessionId(data.refreshToken)} secure=${isProduction} NODE_ENV=${process.env.NODE_ENV}`);
 
     // Se o login não retornou user, buscamos após cookies já estarem setados
     if (!data.user) {

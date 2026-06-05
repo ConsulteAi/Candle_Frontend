@@ -150,21 +150,6 @@ serverAxios.interceptors.response.use(
       try {
         const cookieStore = await cookies();
         const refreshToken = cookieStore.get("refreshToken")?.value;
-        const accessTokenCookie = cookieStore.get("accessToken")?.value;
-
-        const decodeJwtSessionId = (token: string) => {
-          try {
-            const p = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'));
-            return p.sessionId ?? 'sem-sessionId';
-          } catch { return 'decode-error'; }
-        };
-
-        console.log(
-          `[serverHttpClient] refresh acionado: url=${originalRequest?.url} ` +
-          `at_present=${!!accessTokenCookie} at_session=${accessTokenCookie ? decodeJwtSessionId(accessTokenCookie) : 'ausente'} ` +
-          `rt_present=${!!refreshToken} rt_session=${refreshToken ? decodeJwtSessionId(refreshToken) : 'ausente'}`
-        );
-
         if (!refreshToken) {
           try {
             cookieStore.delete("accessToken");
