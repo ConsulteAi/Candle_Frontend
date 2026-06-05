@@ -15,7 +15,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { getRevenueStatsAction } from '@/actions/admin.actions';
+import { getRevenueStatsAction, getDashboardQueriesAction } from '@/actions/admin.actions';
 import type { DashboardOverview, DashboardQueries, RevenueStats } from '@/types/admin';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -146,11 +146,21 @@ export function KpiSection({ initialPeriod, overview, queries }: KpiSectionProps
     { keepPreviousData: true, revalidateOnFocus: false },
   );
 
+  const { data: queriesStats, isLoading: queriesLoading } = useSWR<DashboardQueries>(
+    ['kpi-queries', period],
+    () =>
+      getDashboardQueriesAction({ days: period }).then((res) => {
+        if (res.success && res.data) return res.data;
+        throw new Error('Erro ao carregar consultas');
+      }),
+    { keepPreviousData: true, revalidateOnFocus: false },
+  );
+
   // Revenue: period-aware from revenueStats; fallback to server data
   const revenue = revenueStats?.totalRevenue
     ?? (isToday ? overview.revenueToday : overview.revenueThisMonth);
 
-  // Profit: use exact values for today/month; estimate via avg margin for other periods
+  // Profit: exact for today/month; estimate via avg margin for other periods
   const avgMargin = queries.totalRevenue > 0
     ? queries.totalProfit / queries.totalRevenue
     : 0;
@@ -162,12 +172,17 @@ export function KpiSection({ initialPeriod, overview, queries }: KpiSectionProps
     : revenue * avgMargin;
 
   const isEstimatedProfit = !isToday && !isMonth;
-
   const profitMargin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : '0';
 
-  // Queries: today's or this month's (backend doesn't support period filtering yet)
-  const queriesValue = isToday ? overview.queriesToday : overview.queriesThisMonth;
-  const queriesLabel = isToday ? 'Consultas Hoje' : 'Consultas Este Mês';
+  // Queries: period-aware from SWR; fallback to server data
+  const queriesValue = queriesStats?.totalQueries
+    ?? (isToday ? overview.queriesToday : overview.queriesThisMonth);
+  const queriesSuccessRate = queriesStats
+    ? queriesStats.queriesByStatus.SUCCESS + queriesStats.queriesByStatus.FAILED > 0
+      ? Math.round((queriesStats.queriesByStatus.SUCCESS /
+          (queriesStats.queriesByStatus.SUCCESS + queriesStats.queriesByStatus.FAILED)) * 100)
+      : overview.querySuccessRate
+    : overview.querySuccessRate;
 
   return (
     <>
@@ -215,30 +230,27 @@ export function KpiSection({ initialPeriod, overview, queries }: KpiSectionProps
           delay={80}
         />
 
-        {/* Consultas */}
+        {/* Consultas — period-aware via SWR */}
         <KpiCard
-          title={queriesLabel}
+          title="Consultas"
           value={queriesValue.toLocaleString('pt-BR')}
-          subtext={
-            isToday
-              ? 'Realizadas no dia de hoje'
-              : `${overview.queriesToday.toLocaleString('pt-BR')} realizadas hoje`
-          }
+          subtext={`${overview.queriesToday.toLocaleString('pt-BR')} realizadas hoje`}
           icon={Zap}
           iconBg="bg-amber-50"
           iconColor="text-amber-500"
+          loading={queriesLoading}
           badge={
             <span
               className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full ${
-                overview.querySuccessRate >= 95
+                queriesSuccessRate >= 95
                   ? 'bg-emerald-50 text-emerald-700'
-                  : overview.querySuccessRate >= 80
+                  : queriesSuccessRate >= 80
                   ? 'bg-amber-50 text-amber-700'
                   : 'bg-red-50 text-red-600'
               }`}
             >
               <CheckCircle2 className="w-3 h-3" />
-              {overview.querySuccessRate}%
+              {queriesSuccessRate}%
             </span>
           }
           delay={160}

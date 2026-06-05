@@ -78,11 +78,11 @@ export async function getProviderStatsAction(): Promise<
   }
 }
 
-export async function getDashboardQueriesAction(): Promise<
+export async function getDashboardQueriesAction(params?: { days?: number }): Promise<
   ActionState<DashboardQueries>
 > {
   try {
-    const data = await AdminService.getDashboardQueries();
+    const data = await AdminService.getDashboardQueries(params);
     return { success: true, data };
   } catch (error: any) {
     return {
