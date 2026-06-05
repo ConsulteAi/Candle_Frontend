@@ -28,8 +28,8 @@ const BASE_URL = '/admin';
 
 export const AdminService = {
   // --- Dashboard ---
-  getDashboardOverview: async (): Promise<DashboardOverview> => {
-    const response = await serverHttpClient.get<DashboardOverview>(`${BASE_URL}/dashboard/overview`);
+  getDashboardOverview: async (params?: { days?: number }): Promise<DashboardOverview> => {
+    const response = await serverHttpClient.get<DashboardOverview>(`${BASE_URL}/dashboard/overview`, { params });
     return response.data;
   },
 
@@ -43,8 +43,8 @@ export const AdminService = {
     return response.data;
   },
 
-  getDashboardQueries: async (): Promise<DashboardQueries> => {
-    const response = await serverHttpClient.get<DashboardQueries>(`${BASE_URL}/dashboard/queries`);
+  getDashboardQueries: async (params?: { days?: number }): Promise<DashboardQueries> => {
+    const response = await serverHttpClient.get<DashboardQueries>(`${BASE_URL}/dashboard/queries`, { params });
     return response.data;
   },
 

@@ -10,14 +10,16 @@ import {
   Activity,
   Zap,
   Wallet,
-  Database,
+  Clock,
   ArrowUpRight,
   CheckCircle2,
   type LucideIcon,
 } from 'lucide-react';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RevenueChartCard } from './RevenueChartCard';
 import { ProvidersSection } from './ProvidersSection';
+import { TopQueriesTablePaginated } from './TopQueriesTablePaginated';
 import type { DashboardOverview, DashboardQueries } from '@/types/admin';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -30,6 +32,16 @@ function fmtCompact(value: number) {
   if (value >= 1_000_000) return `R$ ${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 1_000) return `R$ ${(value / 1_000).toFixed(1)}k`;
   return fmt(value);
+}
+
+function periodLabel(days: number): string {
+  if (days === 1) return 'hoje';
+  if (days === 7) return 'nos últimos 7 dias';
+  if (days === 15) return 'nos últimos 15 dias';
+  if (days === 30) return 'este mês';
+  if (days === 90) return 'no trimestre';
+  if (days === 180) return 'no semestre';
+  return `nos últimos ${days} dias`;
 }
 
 // ─── Section Title ─────────────────────────────────────────────────────────────
@@ -104,124 +116,6 @@ function KpiCard({
   );
 }
 
-// ─── Top Queries Table ─────────────────────────────────────────────────────────
-
-const MEDAL_CONFIG = [
-  { bg: 'bg-amber-100', text: 'text-amber-700' },
-  { bg: 'bg-slate-100', text: 'text-slate-500' },
-  { bg: 'bg-orange-100', text: 'text-orange-600' },
-];
-
-function TopQueriesTable({ queries }: { queries: DashboardQueries }) {
-  const maxVolume = Math.max(...queries.topQueryTypes.map((q) => q.totalQueries), 1);
-
-  return (
-    <Card className="shadow-glass border-none overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-50">
-        <div className="space-y-0.5">
-          <CardTitle className="text-base font-bold">Top Consultas</CardTitle>
-          <CardDescription className="text-xs">Consultas mais rentáveis do período</CardDescription>
-        </div>
-        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-full border border-emerald-100 shrink-0">
-          Por rentabilidade
-        </span>
-      </CardHeader>
-      <CardContent className="p-0">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead>
-              <tr className="bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                <th className="px-5 py-3.5">Consulta</th>
-                <th className="px-5 py-3.5">Volume</th>
-                <th className="px-5 py-3.5 text-right">Receita</th>
-                <th className="px-5 py-3.5 text-right">Margem</th>
-                <th className="px-5 py-3.5 text-right">Lucro</th>
-              </tr>
-            </thead>
-            <tbody>
-              {queries.topQueryTypes.map((query, index) => {
-                const margin = query.revenue > 0 ? (query.profit / query.revenue) * 100 : 0;
-                const volumePct = (query.totalQueries / maxVolume) * 100;
-                const medal = index < 3 ? MEDAL_CONFIG[index] : null;
-
-                return (
-                  <tr
-                    key={query.id}
-                    className="border-b border-slate-50 last:border-0 hover:bg-slate-50/60 transition-colors"
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        {medal ? (
-                          <span
-                            className={`w-7 h-7 rounded-lg ${medal.bg} ${medal.text} flex items-center justify-center text-xs font-black shrink-0`}
-                          >
-                            {index + 1}°
-                          </span>
-                        ) : (
-                          <span className="w-7 h-7 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center text-xs font-bold shrink-0">
-                            {index + 1}
-                          </span>
-                        )}
-                        <div>
-                          <div className="font-semibold text-slate-800 text-sm leading-none mb-0.5">
-                            {query.name}
-                          </div>
-                          <div className="text-[11px] text-slate-400 font-mono">{query.code}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs font-bold text-slate-700">
-                          {query.totalQueries.toLocaleString('pt-BR')}
-                        </span>
-                        <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary/50 rounded-full transition-all duration-700"
-                            style={{ width: `${volumePct}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <span className="text-sm font-semibold text-slate-700">
-                        {fmtCompact(query.revenue)}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <span
-                        className={`inline-flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                          margin >= 40
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : margin >= 20
-                            ? 'bg-amber-50 text-amber-700'
-                            : 'bg-red-50 text-red-600'
-                        }`}
-                      >
-                        {margin.toFixed(0)}%
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-right">
-                      <span className="font-bold text-emerald-600">{fmtCompact(query.profit)}</span>
-                    </td>
-                  </tr>
-                );
-              })}
-              {queries.topQueryTypes.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-5 py-10 text-center text-slate-300 text-sm">
-                    Nenhuma consulta realizada neste período.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 // ─── Operational Summary ───────────────────────────────────────────────────────
 
 function OperationalSummary({
@@ -247,57 +141,56 @@ function OperationalSummary({
       ? ((queries.queriesByStatus.PENDING + queries.queriesByStatus.PROCESSING) / totalForStatus) * 100
       : 0;
 
-  const cachedCount = Math.round((queries.cacheHitRate / 100) * queries.totalQueries);
-
   return (
-    <Card className="bg-gradient-to-br from-primary to-primary/85 text-white border-none shadow-xl overflow-hidden relative">
-      <div className="absolute top-3 right-3 w-28 h-28 rounded-full border border-white/10 pointer-events-none" />
-      <div className="absolute top-10 right-10 w-14 h-14 rounded-full border border-white/8 pointer-events-none" />
+    <Card className="shadow-glass border-none overflow-hidden">
+      {/* Colored header strip */}
+      <div className="bg-gradient-to-r from-primary to-primary/80 px-5 py-4">
+        <h3 className="text-white font-bold text-base font-display">Saúde do Negócio</h3>
+        <p className="text-white/70 text-xs mt-0.5">Visão financeira e operacional</p>
+      </div>
 
-      <CardHeader className="pb-3 relative">
-        <CardTitle className="text-white text-base font-bold">Saúde do Negócio</CardTitle>
-        <CardDescription className="text-white/55 text-xs">
-          Visão financeira e operacional
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4 relative">
-        {/* Financial rows */}
-        <div className="space-y-2.5">
-          <div className="flex justify-between items-center">
-            <span className="text-white/65 text-sm">Saldo em Circulação</span>
-            <span className="font-bold text-sm">{fmt(overview.totalBalanceInCirculation)}</span>
+      <CardContent className="p-5 space-y-4">
+        {/* Financial rows — dark text on white, high contrast */}
+        <div className="space-y-1">
+          <div className="flex justify-between items-center py-2.5 border-b border-slate-100">
+            <span className="text-slate-500 text-sm">Saldo em Circulação</span>
+            <span className="font-bold text-slate-900 text-sm tabular-nums">
+              {fmt(overview.totalBalanceInCirculation)}
+            </span>
           </div>
-          <div className="flex justify-between items-center pb-3 border-b border-white/15">
-            <span className="text-white/65 text-sm">Custo Operacional</span>
-            <span className="font-bold text-sm">{fmt(queries.totalCost)}</span>
+          <div className="flex justify-between items-center py-2.5">
+            <span className="text-slate-500 text-sm">Custo Operacional</span>
+            <span className="font-bold text-slate-900 text-sm tabular-nums">
+              {fmt(queries.totalCost)}
+            </span>
           </div>
         </div>
 
         {/* Margin */}
-        <div>
+        <div className="pt-1 border-t border-slate-100">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-white/65 text-xs font-medium flex items-center gap-1.5">
+            <span className="text-slate-500 text-xs font-medium flex items-center gap-1.5">
               <Activity className="w-3 h-3" />
               Margem de Lucro
             </span>
-            <span className="text-emerald-300 font-black text-sm">{margin.toFixed(1)}%</span>
+            <span className="text-emerald-600 font-black text-sm">{margin.toFixed(1)}%</span>
           </div>
-          <div className="w-full bg-black/20 rounded-full h-2">
+          <div className="w-full bg-slate-100 rounded-full h-2">
             <div
-              className="bg-gradient-to-r from-emerald-400 to-emerald-300 h-2 rounded-full transition-all duration-1000"
+              className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2 rounded-full transition-all duration-1000"
               style={{ width: `${Math.min(margin, 100)}%` }}
             />
           </div>
         </div>
 
         {/* Query status breakdown */}
-        <div>
-          <p className="text-white/55 text-[11px] font-bold uppercase tracking-wider mb-2">
+        <div className="pt-1 border-t border-slate-100">
+          <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-2.5">
             Status das Consultas
           </p>
-          <div className="flex h-2 rounded-full overflow-hidden gap-0.5 mb-2.5">
+          <div className="flex h-2 rounded-full overflow-hidden gap-0.5 mb-3">
             {successPct > 0 && (
-              <div className="bg-emerald-400 rounded-l-full" style={{ width: `${successPct}%` }} />
+              <div className="bg-emerald-500 rounded-l-full" style={{ width: `${successPct}%` }} />
             )}
             {failedPct > 0 && (
               <div className="bg-red-400" style={{ width: `${failedPct}%` }} />
@@ -306,18 +199,18 @@ function OperationalSummary({
               <div className="bg-amber-400 rounded-r-full" style={{ width: `${pendingPct}%` }} />
             )}
           </div>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-white/65">
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-slate-600">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
               {queries.queriesByStatus.SUCCESS.toLocaleString('pt-BR')} OK
             </span>
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-400 inline-block" />
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-red-400 shrink-0" />
               {queries.queriesByStatus.FAILED.toLocaleString('pt-BR')} falhas
             </span>
             {queries.queriesByStatus.PENDING + queries.queriesByStatus.PROCESSING > 0 && (
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
                 {(
                   queries.queriesByStatus.PENDING + queries.queriesByStatus.PROCESSING
                 ).toLocaleString('pt-BR')}{' '}
@@ -325,15 +218,6 @@ function OperationalSummary({
               </span>
             )}
           </div>
-        </div>
-
-        {/* Cache badge */}
-        <div className="flex items-center justify-between pt-1 border-t border-white/15">
-          <span className="text-white/65 text-xs">Cache ativo</span>
-          <span className="inline-flex items-center gap-1.5 bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 text-xs font-bold px-2.5 py-1 rounded-full">
-            <Database className="w-3 h-3" />
-            {queries.cacheHitRate.toFixed(1)}% — {cachedCount.toLocaleString('pt-BR')} hits
-          </span>
         </div>
       </CardContent>
     </Card>
@@ -361,7 +245,10 @@ function ProvidersSkeleton() {
 // ─── Main server component ─────────────────────────────────────────────────────
 
 export async function DashboardMainSection({ initialPeriod }: { initialPeriod: number }) {
-  const [result, user] = await Promise.all([getDashboardMainAction(), getCurrentUser()]);
+  const [result, user] = await Promise.all([
+    getDashboardMainAction({ days: initialPeriod }),
+    getCurrentUser(),
+  ]);
 
   if (!result.success || !result.data) {
     return (
@@ -374,27 +261,36 @@ export async function DashboardMainSection({ initialPeriod }: { initialPeriod: n
   const { overview, queries } = result.data;
   const isMaster = user?.role === UserRole.MASTER;
 
-  const profitMargin =
-    overview.revenueThisMonth > 0
-      ? ((overview.profitThisMonth / overview.revenueThisMonth) * 100).toFixed(1)
-      : '0';
+  const isToday = initialPeriod === 1;
 
-  const cachedCount = Math.round((queries.cacheHitRate / 100) * queries.totalQueries);
+  // Valores corretos por período
+  const revenueValue = isToday ? overview.revenueToday : overview.revenueThisMonth;
+  const profitValue = isToday ? overview.profitToday : overview.profitThisMonth;
+  const queriesValue = isToday ? overview.queriesToday : overview.queriesThisMonth;
+
+  const profitMargin =
+    revenueValue > 0 ? ((profitValue / revenueValue) * 100).toFixed(1) : '0';
+
+  const pLabel = periodLabel(initialPeriod);
 
   return (
     <>
       {/* ── KPI Grid ──────────────────────────────────────────── */}
-      <SectionTitle>Indicadores do Período</SectionTitle>
+      <SectionTitle>Indicadores — {pLabel}</SectionTitle>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
         <KpiCard
-          title="Receita do Período"
-          value={fmtCompact(overview.revenueThisMonth)}
-          subtext={`+ ${fmt(overview.revenueToday)} gerado hoje`}
+          title="Receita"
+          value={fmtCompact(revenueValue)}
+          subtext={
+            isToday
+              ? `Total acumulado: ${fmtCompact(overview.totalRevenue)}`
+              : `+ ${fmt(overview.revenueToday)} gerado hoje`
+          }
           icon={TrendingUp}
           iconBg="bg-primary/10"
           iconColor="text-primary"
           badge={
-            overview.revenueToday > 0 ? (
+            overview.revenueToday > 0 && !isToday ? (
               <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-2 py-1 rounded-full bg-primary/10 text-primary">
                 <ArrowUpRight className="w-3 h-3" />
                 Ativo hoje
@@ -405,7 +301,7 @@ export async function DashboardMainSection({ initialPeriod }: { initialPeriod: n
         />
         <KpiCard
           title="Lucro Líquido"
-          value={fmtCompact(overview.profitThisMonth)}
+          value={fmtCompact(profitValue)}
           subtext={`Margem de ${profitMargin}% sobre a receita`}
           icon={DollarSign}
           iconBg="bg-emerald-100"
@@ -414,9 +310,9 @@ export async function DashboardMainSection({ initialPeriod }: { initialPeriod: n
           delay={80}
         />
         <KpiCard
-          title="Consultas Realizadas"
-          value={overview.queriesThisMonth.toLocaleString('pt-BR')}
-          subtext={`${overview.queriesToday.toLocaleString('pt-BR')} consultas hoje`}
+          title={isToday ? 'Consultas Hoje' : 'Consultas Este Mês'}
+          value={queriesValue.toLocaleString('pt-BR')}
+          subtext={isToday ? 'Realizadas no dia de hoje' : `${overview.queriesToday.toLocaleString('pt-BR')} realizadas hoje`}
           icon={Zap}
           iconBg="bg-amber-50"
           iconColor="text-amber-500"
@@ -462,16 +358,16 @@ export async function DashboardMainSection({ initialPeriod }: { initialPeriod: n
           delay={320}
         />
         <KpiCard
-          title="Taxa de Cache"
-          value={`${queries.cacheHitRate.toFixed(1)}%`}
-          subtext={`${cachedCount.toLocaleString('pt-BR')} consultas servidas do cache`}
-          icon={Database}
-          iconBg="bg-teal-50"
-          iconColor="text-teal-600"
+          title="Aguardando Verificação"
+          value={(overview.usersByStatus?.PENDING_VERIFICATION ?? 0).toLocaleString('pt-BR')}
+          subtext="Usuários com cadastro pendente"
+          icon={Clock}
+          iconBg="bg-amber-50"
+          iconColor="text-amber-500"
           badge={
-            queries.cacheHitRate > 0 ? (
-              <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-2 py-1 rounded-full bg-teal-50 text-teal-700">
-                Economia
+            (overview.usersByStatus?.PENDING_VERIFICATION ?? 0) > 0 ? (
+              <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-2 py-1 rounded-full bg-amber-50 text-amber-600">
+                Atenção
               </span>
             ) : undefined
           }
@@ -487,7 +383,7 @@ export async function DashboardMainSection({ initialPeriod }: { initialPeriod: n
           <RevenueChartCard initialPeriod={initialPeriod} />
 
           <SectionTitle>Performance por Produto</SectionTitle>
-          <TopQueriesTable queries={queries} />
+          <TopQueriesTablePaginated />
         </div>
 
         {/* Right 1/3 */}

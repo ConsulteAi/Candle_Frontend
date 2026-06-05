@@ -27,13 +27,13 @@ export async function getDashboardOverviewAction(): Promise<
   }
 }
 
-export async function getDashboardMainAction(): Promise<
+export async function getDashboardMainAction(params?: { days?: number }): Promise<
   ActionState<{ overview: DashboardOverview; queries: DashboardQueries }>
 > {
   try {
     const [overview, queries] = await Promise.all([
-      AdminService.getDashboardOverview(),
-      AdminService.getDashboardQueries(),
+      AdminService.getDashboardOverview(params),
+      AdminService.getDashboardQueries(params),
     ]);
     return { success: true, data: { overview, queries } };
   } catch (error: any) {
