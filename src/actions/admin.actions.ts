@@ -1,7 +1,6 @@
 "use server";
 
 import { AdminService } from "@/services/admin.service";
-import { AuthService } from "@/services/auth.service";
 import type {
   AdminUser,
   DashboardOverview,
@@ -15,7 +14,6 @@ import type {
   QueryTypeFilters,
   DashboardQueries,
 } from "@/types/admin";
-import { UserRole } from "@/types/auth";
 import type { ActionState } from "./auth.actions";
 
 export async function getDashboardOverviewAction(): Promise<
@@ -29,30 +27,31 @@ export async function getDashboardOverviewAction(): Promise<
   }
 }
 
-import { redirect } from "next/navigation";
-import { isAxiosError } from "axios";
-import { getCurrentUser } from "@/lib/auth";
-
-async function hasBackofficeAccess(): Promise<boolean> {
-  const user = await getCurrentUser();
-  return !!user && (user.role === UserRole.ADMIN || user.role === UserRole.MASTER);
+export async function getDashboardMainAction(params?: { days?: number }): Promise<
+  ActionState<{ overview: DashboardOverview; queries: DashboardQueries }>
+> {
+  try {
+    const [overview, queries] = await Promise.all([
+      AdminService.getDashboardOverview(params),
+      AdminService.getDashboardQueries(params),
+    ]);
+    return { success: true, data: { overview, queries } };
+  } catch (error: any) {
+    return { success: false, error: "Erro ao carregar dashboard" };
+  }
 }
 
 export async function getUsersAction(
   filters: UserFilters,
 ): Promise<ActionState<PaginatedResponse<AdminUser>>> {
   try {
-    if (!(await hasBackofficeAccess())) {
-      return { success: false, error: "Acesso negado" };
-    }
-
     const data = await AdminService.getUsers(filters);
     return { success: true, data };
   } catch (error: any) {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      redirect("/auth/login");
-    }
-    return { success: false, error: "Erro ao listar usuários" };
+    const status = error?.response?.status;
+    const detail = error?.response?.data?.message ?? error?.message ?? "desconhecido";
+    console.error(`[admin] getUsers falhou — status=${status} detalhe=${JSON.stringify(detail)}`);
+    return { success: false, error: `Erro ao listar usuários (${status ?? "sem status"}: ${typeof detail === "string" ? detail : JSON.stringify(detail)})` };
   }
 }
 
@@ -61,10 +60,6 @@ export async function getRevenueStatsAction(params?: {
   days?: number;
 }): Promise<ActionState<RevenueStats>> {
   try {
-    if (!(await hasBackofficeAccess())) {
-      return { success: false, error: "Acesso negado" };
-    }
-
     const data = await AdminService.getRevenueStats(params);
     return { success: true, data };
   } catch (error: any) {
@@ -76,10 +71,6 @@ export async function getProviderStatsAction(): Promise<
   ActionState<ProviderStats>
 > {
   try {
-    if (!(await hasBackofficeAccess())) {
-      return { success: false, error: "Acesso negado" };
-    }
-
     const data = await AdminService.getProviderStats();
     return { success: true, data };
   } catch (error: any) {
@@ -87,15 +78,11 @@ export async function getProviderStatsAction(): Promise<
   }
 }
 
-export async function getDashboardQueriesAction(): Promise<
+export async function getDashboardQueriesAction(params?: { days?: number }): Promise<
   ActionState<DashboardQueries>
 > {
   try {
-    if (!(await hasBackofficeAccess())) {
-      return { success: false, error: "Acesso negado" };
-    }
-
-    const data = await AdminService.getDashboardQueries();
+    const data = await AdminService.getDashboardQueries(params);
     return { success: true, data };
   } catch (error: any) {
     return {
@@ -109,10 +96,6 @@ export async function getTransactionsAction(
   filters: TransactionFilters,
 ): Promise<ActionState<PaginatedResponse<AdminTransaction>>> {
   try {
-    if (!(await hasBackofficeAccess())) {
-      return { success: false, error: "Acesso negado" };
-    }
-
     const data = await AdminService.getTransactions(filters);
     return { success: true, data };
   } catch (error: any) {
@@ -124,10 +107,6 @@ export async function getQueryTypesAction(
   filters: QueryTypeFilters,
 ): Promise<ActionState<PaginatedResponse<QueryType>>> {
   try {
-    if (!(await hasBackofficeAccess())) {
-      return { success: false, error: "Acesso negado" };
-    }
-
     const data = await AdminService.getQueryTypes(filters);
     return { success: true, data };
   } catch (error: any) {
@@ -139,10 +118,6 @@ export async function toggleQueryTypeAction(
   id: string,
 ): Promise<ActionState<void>> {
   try {
-    if (!(await hasBackofficeAccess())) {
-      return { success: false, error: "Acesso negado" };
-    }
-
     await AdminService.toggleQueryType(id);
     return { success: true };
   } catch (error: any) {

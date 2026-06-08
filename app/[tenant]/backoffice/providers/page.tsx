@@ -5,9 +5,8 @@ import { redirect } from 'next/navigation';
 
 export default async function ProvidersPage() {
   const user = await getCurrentUser();
-  if (!user || user.role !== UserRole.MASTER) {
-    redirect('/backoffice');
-  }
+  if (!user) redirect('/login');
+  if (user.role !== UserRole.MASTER) redirect('/backoffice');
 
   return (
     <div className="space-y-6">

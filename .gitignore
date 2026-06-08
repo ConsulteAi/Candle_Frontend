@@ -97,3 +97,4 @@ sketch
 .env
 
 .DS_Store
+.vercel

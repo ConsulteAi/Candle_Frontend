@@ -1,40 +1,50 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { getMeAction } from '@/actions/auth.actions';
-import { buildLoginRedirectPath, clearClientSession } from '@/lib/auth/client';
+import { buildLoginRedirectPath } from '@/lib/auth/client';
 import { isPublicRoute } from '@/lib/auth/routes';
 import { Loader2 } from 'lucide-react';
+
+// AuthGuard only calls getMeAction() when the Zustand store shows the user
+// is NOT authenticated. This covers the "valid cookies but cleared store"
+// edge case while eliminating the race between getMeAction() and page-level
+// SWR queries that fire simultaneously when the user IS authenticated.
+//
+// When the user IS authenticated, server-side layouts validate the actual
+// session tokens on every navigation (via getCurrentUser()), so a redundant
+// client-side check here only creates competing refresh-token requests.
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const login = useAuthStore((state) => state.login);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
   const router = useRouter();
   const pathname = usePathname();
   const publicRoute = isPublicRoute(pathname || '/');
-  const [isHydrated, setIsHydrated] = useState(false);
   const [isResolvingSession, setIsResolvingSession] = useState(false);
-  const hasValidatedProtectedSessionRef = useRef(false);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   useEffect(() => {
     if (!isHydrated) return;
 
     if (publicRoute) {
       setIsResolvingSession(false);
-      hasValidatedProtectedSessionRef.current = false;
       return;
     }
 
-    if (hasValidatedProtectedSessionRef.current) {
+    // Already authenticated in the store: trust it and skip the server call.
+    // Server-side layouts re-validate tokens on every navigation.
+    if (isAuthenticated) {
+      setIsResolvingSession(false);
       return;
     }
 
+    // Not authenticated — check if cookies (httpOnly) still carry a valid
+    // session that predates the current Zustand state (e.g., store was cleared
+    // but the browser still has fresh tokens). Only in this case do we make a
+    // server round-trip.
     let active = true;
     setIsResolvingSession(true);
 
@@ -44,15 +54,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
       if (result.success && result.data) {
         login({ user: result.data });
-        hasValidatedProtectedSessionRef.current = true;
       } else {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn('[auth][guard] session resolution failed, redirecting to login', {
-            pathname,
-          });
-        }
-        hasValidatedProtectedSessionRef.current = false;
-        await clearClientSession();
         if (active) {
           router.replace(buildLoginRedirectPath(pathname || '/'));
         }

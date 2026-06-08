@@ -8,7 +8,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { getBalanceAction } from "@/actions/balance.actions";
-import { clearClientSession } from "@/lib/auth/client";
 
 /** Tempo de vida do cache do saldo: 5 minutos */
 const BALANCE_TTL_MS = 5 * 60 * 1000;
@@ -75,24 +74,11 @@ export function useBalance() {
       const result = await getBalanceAction();
       if (result.success && result.data) {
         updateBalance(result.data.available);
-      } else if (result.statusCode === 401) {
-        await clearClientSession();
-        setBalanceError("Sessão expirada. Faça login novamente.");
       } else if (result.error) {
         setBalanceError(result.error);
       }
     } catch (error: any) {
-      const isUnauthorized =
-        error?.response?.status === 401 ||
-        error?.status === 401 ||
-        error?.message?.includes("401");
-
-      if (isUnauthorized) {
-        await clearClientSession();
-        setBalanceError("Sessão expirada. Faça login novamente.");
-      } else {
-        setBalanceError("Erro ao buscar saldo");
-      }
+      setBalanceError("Erro ao buscar saldo");
     } finally {
       inFlightRef.current = false;
       if (!silent) {

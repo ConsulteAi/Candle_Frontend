@@ -1,14 +1,6 @@
 import { QueryTypesManager } from '@/components/admin/QueryTypesManager';
-import { getCurrentUser } from '@/lib/auth';
-import { UserRole } from '@/types/auth';
-import { redirect } from 'next/navigation';
 
 export default async function QueryTypesPage() {
-  const user = await getCurrentUser();
-  if (!user || (user.role !== UserRole.ADMIN && user.role !== UserRole.MASTER)) {
-    redirect('/backoffice');
-  }
-
   return (
     <div className="space-y-6">
       <div>

@@ -6,9 +6,8 @@ import { redirect } from 'next/navigation';
 
 export default async function ApiTokensPage() {
   const user = await getCurrentUser();
-  if (!user || user.role !== UserRole.MASTER) {
-    redirect('/backoffice');
-  }
+  if (!user) redirect('/login');
+  if (user.role !== UserRole.MASTER) redirect('/backoffice');
 
   const result = await getApiTokensAction();
 
