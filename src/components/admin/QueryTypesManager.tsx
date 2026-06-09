@@ -263,7 +263,26 @@ export function QueryTypesManager() {
       setLoadingDetails(true);
       const details = await fetchQueryTypeDetails(item.id);
       setEditingItem(details);
-      setComposition(details.composition ?? null);
+
+      const raw = details.composition as any;
+      if (raw) {
+        setComposition({
+          primaryEnabled: raw.primarySlot?.isActive ?? true,
+          partialModeEnabled: !(raw.primarySlot?.isActive ?? true),
+          enrichments: (raw.enrichmentSlots ?? []).map((slot: any) => ({
+            id: slot.id,
+            queryTypeId: slot.candidates?.[0]?.queryTypeId ?? '',
+            queryTypeCode: slot.candidates?.[0]?.queryTypeCode ?? '',
+            queryTypeName: slot.candidates?.[0]?.queryTypeName ?? '',
+            role: slot.role ?? '',
+            executionOrder: slot.executionOrder,
+            timeoutMs: slot.timeoutMs,
+            isActive: slot.isActive,
+          })),
+        });
+      } else {
+        setComposition(null);
+      }
     } catch {
       setComposition(null);
       toast({
