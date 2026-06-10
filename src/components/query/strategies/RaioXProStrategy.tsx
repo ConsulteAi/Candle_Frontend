@@ -198,16 +198,16 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
   const bvrAvailable = bvr?.available === true;
   const fs = bvr?.financialSummary;
 
-  const debts = data.debts ?? [];
-  const protests = data.protests ?? [];
-  const badChecks = data.badChecks ?? [];
-  const bvrDebts = bvr?.debts ?? [];
-  const bvrProtests = bvr?.protests ?? [];
+  const debts = (data.debts ?? []).filter(d => d.origin || d.contract || parseBRLValue(d.value) > 0);
+  const protests = (data.protests ?? []).filter(p => p.origin || p.date || parseBRLValue(p.value) > 0);
+  const badChecks = (data.badChecks ?? []).filter(b => b.bankNumber || (Number(b.quantity) > 0));
+  const bvrDebts = (bvr?.debts ?? []).filter((d: any) => d.creditor || d.origin || parseBRLValue(d.value) > 0);
+  const bvrProtests = (bvr?.protests ?? []).filter((p: any) => p.origin || p.date || parseBRLValue(p.value) > 0);
   const bvrQueries = bvr?.queries ?? [];
-  const companyParticipations = data.companyParticipations ?? [];
+  const companyParticipations = (data.companyParticipations ?? []).filter(p => p.cnpj || p.socialReason);
   const alerts = data.alerts ?? [];
-  const phones = data.phones ?? [];
-  const addresses = data.addresses ?? [];
+  const phones = (data.phones ?? []).filter(p => p.number);
+  const addresses = (data.addresses ?? []).filter(a => a.street || a.city);
 
   const hasRestrictions = data.totalDebts > 0 || data.totalProtests > 0 || data.totalBadChecks > 0;
 
@@ -265,16 +265,6 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
         <BoaVistaHeroCard bvr={bvr} />
       )}
 
-      {data.boaVistaRatingUnavailable && (
-        <Card className="p-4 border border-yellow-200 bg-yellow-50">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0" />
-            <p className="text-sm text-yellow-800 font-medium">
-              {data.boaVistaRatingMessage || 'O Rating Boa Vista não estava disponível para esta consulta (timeout ou falha no enriquecimento).'}
-            </p>
-          </div>
-        </Card>
-      )}
 
       {/* ── Resumo Boa Vista ───────────────────────────────────────────────── */}
       {bvrAvailable && fs && (
