@@ -56,7 +56,10 @@ type QueryTypeFormState = {
   cost: number;
 };
 
-type QueryTypeCompositionFormState = QueryTypeComposition;
+type QueryTypeCompositionFormState = QueryTypeComposition & {
+  primaryName: string;
+  primaryCode: string;
+};
 
 const emptyFormData: QueryTypeFormState = {
   name: '',
@@ -263,7 +266,28 @@ export function QueryTypesManager() {
       setLoadingDetails(true);
       const details = await fetchQueryTypeDetails(item.id);
       setEditingItem(details);
-      setComposition(details.composition ?? null);
+
+      const raw = details.composition as any;
+      if (raw) {
+        setComposition({
+          primaryEnabled: raw.primarySlot?.isActive ?? true,
+          partialModeEnabled: !(raw.primarySlot?.isActive ?? true),
+          primaryName: raw.primarySlot?.candidates?.[0]?.queryTypeName ?? 'Primário',
+          primaryCode: raw.primarySlot?.candidates?.[0]?.queryTypeCode ?? '',
+          enrichments: (raw.enrichmentSlots ?? []).map((slot: any) => ({
+            id: slot.id,
+            queryTypeId: slot.candidates?.[0]?.queryTypeId ?? '',
+            queryTypeCode: slot.candidates?.[0]?.queryTypeCode ?? '',
+            queryTypeName: slot.candidates?.[0]?.queryTypeName ?? '',
+            role: slot.role ?? '',
+            executionOrder: slot.executionOrder,
+            timeoutMs: slot.timeoutMs,
+            isActive: slot.isActive,
+          })),
+        });
+      } else {
+        setComposition(null);
+      }
     } catch {
       setComposition(null);
       toast({
@@ -319,11 +343,18 @@ export function QueryTypesManager() {
 
         <FieldGroup>
           <Field>
-            <FieldLabel>Primário Rating</FieldLabel>
+            <FieldLabel>Primário</FieldLabel>
             <FieldContent>
               <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">Rating</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium text-foreground">{composition.primaryName}</p>
+                    {composition.primaryCode && (
+                      <span className="rounded-full border border-border bg-muted/50 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+                        {composition.primaryCode}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Desativado = resposta parcial automática com aviso no payload.
                   </p>
