@@ -676,6 +676,7 @@ export interface CommercialAnalysisDebt {
   creditor?: string;
   currency?: string;
   modality?: string;
+  informant?: string;
   debtorType?: string;
   inclusionDate?: string;
   registryType?: string;
@@ -716,17 +717,27 @@ export interface CommercialAnalysisCreditLimitSuggestion {
 
 export interface CommercialAnalysisScore {
   value?: string | number;
+  class?: string;
+  probability?: string | number;
   riskText?: string;
   risk?: string;
+  informant?: string;
   nomeScore?: string;
   tipoScore?: string;
   modeloPlano?: string;
+  modeloScore?: string;
+  planoExecucao?: string;
   textoExplicativo?: string;
   classificacaoCor?: string;
+  classificacaoNumerica?: string;
+  codigoNaturezaModelo?: string;
 }
 
 export interface CommercialAnalysisDecision {
   status?: string;
+  code?: string;
+  text?: string;
+  approved?: boolean;
 }
 
 export interface CommercialAnalysisLegalAction {
@@ -892,9 +903,9 @@ export interface BoaVistaRatingEnrichment {
     phones?: Array<{ areaCode?: string; number?: string; type?: string }>;
     addresses?: BaseAddress[];
   };
-  estimatedIncome?: { range?: string; annualIncome?: string | number; message?: string; description?: string };
-  estimatedRevenue?: { range?: string; annualIncome?: string | number; message?: string; description?: string };
-  dashboardSummary?: Record<string, unknown>;
+  estimatedIncome?: string | { range?: string; annualIncome?: string | number; message?: string; description?: string };
+  estimatedRevenue?: { range?: string; annualIncome?: string | number; message?: string; description?: string } | null;
+  dashboardSummary?: Array<{ total?: number | null; anchor?: string; occurrence?: string; totalValue?: number | null; latestOccurrence?: string }> | Record<string, unknown>;
 }
 
 export interface RaioXBacenPlusResult {
@@ -926,18 +937,27 @@ export interface RaioXBacenPlusResult {
 
 // ─── RAIO_X_PRO_PF / RAIO_X_PRO_PJ ──────────────────────────────────────────
 
-export interface RaioXProResult extends ScrBacenResult {
-  person?: Pick<BasePerson, 'name' | 'document'>;
+export interface RaioXProResult {
+  protocol: string;
+  pdf?: string;
+  // Dados pessoais — primário BIGTECH/SERASA_CREDNET
+  person?: BasePerson;
   company?: Pick<BaseCompany, 'socialReason' | 'cnpj'>;
-  marketRestrictions?: RaioXMarketRestrictions;
-  marketRestrictionsUnavailable?: boolean;
-  marketRestrictionsMessage?: string;
-  ccf?: CcfEnrichment;
-  ccfUnavailable?: boolean;
-  ccfMessage?: string;
-  scrBacen?: ScrEhmEnrichment;
-  scrBacenUnavailable?: boolean;
-  scrBacenMessage?: string;
+  // Dados nativos SERASA CREDNET
+  debts: Array<{ value: string; contract: string; origin: string; date: string; informant?: string; nadaConsta?: boolean; _base?: string }>;
+  protests: Array<{ value: string; date: string; origin?: string; notary?: string; type?: string }>;
+  badChecks: Array<{ bankNumber?: string; quantity?: string | number; lastOccurrence?: string; alinea?: string; city?: string; state?: string; branch?: string }>;
+  totalDebts: number;
+  totalProtests: number;
+  totalBadChecks: number;
+  companyParticipations: Array<{ cnpj: string; socialReason: string; participation: string }>;
+  alerts: Array<{ title: string; description: string }>;
+  phones: Array<{ areaCode: string; number: string; type: string; carrier?: string }>;
+  addresses: Array<{ zip: string; city: string; state: string; number?: string; street: string; district: string; complement?: string; source?: string }>;
+  // Boa Vista Rating enrichment
+  boaVistaRating?: BoaVistaRatingEnrichment;
+  boaVistaRatingUnavailable?: boolean;
+  boaVistaRatingMessage?: string;
 }
 
 // ─── DADOS_CPF ────────────────────────────────────────────────────────────────
