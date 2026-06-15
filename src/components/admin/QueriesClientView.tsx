@@ -14,10 +14,12 @@ import {
   Loader2,
   Archive,
   Search,
+  Eye,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -291,7 +293,7 @@ export function QueriesClientView({ initialData }: QueriesClientViewProps) {
                 <TableHead className="font-semibold text-slate-600">Documento</TableHead>
                 <TableHead className="font-semibold text-slate-600">Status</TableHead>
                 <TableHead className="font-semibold text-slate-600 text-right">Preço</TableHead>
-                <TableHead className="font-semibold text-slate-600">Cache</TableHead>
+                <TableHead className="font-semibold text-slate-600"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -316,7 +318,14 @@ export function QueriesClientView({ initialData }: QueriesClientViewProps) {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={query.status} />
+                    <div className="flex flex-col gap-1">
+                      <StatusBadge status={query.status} />
+                      {query.status === 'FAILED' && query.errorMessage && (
+                        <span className="text-xs text-red-500 max-w-[220px] truncate" title={query.errorMessage}>
+                          {query.errorMessage}
+                        </span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     {query.status === 'FAILED' ? (
@@ -332,19 +341,23 @@ export function QueriesClientView({ initialData }: QueriesClientViewProps) {
                     )}
                   </TableCell>
                   <TableCell>
-                    {query.isCached ? (
-                      <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-200 border-none text-xs">
-                        Cache
-                      </Badge>
+                    {query.status === 'FAILED' ? (
+                      <Button variant="ghost" size="sm" disabled>
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     ) : (
-                      <span className="text-xs text-slate-400">—</span>
+                      <Link href={`/consulta/${query.id}`} target="_blank">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
                     )}
                   </TableCell>
                 </TableRow>
               ))}
               {initialData.data.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-slate-500">
+                  <TableCell colSpan={6} className="h-24 text-center text-slate-500">
                     Nenhuma consulta encontrada para os filtros selecionados.
                   </TableCell>
                 </TableRow>
