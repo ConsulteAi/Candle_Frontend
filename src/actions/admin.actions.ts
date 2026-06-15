@@ -13,6 +13,8 @@ import type {
   QueryType,
   QueryTypeFilters,
   DashboardQueries,
+  AdminQueryListItem,
+  AdminQueriesFilters,
 } from "@/types/admin";
 import type { ActionState } from "./auth.actions";
 
@@ -122,5 +124,16 @@ export async function toggleQueryTypeAction(
     return { success: true };
   } catch (error: any) {
     return { success: false, error: "Erro ao alterar status da consulta" };
+  }
+}
+
+export async function getAdminQueriesAction(
+  filters: AdminQueriesFilters,
+): Promise<ActionState<PaginatedResponse<AdminQueryListItem>>> {
+  try {
+    const data = await AdminService.getQueries(filters);
+    return { success: true, data };
+  } catch (error: any) {
+    return { success: false, error: "Erro ao listar consultas" };
   }
 }
