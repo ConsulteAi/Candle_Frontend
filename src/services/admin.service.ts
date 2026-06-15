@@ -1,11 +1,11 @@
 import { serverHttpClient } from '@/lib/api/serverHttpClient';
-import type { 
-  DashboardOverview, 
-  RevenueStats, 
-  ProviderStats, 
-  AdminUser, 
-  UserFilters, 
-  PaginatedResponse, 
+import type {
+  DashboardOverview,
+  RevenueStats,
+  ProviderStats,
+  AdminUser,
+  UserFilters,
+  PaginatedResponse,
   AdjustBalanceDTO,
   QueryType,
   QueryTypeFilters,
@@ -15,6 +15,8 @@ import type {
   AdminQuery,
   AdminTransactionListQueryDto,
   AdminQueryListQueryDto,
+  AdminQueryListItem,
+  AdminQueriesFilters,
   CreateQueryTypeDto,
   UpdateQueryTypeDto,
   Provider,
@@ -143,5 +145,11 @@ export const AdminService = {
   getTransactions: async (filters: TransactionFilters): Promise<PaginatedResponse<AdminTransaction>> => {
     const response = await serverHttpClient.get<PaginatedResponse<AdminTransaction>>(`${BASE_URL}/transactions`, { params: filters });
     return response.data;
-  }
+  },
+
+  // --- Queries ---
+  getQueries: async (filters: AdminQueriesFilters): Promise<PaginatedResponse<AdminQueryListItem>> => {
+    const response = await serverHttpClient.get<PaginatedResponse<AdminQueryListItem>>(`${BASE_URL}/queries`, { params: filters });
+    return response.data;
+  },
 };

@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { TenantBrand } from '@/components/ui/TenantBrand';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Wallet, 
-  Settings, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  Users,
+  Wallet,
+  Settings,
+  BarChart3,
   Database,
   Search,
   LogOut,
@@ -18,6 +18,7 @@ import {
   Palette,
   KeyRound,
   ShieldAlert,
+  ScrollText,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ const menuItems = [
   { name: 'Dashboard', href: '/backoffice', icon: LayoutDashboard },
   { name: 'Usuários', href: '/backoffice/users', icon: Users },
   { name: 'Transações', href: '/backoffice/transactions', icon: Wallet },
+  { name: 'Consultas', href: '/backoffice/queries', icon: ScrollText },
   { name: 'Tipos de Consulta', href: '/backoffice/query-types', icon: Database },
   { name: 'Provedores', href: '/backoffice/providers', icon: Activity, role: UserRole.MASTER },
   { name: 'Tenants', href: '/backoffice/tenants', icon: Building2, role: UserRole.MASTER },

@@ -302,6 +302,41 @@ export interface AdminQueryListQueryDto {
   endDate?: string;
 }
 
+export interface AdminQueryListItem {
+  id: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  queryTypeId: string;
+  queryType: {
+    id: string;
+    code: string;
+    name: string;
+  };
+  input: string;
+  status: 'SUCCESS' | 'FAILED' | 'PENDING' | 'PROCESSING';
+  price: number;
+  isCached: boolean;
+  errorMessage: string | null;
+  createdAt: string;
+  completedAt: string | null;
+}
+
+export interface AdminQueriesFilters {
+  status?: string;
+  userId?: string;
+  queryTypeId?: string;
+  input?: string;
+  isCached?: string;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+}
+
 // --- Provider Types ---
 
 export interface Provider {
