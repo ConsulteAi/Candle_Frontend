@@ -39,7 +39,6 @@ const fmt = (v: number) =>
 import { httpClient } from '@/lib/api/httpClient';
 import type {
   QueryType,
-  QueryTypeComposition,
   PaginatedResponse,
   Provider,
 } from '@/types/admin';
@@ -56,9 +55,29 @@ type QueryTypeFormState = {
   cost: number;
 };
 
-type QueryTypeCompositionFormState = QueryTypeComposition & {
-  primaryName: string;
-  primaryCode: string;
+type QueryTypeCompositionFormState = {
+  mode: 'QUERY_TYPE' | 'ENRICHMENT';
+  enrichments: Array<{
+    id: string;
+    enrichmentId: string;
+    enrichmentCode: string;
+    enrichmentName: string;
+    semanticKey: string;
+    executionOrder: number;
+    isActive: boolean;
+    timeoutMs: number | null;
+    compositeQueryTypeId: string;
+    compositeQueryTypeCode: string;
+    compositeQueryTypeName: string;
+    candidates: Array<{
+      id: string;
+      queryTypeId: string;
+      queryTypeCode: string;
+      queryTypeName: string;
+      priority: number;
+      isActive: boolean;
+    }>;
+  }>;
 };
 
 const emptyFormData: QueryTypeFormState = {
@@ -204,13 +223,12 @@ export function QueryTypesManager() {
 
       await httpClient.patch(`/admin/query-types/${editingItem.id}`, payload);
 
-      if (composition) {
+      if (composition?.mode === 'QUERY_TYPE') {
         await httpClient.patch(`/admin/query-types/${editingItem.id}/composition`, {
-          primaryEnabled: composition.primaryEnabled,
           enrichments: composition.enrichments.map((enrichment) => ({
-            id: enrichment.id,
+            enrichmentId: enrichment.enrichmentId,
+            executionOrder: enrichment.executionOrder,
             isActive: enrichment.isActive,
-            timeoutMs: enrichment.timeoutMs,
           })),
         });
       }
@@ -266,24 +284,44 @@ export function QueryTypesManager() {
       setLoadingDetails(true);
       const details = await fetchQueryTypeDetails(item.id);
       setEditingItem(details);
+      setFormData({
+        name: details.name,
+        description: details.description ?? '',
+        price: details.price,
+        apiTokenPrice: details.apiTokenPrice ?? null,
+        resellerPrice: details.resellerPrice ?? null,
+        cost: details.cost,
+      });
 
       const raw = details.composition as any;
       if (raw) {
         setComposition({
-          primaryEnabled: raw.primarySlot?.isActive ?? true,
-          partialModeEnabled: !(raw.primarySlot?.isActive ?? true),
-          primaryName: raw.primarySlot?.candidates?.[0]?.queryTypeName ?? 'Primário',
-          primaryCode: raw.primarySlot?.candidates?.[0]?.queryTypeCode ?? '',
-          enrichments: (raw.enrichmentSlots ?? []).map((slot: any) => ({
-            id: slot.id,
-            queryTypeId: slot.candidates?.[0]?.queryTypeId ?? '',
-            queryTypeCode: slot.candidates?.[0]?.queryTypeCode ?? '',
-            queryTypeName: slot.candidates?.[0]?.queryTypeName ?? '',
-            role: slot.role ?? '',
-            executionOrder: slot.executionOrder,
-            timeoutMs: slot.timeoutMs,
-            isActive: slot.isActive,
-          })),
+          mode: details.kind === 'ENRICHMENT' ? 'ENRICHMENT' : 'QUERY_TYPE',
+          enrichments: Array.isArray(raw.enrichments)
+            ? raw.enrichments.map((entry: any) => ({
+                id: entry.id,
+                enrichmentId: entry.enrichmentId,
+                enrichmentCode: entry.enrichment?.code ?? '',
+                enrichmentName: entry.enrichment?.name ?? '',
+                semanticKey: entry.enrichment?.semanticKey ?? '',
+                executionOrder: entry.executionOrder,
+                isActive: entry.isActive,
+                timeoutMs: entry.enrichment?.timeoutMs ?? null,
+                compositeQueryTypeId: entry.compositeQueryTypeId ?? '',
+                compositeQueryTypeCode: entry.compositeQueryTypeCode ?? '',
+                compositeQueryTypeName: entry.compositeQueryTypeName ?? '',
+                candidates: Array.isArray(entry.enrichment?.candidates)
+                  ? entry.enrichment.candidates.map((candidate: any) => ({
+                      id: candidate.id,
+                      queryTypeId: candidate.queryTypeId,
+                      queryTypeCode: candidate.queryTypeCode,
+                      queryTypeName: candidate.queryTypeName,
+                      priority: candidate.priority,
+                      isActive: candidate.isActive,
+                    }))
+                  : [],
+              }))
+            : [],
         });
       } else {
         setComposition(null);
@@ -328,51 +366,26 @@ export function QueryTypesManager() {
         <SectionHeader
           icon={SlidersHorizontal}
           title="Composição"
-          description="Controle a composição deste tipo de consulta."
+          description={
+            composition.mode === 'ENRICHMENT'
+              ? 'Veja os query types técnicos que compõem este enrichment.'
+              : 'Controle a composição deste tipo de consulta.'
+          }
         />
 
         <Alert className="border-amber-200 bg-amber-50">
           <Info className="h-4 w-4 text-amber-700" />
           <AlertTitle className="text-sm font-semibold text-amber-900">
-            Modo parcial automático
+            {composition.mode === 'ENRICHMENT'
+              ? 'Query types componentes'
+              : 'Contrato da arquitetura nova'}
           </AlertTitle>
           <AlertDescription className="mt-0.5 text-xs text-amber-800">
-            Ao desativar o primário, o Raio X continua ativo em modo parcial e retorna apenas os enrichments habilitados.
+            {composition.mode === 'ENRICHMENT'
+              ? 'Este enrichment comercial é formado pelos query types técnicos abaixo.'
+              : 'A composição agora é definida por enrichments comerciais ligados ao query type técnico. Ordem e ativação continuam configuráveis aqui.'}
           </AlertDescription>
         </Alert>
-
-        <FieldGroup>
-          <Field>
-            <FieldLabel>Primário</FieldLabel>
-            <FieldContent>
-              <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-medium text-foreground">{composition.primaryName}</p>
-                    {composition.primaryCode && (
-                      <span className="rounded-full border border-border bg-muted/50 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-                        {composition.primaryCode}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Desativado = resposta parcial automática com aviso no payload.
-                  </p>
-                </div>
-                <Switch
-                  checked={composition.primaryEnabled}
-                  onCheckedChange={(checked) =>
-                    setComposition((current) =>
-                      current
-                        ? { ...current, primaryEnabled: checked, partialModeEnabled: !checked }
-                        : current
-                    )
-                  }
-                />
-              </div>
-            </FieldContent>
-          </Field>
-        </FieldGroup>
 
         <div className="space-y-3">
           {composition.enrichments.map((enrichment) => (
@@ -384,80 +397,82 @@ export function QueryTypesManager() {
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-semibold text-foreground">
-                      {enrichment.queryTypeName}
+                      {composition.mode === 'ENRICHMENT'
+                        ? enrichment.compositeQueryTypeName
+                        : enrichment.enrichmentName}
                     </span>
                     <span className="rounded-full border border-border bg-muted/50 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-                      {enrichment.queryTypeCode}
+                      {composition.mode === 'ENRICHMENT'
+                        ? enrichment.compositeQueryTypeCode
+                        : enrichment.enrichmentCode}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Role: {enrichment.role} · Ordem: {enrichment.executionOrder}
+                    Ordem: {enrichment.executionOrder}
+                    {composition.mode === 'QUERY_TYPE' && enrichment.semanticKey && ` · Semântica: ${enrichment.semanticKey}`}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 self-start rounded-full border border-border bg-muted/30 px-3 py-1.5">
-                  <Switch
-                    checked={enrichment.isActive}
-                    onCheckedChange={(checked) =>
-                      setComposition((current) =>
-                        current
-                          ? {
-                              ...current,
-                              enrichments: current.enrichments.map((item) =>
-                                item.id === enrichment.id
-                                  ? { ...item, isActive: checked }
-                                  : item
-                              ),
-                            }
-                          : current
-                      )
-                    }
-                  />
-                  <span className={cn(
-                    'text-xs font-medium',
-                    enrichment.isActive ? 'text-emerald-600' : 'text-muted-foreground'
-                  )}>
-                    {enrichment.isActive ? 'Ativo' : 'Inativo'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,220px)]">
-                <Field>
-                  <FieldLabel>Timeout (ms)</FieldLabel>
-                  <FieldContent>
-                    <Input
-                      type="number"
-                      min="1000"
-                      step="1000"
-                      value={enrichment.timeoutMs ?? ''}
-                      onChange={(e) =>
+                {composition.mode === 'QUERY_TYPE' ? (
+                  <div className="flex items-center gap-2 self-start rounded-full border border-border bg-muted/30 px-3 py-1.5">
+                    <Switch
+                      checked={enrichment.isActive}
+                      onCheckedChange={(checked) =>
                         setComposition((current) =>
                           current
                             ? {
                                 ...current,
                                 enrichments: current.enrichments.map((item) =>
                                   item.id === enrichment.id
-                                    ? {
-                                        ...item,
-                                        timeoutMs:
-                                          e.target.value === ''
-                                            ? null
-                                            : Number(e.target.value),
-                                      }
+                                    ? { ...item, isActive: checked }
                                     : item
                                 ),
                               }
                             : current
                         )
                       }
-                      placeholder="Default do runtime"
                     />
-                    <FieldDescription>
-                      Vazio usa o default do runtime. Ex.: 90000 para 90 segundos.
-                    </FieldDescription>
-                  </FieldContent>
-                </Field>
+                    <span className={cn(
+                      'text-xs font-medium',
+                      enrichment.isActive ? 'text-emerald-600' : 'text-muted-foreground'
+                    )}>
+                      {enrichment.isActive ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
+                ) : (
+                  <span className={cn(
+                    'self-start rounded-full border px-3 py-1.5 text-xs font-medium',
+                    enrichment.isActive
+                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                      : 'border-border bg-muted/30 text-muted-foreground'
+                  )}>
+                    {enrichment.isActive ? 'Ativo' : 'Inativo'}
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {composition.mode === 'QUERY_TYPE' ? (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      Timeout do enrichment: {enrichment.timeoutMs ? `${enrichment.timeoutMs} ms` : 'default do runtime'}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {enrichment.candidates.map((candidate) => (
+                        <span
+                          key={candidate.id}
+                          className="rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[11px] text-muted-foreground"
+                        >
+                          {candidate.queryTypeName} ({candidate.queryTypeCode})
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Query type técnico participante desta composição.
+                  </p>
+                )}
               </div>
             </div>
           ))}
@@ -581,16 +596,23 @@ export function QueryTypesManager() {
                 >
                   {/* Código — chip monospace truncado com tooltip */}
                   <TableCell className="py-3">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="inline-block max-w-[180px] truncate rounded bg-muted/70 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
+                    <div className="flex flex-col gap-1">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-block max-w-[180px] truncate rounded bg-muted/70 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
+                            {qt.code}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="font-mono text-xs">
                           {qt.code}
+                        </TooltipContent>
+                      </Tooltip>
+                      {qt.kind === 'ENRICHMENT' && (
+                        <span className="w-fit rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700">
+                          Raio X
                         </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="font-mono text-xs">
-                        {qt.code}
-                      </TooltipContent>
-                    </Tooltip>
+                      )}
+                    </div>
                   </TableCell>
 
                   {/* Nome + badge do provedor */}
@@ -599,7 +621,7 @@ export function QueryTypesManager() {
                       <span className="text-sm font-medium leading-tight text-foreground">
                         {qt.name}
                       </span>
-                      {isMaster && qt.providerName && (
+                      {isMaster && qt.providerName && qt.kind !== 'ENRICHMENT' && (
                         <span className="w-fit rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                           {qt.providerName}
                         </span>
@@ -686,7 +708,7 @@ export function QueryTypesManager() {
           {/* Header fixo com borda inferior */}
           <DialogHeader className="shrink-0 border-b px-6 py-5">
             <DialogTitle className="text-base font-semibold">
-              Editar Consulta
+              {editingItem?.kind === 'ENRICHMENT' ? 'Editar Enrichment' : 'Editar Consulta'}
             </DialogTitle>
             <DialogDescription className="mt-0.5 text-sm text-muted-foreground">
               {editingItem?.name && (
@@ -725,7 +747,7 @@ export function QueryTypesManager() {
                   <div className="flex flex-col gap-4">
                     <SectionHeader
                       icon={FileText}
-                      title="Detalhes da consulta"
+                      title={editingItem?.kind === 'ENRICHMENT' ? 'Detalhes do enrichment' : 'Detalhes da consulta'}
                       description="Informações exibidas no painel e para seus clientes."
                     />
                     <FieldGroup>
@@ -823,7 +845,7 @@ export function QueryTypesManager() {
                 <div className="flex flex-col gap-4">
                   <SectionHeader
                     icon={DollarSign}
-                    title="Preço da consulta"
+                    title={editingItem?.kind === 'ENRICHMENT' ? 'Preço do enrichment' : 'Preço da consulta'}
                     description="Atualize apenas o valor comercial exibido no painel."
                   />
                   <FieldGroup>
