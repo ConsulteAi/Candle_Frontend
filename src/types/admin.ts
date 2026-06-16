@@ -191,7 +191,10 @@ export interface QueryTypeCompositionEnrichment {
   enrichmentId: string;
   executionOrder: number;
   isActive: boolean;
-  enrichment: {
+  compositeQueryTypeId?: string;
+  compositeQueryTypeCode?: string;
+  compositeQueryTypeName?: string;
+  enrichment?: {
     id: string;
     code: string;
     name: string;
