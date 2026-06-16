@@ -157,22 +157,23 @@ export interface UpsertUserQueryPriceBenefitDTO {
 
 export interface QueryType {
   id: string;
+  kind?: 'QUERY_TYPE' | 'ENRICHMENT';
   code: string;
   name: string;
   description?: string;
   category: string[];
-  endpoint: string;
+  endpoint?: string | null;
   providerCredential?: any;
   price: number;
   apiTokenPrice?: number | null;
   resellerPrice?: number | null;
   cost: number;
-  cachedPrice: number;
-  cacheTtlMinutes: number;
+  cachedPrice?: number | null;
+  cacheTtlMinutes?: number | null;
   isActive: boolean;
-  providerId: string;
-  providerName: string;
-  providerIsActive: boolean;
+  providerId?: string | null;
+  providerName?: string | null;
+  providerIsActive?: boolean | null;
   createdAt: string;
   updatedAt: string;
   stats?: {
@@ -187,18 +188,33 @@ export interface QueryType {
 
 export interface QueryTypeCompositionEnrichment {
   id: string;
-  queryTypeId: string;
-  queryTypeCode: string;
-  queryTypeName: string;
-  role: string;
+  enrichmentId: string;
   executionOrder: number;
-  timeoutMs: number | null;
   isActive: boolean;
+  enrichment: {
+    id: string;
+    code: string;
+    name: string;
+    description?: string | null;
+    price: number;
+    cost: number;
+    category: string[];
+    semanticKey?: string | null;
+    timeoutMs?: number | null;
+    isActive: boolean;
+    isVisible: boolean;
+    candidates: Array<{
+      id: string;
+      queryTypeId: string;
+      queryTypeCode: string;
+      queryTypeName: string;
+      priority: number;
+      isActive: boolean;
+    }>;
+  };
 }
 
 export interface QueryTypeComposition {
-  primaryEnabled: boolean;
-  partialModeEnabled: boolean;
   enrichments: QueryTypeCompositionEnrichment[];
 }
 
