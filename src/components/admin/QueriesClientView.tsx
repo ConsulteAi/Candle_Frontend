@@ -43,6 +43,72 @@ interface QueriesClientViewProps {
   initialData: PaginatedResponse<AdminQueryListItem>;
 }
 
+function humanizeError(errorMessage: string | null | undefined): { short: string; hint: string } {
+  if (!errorMessage) return { short: 'Consulta não completada', hint: 'Motivo não especificado.' };
+
+  const msg = errorMessage.toLowerCase();
+
+  if (msg.includes('já em andamento') || msg.includes('bloqueada')) {
+    return {
+      short: 'Consulta em andamento',
+      hint: 'Já existe uma consulta em processamento para este documento. Aguarde e tente novamente.',
+    };
+  }
+  if (
+    msg.includes('saldo insuficiente') ||
+    msg.includes('cliente sem saldo') ||
+    msg.includes('limite geral do cliente excedido') ||
+    msg.includes('produto não habilitado') ||
+    msg.includes('produto nao habilitado')
+  ) {
+    return {
+      short: 'Saldo ou produto indisponível',
+      hint: 'O serviço não possui saldo suficiente ou o produto não está habilitado para esta consulta.',
+    };
+  }
+  if (msg.includes('autenticaç') || msg.includes('autenticac') || msg.includes('credenci')) {
+    return {
+      short: 'Falha de autenticação',
+      hint: 'Erro nas credenciais ao acessar o serviço externo. Verifique as configurações do provider.',
+    };
+  }
+  if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('time out')) {
+    return {
+      short: 'Tempo de resposta esgotado',
+      hint: 'O serviço externo demorou demais para responder. Tente novamente em alguns instantes.',
+    };
+  }
+  if (msg.includes('persistence failure') || msg.includes('persistir resultado')) {
+    return {
+      short: 'Erro ao salvar resultado',
+      hint: 'A consulta foi realizada com sucesso, mas houve falha ao salvar o resultado.',
+    };
+  }
+  if (msg.includes('business error') || msg.includes('returned business error')) {
+    return {
+      short: 'Dado não encontrado',
+      hint: 'O serviço externo não encontrou dados para este documento.',
+    };
+  }
+  if (msg.includes('connection') || msg.includes('socket') || msg.includes('network')) {
+    return {
+      short: 'Falha de comunicação',
+      hint: 'Erro de conexão ao acessar o serviço externo.',
+    };
+  }
+  if (msg.includes('falha no provider') || msg.includes('provider')) {
+    return {
+      short: 'Serviço externo indisponível',
+      hint: 'O serviço de consulta retornou um erro inesperado.',
+    };
+  }
+
+  return {
+    short: 'Consulta não completada',
+    hint: 'Ocorreu um erro durante o processamento da consulta.',
+  };
+}
+
 function StatusBadge({ status, errorMessage }: { status: string; errorMessage?: string | null }) {
   if (status === 'SUCCESS') {
     return (
@@ -53,23 +119,26 @@ function StatusBadge({ status, errorMessage }: { status: string; errorMessage?: 
     );
   }
   if (status === 'FAILED') {
+    const { short, hint } = humanizeError(errorMessage);
     return (
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-full px-2.5 py-1 w-fit">
           <XCircle className="w-3 h-3 flex-shrink-0" />
           Falhou
         </span>
+        <p className="text-[12px] text-slate-500 leading-tight">{short}</p>
         {errorMessage && (
-          <TooltipProvider delayDuration={200}>
+          <TooltipProvider delayDuration={300}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="inline-flex items-center gap-1 text-[11px] text-red-500/80 cursor-default max-w-[200px]">
+                <button className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 underline underline-offset-2 decoration-dotted text-left w-fit transition-colors">
                   <AlertCircle className="w-3 h-3 flex-shrink-0" />
-                  <span className="truncate">{errorMessage}</span>
-                </span>
+                  Detalhes técnicos
+                </button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-xs text-xs break-words">
-                {errorMessage}
+              <TooltipContent side="bottom" className="max-w-sm text-xs break-words space-y-2">
+                <p className="text-slate-300 leading-relaxed">{hint}</p>
+                <p className="font-mono text-[10px] text-slate-400 border-t border-slate-700 pt-2 leading-relaxed">{errorMessage}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -295,7 +364,7 @@ export function QueriesClientView({ initialData }: QueriesClientViewProps) {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {initialData.data.map((query) => (
-                <tr key={query.id} className="hover:bg-slate-50/40 transition-colors group">
+                <tr key={query.id} className={`transition-colors group ${query.status === 'FAILED' ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-slate-50/40'}`}>
                   <td className="px-4 py-3.5 text-xs text-slate-500 tabular-nums whitespace-nowrap">
                     {format(new Date(query.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                     <span className="block text-slate-400">
@@ -308,7 +377,7 @@ export function QueriesClientView({ initialData }: QueriesClientViewProps) {
                   </td>
                   <td className="px-4 py-3.5">
                     <p className="text-sm text-slate-700 leading-tight">{query.queryType.name}</p>
-                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">{query.queryType.code}</p>
+                    <p className="text-[10px] text-slate-300 font-mono mt-0.5">{query.queryType.code}</p>
                   </td>
                   <td className="px-4 py-3.5">
                     <span className="font-mono text-sm text-slate-700">{formatCpfCnpj(query.input)}</span>
