@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition, useEffect, useState } from 'react';
+import { useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CalendarDays,
@@ -36,9 +36,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-import type { AdminQueryListItem, PaginatedResponse, QueryType } from '@/types/admin';
+import type { AdminQueryListItem, PaginatedResponse } from '@/types/admin';
 import { formatCpfCnpj } from '@/lib/formatters';
-import { httpClient } from '@/lib/api/httpClient';
 
 interface QueriesClientViewProps {
   initialData: PaginatedResponse<AdminQueryListItem>;
@@ -174,25 +173,15 @@ export function QueriesClientView({ initialData }: QueriesClientViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [queryTypes, setQueryTypes] = useState<QueryType[]>([]);
-
-  useEffect(() => {
-    httpClient
-      .get<PaginatedResponse<QueryType>>('/admin/query-types', { params: { limit: 200 } })
-      .then((res) => setQueryTypes(res.data.data))
-      .catch(() => {});
-  }, []);
 
   const currentStatus = searchParams.get('status') || 'ALL';
   const currentInput = searchParams.get('input') || '';
-  const currentQueryTypeId = searchParams.get('queryTypeId') || 'ALL';
   const currentStartDate = searchParams.get('startDate') || '';
   const currentEndDate = searchParams.get('endDate') || '';
 
   const hasActiveFilters =
     currentStatus !== 'ALL' ||
     currentInput !== '' ||
-    currentQueryTypeId !== 'ALL' ||
     currentStartDate !== '' ||
     currentEndDate !== '';
 
@@ -202,7 +191,6 @@ export function QueriesClientView({ initialData }: QueriesClientViewProps) {
       const merged = {
         status: currentStatus,
         input: currentInput,
-        queryTypeId: currentQueryTypeId,
         startDate: currentStartDate,
         endDate: currentEndDate,
         ...overrides,
@@ -278,23 +266,6 @@ export function QueriesClientView({ initialData }: QueriesClientViewProps) {
                   <SelectItem value="FAILED">Falhou</SelectItem>
                   <SelectItem value="PENDING">Pendente</SelectItem>
                   <SelectItem value="PROCESSING">Processando</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Tipo de Consulta</label>
-              <Select value={currentQueryTypeId} onValueChange={(v) => pushFilters({ queryTypeId: v })}>
-                <SelectTrigger className="w-[200px] h-9 border-slate-200 text-sm bg-slate-50/50">
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos</SelectItem>
-                  {queryTypes.map((qt) => (
-                    <SelectItem key={qt.id} value={qt.id}>
-                      {qt.name}
-                    </SelectItem>
-                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -17,7 +17,6 @@ export default async function QueriesPage({
     limit: 20,
     status: getString('status'),
     input: getString('input'),
-    queryTypeId: getString('queryTypeId'),
     startDate: getString('startDate'),
     endDate: getString('endDate'),
   };
