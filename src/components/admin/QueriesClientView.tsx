@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CalendarDays,
@@ -38,10 +38,10 @@ import {
 
 import type { AdminQueryListItem, PaginatedResponse, QueryType } from '@/types/admin';
 import { formatCpfCnpj } from '@/lib/formatters';
+import { httpClient } from '@/lib/api/httpClient';
 
 interface QueriesClientViewProps {
   initialData: PaginatedResponse<AdminQueryListItem>;
-  queryTypes: QueryType[];
 }
 
 function humanizeError(errorMessage: string | null | undefined): { short: string; hint: string } {
@@ -170,10 +170,18 @@ function StatusBadge({ status, errorMessage }: { status: string; errorMessage?: 
   );
 }
 
-export function QueriesClientView({ initialData, queryTypes }: QueriesClientViewProps) {
+export function QueriesClientView({ initialData }: QueriesClientViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const [queryTypes, setQueryTypes] = useState<QueryType[]>([]);
+
+  useEffect(() => {
+    httpClient
+      .get<PaginatedResponse<QueryType>>('/admin/query-types', { params: { limit: 200 } })
+      .then((res) => setQueryTypes(res.data.data))
+      .catch(() => {});
+  }, []);
 
   const currentStatus = searchParams.get('status') || 'ALL';
   const currentInput = searchParams.get('input') || '';

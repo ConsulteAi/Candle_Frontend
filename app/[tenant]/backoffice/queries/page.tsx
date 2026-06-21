@@ -1,6 +1,6 @@
-import { getAdminQueriesAction, getQueryTypesAction } from '@/actions/admin.actions';
+import { getAdminQueriesAction } from '@/actions/admin.actions';
 import { QueriesClientView } from '@/components/admin/QueriesClientView';
-import type { AdminQueriesFilters, QueryType } from '@/types/admin';
+import type { AdminQueriesFilters } from '@/types/admin';
 
 export default async function QueriesPage({
   searchParams,
@@ -22,10 +22,7 @@ export default async function QueriesPage({
     endDate: getString('endDate'),
   };
 
-  const [result, queryTypesResult] = await Promise.all([
-    getAdminQueriesAction(filters),
-    getQueryTypesAction({ limit: 200, isActive: true }),
-  ]);
+  const result = await getAdminQueriesAction(filters);
 
   if (!result.success || !result.data) {
     return (
@@ -35,7 +32,5 @@ export default async function QueriesPage({
     );
   }
 
-  const queryTypes: QueryType[] = queryTypesResult.success ? (queryTypesResult.data?.data ?? []) : [];
-
-  return <QueriesClientView initialData={result.data} queryTypes={queryTypes} />;
+  return <QueriesClientView initialData={result.data} />;
 }
