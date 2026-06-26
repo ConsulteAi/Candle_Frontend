@@ -272,7 +272,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'suggestedInstallment', type: 'number', description: 'Parcela sugerida.' },
       { name: 'suggestedCredit', type: 'number', description: 'Valor de credito sugerido.' },
       { name: 'interestRate', type: 'number', description: 'Taxa de juros sugerida.' },
-      { name: 'bacenRating', type: 'string', description: 'Rating BACEN.' },
+      { name: 'bacenRating', type: 'string', description: 'Rating.' },
       { name: 'installmentsRange', type: 'string', description: 'Faixa de parcelas sugerida.' },
       { name: 'score', type: 'number', description: 'Score interno do motor.' },
       { name: 'businessDecision', type: 'string', description: 'Decisao de negocio sugerida.' },
