@@ -339,6 +339,8 @@ export interface AdminQueryListItem {
   status: 'SUCCESS' | 'FAILED' | 'PENDING' | 'PROCESSING';
   price: number;
   isCached: boolean;
+  requestOrigin: 'AUTHENTICATED_USER' | 'API_TOKEN' | null;
+  isWhiteLabel: boolean;
   errorMessage: string | null;
   createdAt: string;
   completedAt: string | null;
