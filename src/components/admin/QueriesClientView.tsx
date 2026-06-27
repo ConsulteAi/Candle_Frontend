@@ -43,6 +43,7 @@ import { formatCpfCnpj } from '@/lib/formatters';
 
 interface QueriesClientViewProps {
   initialData: PaginatedResponse<AdminQueryListItem>;
+  isMaster?: boolean;
 }
 
 function humanizeError(errorMessage: string | null | undefined): { short: string; hint: string } {
@@ -171,7 +172,7 @@ function StatusBadge({ status, errorMessage }: { status: string; errorMessage?: 
   );
 }
 
-export function QueriesClientView({ initialData }: QueriesClientViewProps) {
+export function QueriesClientView({ initialData, isMaster = false }: QueriesClientViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -376,20 +377,22 @@ export function QueriesClientView({ initialData }: QueriesClientViewProps) {
                   <td className="px-4 py-3.5">
                     <p className="text-sm font-medium text-slate-800 leading-tight">{query.user.name}</p>
                     <p className="text-xs text-slate-400 mt-0.5">{query.user.email}</p>
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {query.requestOrigin === 'API_TOKEN' && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-violet-700 bg-violet-50 border border-violet-200 rounded-full px-2 py-0.5">
-                          <Key className="w-2.5 h-2.5" />
-                          API Token
-                        </span>
-                      )}
-                      {query.isWhiteLabel && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-sky-700 bg-sky-50 border border-sky-200 rounded-full px-2 py-0.5">
-                          <Globe className="w-2.5 h-2.5" />
-                          White Label
-                        </span>
-                      )}
-                    </div>
+                    {isMaster && (query.requestOrigin === 'API_TOKEN' || query.isWhiteLabel) && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {query.requestOrigin === 'API_TOKEN' && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-violet-700 bg-violet-50 border border-violet-200 rounded-full px-2 py-0.5">
+                            <Key className="w-2.5 h-2.5" />
+                            API Token
+                          </span>
+                        )}
+                        {query.isWhiteLabel && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-sky-700 bg-sky-50 border border-sky-200 rounded-full px-2 py-0.5">
+                            <Globe className="w-2.5 h-2.5" />
+                            White Label
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3.5">
                     <p className="text-sm text-slate-700 leading-tight">{query.queryType.name}</p>

@@ -1,5 +1,7 @@
 import { getAdminQueriesAction } from '@/actions/admin.actions';
 import { QueriesClientView } from '@/components/admin/QueriesClientView';
+import { getCurrentUser } from '@/lib/auth';
+import { UserRole } from '@/types/auth';
 import type { AdminQueriesFilters } from '@/types/admin';
 
 export default async function QueriesPage({
@@ -7,7 +9,7 @@ export default async function QueriesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const p = await searchParams;
+  const [p, user] = await Promise.all([searchParams, getCurrentUser()]);
 
   const getString = (key: string) =>
     typeof p[key] === 'string' ? (p[key] as string) : undefined;
@@ -31,5 +33,10 @@ export default async function QueriesPage({
     );
   }
 
-  return <QueriesClientView initialData={result.data} />;
+  return (
+    <QueriesClientView
+      initialData={result.data}
+      isMaster={user?.role === UserRole.MASTER}
+    />
+  );
 }
