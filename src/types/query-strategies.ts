@@ -34,6 +34,9 @@ export interface BaseAddress {
   city: string;
   state: string;
   zip: string;
+  number?: string;
+  complement?: string;
+  source?: string;
 }
 
 export interface BasePhone {
@@ -45,6 +48,14 @@ export interface BasePhone {
 export interface BaseAlert {
   title: string;
   description: string;
+}
+
+export interface BaseContact {
+  name?: string;
+  relation?: string;
+  document?: string;
+  city?: string;
+  state?: string;
 }
 
 export interface BaseDebt {
@@ -469,6 +480,7 @@ export interface DividasMultiCnpjProResult extends DividasMultiBaseResult {
 
 // Raio X Credito Rating SCR
 export interface RaioXMarketRestrictionsSummary {
+  totalDebts?: number;
   totalScpcDebts?: number;
   totalRefinPefinDebts?: number;
   totalProtests?: number;
@@ -479,9 +491,29 @@ export interface RaioXMarketRestrictionsSummary {
   hasCommercialRestrictions?: boolean;
 }
 
+export interface RaioXGenericDebt {
+  value?: string | number;
+  contract?: string;
+  origin?: string;
+  date?: string;
+  informant?: string;
+  created_at?: string;
+  creditor?: string;
+  dueDate?: string;
+  inclusionDate?: string;
+  type?: string;
+  institutionDocument?: string;
+  guarantor?: string;
+}
+
 export interface RaioXMarketRestrictions {
+  available?: boolean;
+  sourceQueryTypeCode?: string;
+  sourceProviderCode?: string;
+  person?: Pick<BasePerson, 'name' | 'document' | 'birthDate' | 'motherName'>;
   summary?: RaioXMarketRestrictionsSummary;
   serasaSummary?: DividasMultiSerasaSummary;
+  debts?: RaioXGenericDebt[];
   scpcDebts?: DividasMultiScpcDebt[];
   refinPefinDebts?: DividasMultiRefinPefinDebt[];
   protests?: DividasMultiProtest[];
@@ -499,6 +531,13 @@ export interface RaioXCreditoRatingScrResult extends ScrBacenResult {
   scrBacen?: ScrEhmEnrichment;
   scrBacenUnavailable?: boolean;
   scrBacenMessage?: string;
+}
+
+export interface RaioXFinanceiroPlusPfResult
+  extends CommercialAnalysisPfResult {
+  marketRestrictions?: RaioXMarketRestrictions;
+  marketRestrictionsUnavailable?: boolean;
+  marketRestrictionsMessage?: string;
 }
 
 // SCR EHM (standalone SCR_PF / SCR_PJ via EHM_CONSULTAS)
@@ -713,10 +752,12 @@ export interface CommercialAnalysisCreditLimitSuggestion {
   text?: string;
   amount?: string | number;
   value?: string | number;
+  score?: string | number;
 }
 
 export interface CommercialAnalysisScore {
   value?: string | number;
+  band?: string;
   class?: string;
   probability?: string | number;
   riskText?: string;
@@ -765,6 +806,32 @@ export interface CommercialAnalysisProtestSummary {
   ultimaData?: string;
   valorTotal?: string | number;
   primeiraData?: string;
+}
+
+export interface CommercialAnalysisEstimatedAmount {
+  range?: string;
+  annualIncome?: string | number;
+  message?: string;
+  description?: string;
+}
+
+export interface CommercialAnalysisFinancialRestrictions {
+  count?: number;
+  totalValue?: string | number;
+  firstDueDate?: string;
+  lastDueDate?: string;
+}
+
+export interface CommercialAnalysisCreditEngine {
+  situation?: string;
+  message?: string;
+  suggestedInstallment?: string;
+  suggestedCredit?: string;
+  interestRate?: string;
+  bacenRating?: string;
+  installmentsRange?: string;
+  score?: string | number;
+  businessDecision?: string;
 }
 
 export interface CommercialAnalysisPainelNotaItem {
@@ -817,6 +884,20 @@ interface CommercialAnalysisBaseResult {
   painelNotaComportamento?: CommercialAnalysisPainelNotaComportamento;
   painelMaturidadeCredito?: CommercialAnalysisPainelMaturidade;
   painelPontuacaoComprometimento?: CommercialAnalysisPainelPontuacao;
+  alerts?: BaseAlert[];
+  contacts?: BaseContact[];
+  emails?: string[];
+  phones?: BasePhone[];
+  addresses?: BaseAddress[];
+  companyParticipations?: Array<{
+    cnpj?: string;
+    socialReason?: string;
+    participation?: string;
+  }>;
+  estimatedIncome?: string | CommercialAnalysisEstimatedAmount;
+  estimatedRevenue?: string | CommercialAnalysisEstimatedAmount;
+  financialRestrictions?: CommercialAnalysisFinancialRestrictions;
+  creditEngine?: CommercialAnalysisCreditEngine;
 }
 
 export interface CommercialAnalysisPfResult extends CommercialAnalysisBaseResult {
