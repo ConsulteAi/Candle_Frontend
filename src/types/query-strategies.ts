@@ -504,6 +504,8 @@ export interface RaioXGenericDebt {
   type?: string;
   institutionDocument?: string;
   guarantor?: string;
+  nadaConsta?: boolean;
+  _base?: string;
 }
 
 export interface RaioXMarketRestrictions {
@@ -524,6 +526,9 @@ export interface RaioXMarketRestrictions {
   badChecks?: DividasMultiBadCheck[];
   cadin?: DividasMultiCadinItem[];
   legalActions?: Array<Record<string, unknown>>;
+  partners?: BasePartner[];
+  addresses?: BaseAddress[];
+  queries?: CommercialAnalysisQuery[];
 }
 
 export interface RaioXCreditoRatingScrResult extends ScrBacenResult {

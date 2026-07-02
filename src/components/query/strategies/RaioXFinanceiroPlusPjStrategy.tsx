@@ -16,15 +16,30 @@ export function RaioXFinanceiroPlusPjStrategy({
   if (!data) return null;
 
   const marketCompany = data.marketRestrictions?.company;
-  const fallbackCompany = marketCompany
-    ? {
-        ...marketCompany,
-      }
-    : undefined;
+  const pickValue = (primary?: string, fallback?: string) =>
+    primary && primary.trim() ? primary : fallback;
+  const normalizedCompany =
+    data.company || marketCompany
+      ? {
+          cnpj: pickValue(data.company?.cnpj, marketCompany?.cnpj) || '',
+          socialReason:
+            pickValue(data.company?.socialReason, marketCompany?.socialReason) ||
+            '',
+          fantasyName: pickValue(
+            data.company?.fantasyName,
+            marketCompany?.fantasyName,
+          ),
+          foundationDate: pickValue(
+            data.company?.foundationDate,
+            marketCompany?.foundationDate,
+          ),
+          status: pickValue(data.company?.status, marketCompany?.status),
+        }
+      : undefined;
 
   const normalizedData: RaioXFinanceiroPlusPjResult = {
     ...data,
-    company: data.company ?? fallbackCompany,
+    company: normalizedCompany as RaioXFinanceiroPlusPjResult['company'],
   };
 
   return (
