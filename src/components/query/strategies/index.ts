@@ -59,6 +59,8 @@ export const STRATEGIES: Record<string, React.ComponentType<QueryStrategyProps>>
   'REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PJ': RealtimeMaxSpcSerasaBvsProtestoPjStrategy,
   'MAX_BRASIL_SCORE_BVS_BASICA_PF': MaxBrasilScoreBvsBasicaPfStrategy,
   'MAX_BRASIL_SCORE_BVS_BASICA_PJ': MaxBrasilScoreBvsBasicaPjStrategy,
+  'RATING_AVANCADO_PF': RaioXCreditoRatingScrStrategy,
+  'RATING_AVANCADO_PJ': RaioXCreditoRatingScrStrategy,
   'DIVIDAS_MULTI_CPF_PRO': DividasMultiCpfProStrategy,
   'DIVIDAS_MULTI_CNPJ_PRO': DividasMultiCnpjProStrategy,
   'RAIO_X_CREDITO_RATING_SCR_PF': RaioXCreditoRatingScrStrategy,
