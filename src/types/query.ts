@@ -16,6 +16,13 @@ export enum QueryCategory {
   OTHER = 'OTHER',
 }
 
+export type QueryExecutionStatus =
+  | 'SUCCESS'
+  | 'FAILED'
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'PENDING_RECONCILIATION';
+
 /**
  * Query Type - Tipo de consulta configurado no backend
  */
@@ -62,7 +69,7 @@ export interface QueryHistoryEntry {
   userId: string;
   queryTypeId: string;
   input: string; // Dado consultado
-  status: 'SUCCESS' | 'FAILED';
+  status: QueryExecutionStatus;
   price: number;
   isCached: boolean;
   result: any | null; // Resultado armazenado (se SUCCESS)
@@ -84,7 +91,7 @@ export interface QueryByIdResponse {
   query: {
     id: string;
     input: string;
-    status: 'SUCCESS' | 'FAILED';
+    status: QueryExecutionStatus;
     price: number;
     createdAt: string;
     completedAt: string;

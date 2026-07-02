@@ -7,7 +7,16 @@ import { cn } from '@/lib/utils';
 import { formatCurrency } from '@/lib/formatters';
 import { Card } from '@/design-system/ComponentsTailwind';
 import { Button } from '@/components/ui/button';
-import { Hash, Calendar, DollarSign, Copy, Check } from 'lucide-react';
+import {
+  Hash,
+  Calendar,
+  DollarSign,
+  Copy,
+  Check,
+  AlertCircle,
+  Clock3,
+  XCircle,
+} from 'lucide-react';
 
 interface QueryResultDisplayProps {
   query: QueryHistoryEntry;
@@ -18,6 +27,8 @@ export function QueryResultDisplay({ query, className }: QueryResultDisplayProps
   const code = query.queryType?.code || 'DEFAULT';
   const StrategyComponent = getStrategyComponent(code);
   const [copied, setCopied] = useState(false);
+  const isSuccess = query.status === 'SUCCESS';
+  const isPendingReconciliation = query.status === 'PENDING_RECONCILIATION';
 
   const handleCopyProtocol = () => {
     if (query.id) {
@@ -29,7 +40,51 @@ export function QueryResultDisplay({ query, className }: QueryResultDisplayProps
 
   return (
     <div className={cn('space-y-6', className)}>
-      <StrategyComponent data={query.result} queryId={query.id} />
+      {isSuccess ? (
+        <StrategyComponent data={query.result} queryId={query.id} />
+      ) : (
+        <Card className="border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div
+              className={cn(
+                'flex h-12 w-12 items-center justify-center rounded-2xl',
+                isPendingReconciliation
+                  ? 'bg-orange-100 text-orange-700'
+                  : 'bg-red-100 text-red-700',
+              )}
+            >
+              {isPendingReconciliation ? (
+                <Clock3 className="h-6 w-6" />
+              ) : (
+                <XCircle className="h-6 w-6" />
+              )}
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold text-slate-900">
+                {isPendingReconciliation
+                  ? 'Consulta em reconciliação operacional'
+                  : 'Consulta não concluída'}
+              </h2>
+              <p className="max-w-2xl text-sm leading-relaxed text-slate-600">
+                {isPendingReconciliation
+                  ? 'O provider pode ter processado a consulta mesmo após o timeout local. A cobrança permanece retida até a equipe confirmar sucesso ou falha real.'
+                  : 'Esta consulta não gerou um resultado final disponível para visualização.'}
+              </p>
+              {query.errorMessage && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <AlertCircle className="h-4 w-4" />
+                    Detalhes técnicos
+                  </div>
+                  <p className="font-mono text-xs leading-relaxed text-slate-500">
+                    {query.errorMessage}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
       
       {/* Metadata Footer */}
       <Card className="p-0 border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden shadow-sm">
