@@ -47,8 +47,10 @@ export function CommercialAnalysisPfStrategy({
   data,
   queryId,
   scoreVariant = 'default',
+  showRiskDetails = true,
 }: QueryStrategyProps<CommercialAnalysisPfResult> & {
   scoreVariant?: 'default' | 'gauge';
+  showRiskDetails?: boolean;
 }) {
   if (!data) return null;
 
@@ -65,6 +67,7 @@ export function CommercialAnalysisPfStrategy({
   const hasExtraDebtFields = debts.some((d) => d.creditor || d.updatedValue);
   const useScoreGauge = scoreVariant === 'gauge' && scoreValue != null;
   const numericScoreValue = Number(scoreValue || 0);
+  const visibleRiskText = showRiskDetails ? riskText : undefined;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -74,7 +77,7 @@ export function CommercialAnalysisPfStrategy({
             <ScoreGauge
               value={numericScoreValue}
               band={scoreBand}
-              riskText={riskText}
+              riskText={visibleRiskText}
             />
           </div>
 
@@ -110,7 +113,7 @@ export function CommercialAnalysisPfStrategy({
                 />
               </div>
 
-              {(data.person?.motherName || riskText) && (
+              {(data.person?.motherName || visibleRiskText) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   {data.person?.motherName && (
                     <InfoBox
@@ -119,10 +122,10 @@ export function CommercialAnalysisPfStrategy({
                       icon={<User className="w-4 h-4 text-gray-400" />}
                     />
                   )}
-                  {riskText && (
+                  {visibleRiskText && (
                     <InfoBox
                       label="Risco"
-                      value={riskText}
+                      value={visibleRiskText}
                       icon={<AlertTriangle className="w-4 h-4 text-gray-400" />}
                     />
                   )}
@@ -185,7 +188,7 @@ export function CommercialAnalysisPfStrategy({
             />
           </div>
 
-          {(data.person?.motherName || riskText) && (
+          {(data.person?.motherName || visibleRiskText) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               {data.person?.motherName && (
                 <InfoBox
@@ -194,10 +197,10 @@ export function CommercialAnalysisPfStrategy({
                   icon={<User className="w-4 h-4 text-gray-400" />}
                 />
               )}
-              {riskText && (
+              {visibleRiskText && (
                 <InfoBox
                   label="Risco"
-                  value={riskText}
+                  value={visibleRiskText}
                   icon={<AlertTriangle className="w-4 h-4 text-gray-400" />}
                 />
               )}
