@@ -51,11 +51,11 @@ export const registerSchema = z.object({
     .regex(/^[0-9\s\-\(\)]+$/, 'Telefone deve conter apenas números'),
   document: z
     .string()
-    .min(1, 'CPF ou CNPJ é obrigatório')
+    .min(1, 'CNPJ é obrigatório')
     .refine((val) => {
       const cleaned = val.replace(/\D/g, '');
-      return cleaned.length === 11 || cleaned.length === 14;
-    }, 'CPF/CNPJ inválido'),
+      return cleaned.length === 14;
+    }, 'Cadastro de pessoa física está temporariamente indisponível. Informe um CNPJ válido.'),
   terms: z.boolean().refine((val) => val === true, {
     message: 'Você precisa concordar com os termos de uso',
   }),
