@@ -32,6 +32,9 @@ export function RaioXFinanceiroPlusPjStrategy({
       <CommercialAnalysisPjStrategy
         data={normalizedData}
         queryId={queryId}
+        scoreVariant="gauge"
+        showRiskDetails={false}
+        showCreditLimitSuggestion={false}
       />
 
       {normalizedData.marketRestrictions && (

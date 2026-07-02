@@ -15,6 +15,7 @@ import type { CommercialAnalysisPjResult, QueryStrategyProps } from '@/types/que
 import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
 import { formatDisplayDate } from '@/lib/utils';
 import { InfoBox } from './components/InfoBox';
+import { ScoreGauge } from './components/ScoreGauge';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
@@ -39,7 +40,14 @@ const EMPTY_SUMMARY = {
 export function CommercialAnalysisPjStrategy({
   data,
   queryId,
-}: QueryStrategyProps<CommercialAnalysisPjResult>) {
+  scoreVariant = 'default',
+  showRiskDetails = true,
+  showCreditLimitSuggestion = true,
+}: QueryStrategyProps<CommercialAnalysisPjResult> & {
+  scoreVariant?: 'default' | 'gauge';
+  showRiskDetails?: boolean;
+  showCreditLimitSuggestion?: boolean;
+}) {
   if (!data) return null;
 
   const summary = data.financialSummary ?? EMPTY_SUMMARY;
@@ -47,46 +55,143 @@ export function CommercialAnalysisPjStrategy({
   const protests = data.protests ?? [];
   const queries = data.queries ?? [];
   const serasaDebts = data.serasaDebts ?? [];
+  const scoreValue = data.score?.value;
+  const riskText = data.score?.riskText || data.score?.risk;
+  const scoreBand = data.score?.band || data.score?.class;
+  const useScoreGauge = scoreVariant === 'gauge' && scoreValue != null;
+  const numericScoreValue = Number(scoreValue || 0);
+  const visibleRiskText = showRiskDetails ? riskText : undefined;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
-        <StrategyHeader
-          title={data.company?.socialReason || 'Análise Comercial PJ'}
-          subtitle={data.company?.fantasyName || undefined}
-          protocol={data.protocol}
-          status={data.company?.status}
-          statusVariant={(summary.totalDebts || 0) > 0 || (summary.totalProtests || 0) > 0 ? 'warning' : 'success'}
-          pdfUrl={data.pdf}
-          queryId={queryId}
-          className="mb-6"
-        >
-          <Badge variant="info">PJ</Badge>
-        </StrategyHeader>
+      {useScoreGauge ? (
+        <div className="grid md:grid-cols-12 gap-6">
+          <div className="md:col-span-4">
+            <ScoreGauge
+              value={numericScoreValue}
+              band={scoreBand}
+              riskText={visibleRiskText}
+            />
+          </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <InfoBox
-            label="CNPJ"
-            value={formatCpfCnpj(data.company?.cnpj || '-')}
-            icon={<Building2 className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Fundação"
-            value={formatDisplayDate(data.company?.foundationDate)}
-            icon={<Calendar className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Score"
-            value={String(data.score?.value || '-')}
-            icon={<CheckCircle2 className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Decisão"
-            value={data.decision?.status || '-'}
-            icon={<FileText className="w-4 h-4 text-primary" />}
-          />
+          <div className="md:col-span-8">
+            <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
+              <StrategyHeader
+                title={data.company?.socialReason || 'Análise Comercial PJ'}
+                subtitle={data.company?.fantasyName || undefined}
+                protocol={data.protocol}
+                status={data.company?.status}
+                statusVariant={(summary.totalDebts || 0) > 0 || (summary.totalProtests || 0) > 0 ? 'warning' : 'success'}
+                pdfUrl={data.pdf}
+                queryId={queryId}
+                className="mb-6"
+              >
+                <Badge variant="info">PJ</Badge>
+              </StrategyHeader>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+                <div className="xl:col-span-2">
+                  <InfoBox
+                    label="CNPJ"
+                    value={formatCpfCnpj(data.company?.cnpj || '-')}
+                    icon={<Building2 className="w-4 h-4 text-primary" />}
+                  />
+                </div>
+                <div className="xl:col-span-2">
+                  <InfoBox
+                    label="Fundação"
+                    value={formatDisplayDate(data.company?.foundationDate)}
+                    icon={<Calendar className="w-4 h-4 text-primary" />}
+                  />
+                </div>
+                <div className="xl:col-span-2">
+                  <InfoBox
+                    label="Decisão"
+                    value={data.decision?.status || '-'}
+                    icon={<FileText className="w-4 h-4 text-primary" />}
+                  />
+                </div>
+
+                {data.company?.fantasyName && (
+                  <div className="xl:col-span-4">
+                    <InfoBox
+                      label="Nome Fantasia"
+                      value={data.company.fantasyName}
+                      icon={<Building2 className="w-4 h-4 text-gray-400" />}
+                    />
+                  </div>
+                )}
+                {visibleRiskText && (
+                  <div className="xl:col-span-2">
+                    <InfoBox
+                      label="Risco"
+                      value={visibleRiskText}
+                      icon={<AlertTriangle className="w-4 h-4 text-gray-400" />}
+                    />
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
         </div>
-      </Card>
+      ) : (
+        <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
+          <StrategyHeader
+            title={data.company?.socialReason || 'Análise Comercial PJ'}
+            subtitle={data.company?.fantasyName || undefined}
+            protocol={data.protocol}
+            status={data.company?.status}
+            statusVariant={(summary.totalDebts || 0) > 0 || (summary.totalProtests || 0) > 0 ? 'warning' : 'success'}
+            pdfUrl={data.pdf}
+            queryId={queryId}
+            className="mb-6"
+          >
+            <Badge variant="info">PJ</Badge>
+          </StrategyHeader>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <InfoBox
+              label="CNPJ"
+              value={formatCpfCnpj(data.company?.cnpj || '-')}
+              icon={<Building2 className="w-4 h-4 text-primary" />}
+            />
+            <InfoBox
+              label="Fundação"
+              value={formatDisplayDate(data.company?.foundationDate)}
+              icon={<Calendar className="w-4 h-4 text-primary" />}
+            />
+            <InfoBox
+              label="Score"
+              value={scoreValue ? String(scoreValue) : '-'}
+              icon={<CheckCircle2 className="w-4 h-4 text-primary" />}
+            />
+            <InfoBox
+              label="Decisão"
+              value={data.decision?.status || '-'}
+              icon={<FileText className="w-4 h-4 text-primary" />}
+            />
+          </div>
+
+          {(data.company?.fantasyName || visibleRiskText) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {data.company?.fantasyName && (
+                <InfoBox
+                  label="Nome Fantasia"
+                  value={data.company.fantasyName}
+                  icon={<Building2 className="w-4 h-4 text-gray-400" />}
+                />
+              )}
+              {visibleRiskText && (
+                <InfoBox
+                  label="Risco"
+                  value={visibleRiskText}
+                  icon={<AlertTriangle className="w-4 h-4 text-gray-400" />}
+                />
+              )}
+            </div>
+          )}
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <SummaryCard
@@ -121,7 +226,7 @@ export function CommercialAnalysisPjStrategy({
         />
       </div>
 
-      {data.creditLimitSuggestion && (
+      {showCreditLimitSuggestion && data.creditLimitSuggestion && (
         <StrategySectionWrapper
           title="Sugestão de Limite"
           icon={<CheckCircle2 className="w-5 h-5 text-primary" />}
