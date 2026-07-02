@@ -23,6 +23,7 @@ import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
+import { CommercialAnalysisExtraSections } from './components/CommercialAnalysisExtraSections';
 import {
   Table,
   TableBody,
@@ -487,6 +488,8 @@ export function CommercialAnalysisPfStrategy({
           </Table>
         </StrategySectionWrapper>
       )}
+
+      <CommercialAnalysisExtraSections data={data} />
     </div>
   );
 }

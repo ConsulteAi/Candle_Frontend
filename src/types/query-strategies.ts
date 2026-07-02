@@ -34,6 +34,9 @@ export interface BaseAddress {
   city: string;
   state: string;
   zip: string;
+  number?: string;
+  complement?: string;
+  source?: string;
 }
 
 export interface BasePhone {
@@ -45,6 +48,14 @@ export interface BasePhone {
 export interface BaseAlert {
   title: string;
   description: string;
+}
+
+export interface BaseContact {
+  name?: string;
+  relation?: string;
+  document?: string;
+  city?: string;
+  state?: string;
 }
 
 export interface BaseDebt {
@@ -713,10 +724,12 @@ export interface CommercialAnalysisCreditLimitSuggestion {
   text?: string;
   amount?: string | number;
   value?: string | number;
+  score?: string | number;
 }
 
 export interface CommercialAnalysisScore {
   value?: string | number;
+  band?: string;
   class?: string;
   probability?: string | number;
   riskText?: string;
@@ -765,6 +778,32 @@ export interface CommercialAnalysisProtestSummary {
   ultimaData?: string;
   valorTotal?: string | number;
   primeiraData?: string;
+}
+
+export interface CommercialAnalysisEstimatedAmount {
+  range?: string;
+  annualIncome?: string | number;
+  message?: string;
+  description?: string;
+}
+
+export interface CommercialAnalysisFinancialRestrictions {
+  count?: number;
+  totalValue?: string | number;
+  firstDueDate?: string;
+  lastDueDate?: string;
+}
+
+export interface CommercialAnalysisCreditEngine {
+  situation?: string;
+  message?: string;
+  suggestedInstallment?: string;
+  suggestedCredit?: string;
+  interestRate?: string;
+  bacenRating?: string;
+  installmentsRange?: string;
+  score?: string | number;
+  businessDecision?: string;
 }
 
 export interface CommercialAnalysisPainelNotaItem {
@@ -817,6 +856,20 @@ interface CommercialAnalysisBaseResult {
   painelNotaComportamento?: CommercialAnalysisPainelNotaComportamento;
   painelMaturidadeCredito?: CommercialAnalysisPainelMaturidade;
   painelPontuacaoComprometimento?: CommercialAnalysisPainelPontuacao;
+  alerts?: BaseAlert[];
+  contacts?: BaseContact[];
+  emails?: string[];
+  phones?: BasePhone[];
+  addresses?: BaseAddress[];
+  companyParticipations?: Array<{
+    cnpj?: string;
+    socialReason?: string;
+    participation?: string;
+  }>;
+  estimatedIncome?: string | CommercialAnalysisEstimatedAmount;
+  estimatedRevenue?: string | CommercialAnalysisEstimatedAmount;
+  financialRestrictions?: CommercialAnalysisFinancialRestrictions;
+  creditEngine?: CommercialAnalysisCreditEngine;
 }
 
 export interface CommercialAnalysisPfResult extends CommercialAnalysisBaseResult {
