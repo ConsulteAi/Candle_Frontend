@@ -24,6 +24,8 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [registerError, setRegisterError] = useState<string | null>(null);
+  const pfBlockedMessage =
+    'Cadastro de pessoa física está temporariamente indisponível. No momento, aceitamos apenas empresa com CNPJ.';
 
   const {
     register,
@@ -31,7 +33,6 @@ export default function RegisterPage() {
     formState: { errors },
     setError,
     control,
-    watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -40,12 +41,19 @@ export default function RegisterPage() {
     }
   });
 
-  const documentValue = watch('document');
-  const documentType = (documentValue?.replace(/\D/g, '').length || 0) > 11 ? 'CNPJ' : 'CPF';
-
   const onSubmit = async (data: RegisterFormData) => {
     // Remove confirmPassword and terms before sending to API
     const { confirmPassword, terms, ...registerData } = data;
+    const cleanedDocument = (registerData.document || '').replace(/\D/g, '');
+
+    if (cleanedDocument.length === 11) {
+      setError('document', {
+        type: 'manual',
+        message: pfBlockedMessage,
+      });
+      return;
+    }
+
     setIsLoading(true);
     setRegisterError(null);
     // Artificial delay for premium feel
@@ -58,7 +66,7 @@ export default function RegisterPage() {
         email: registerData.email,
         password: registerData.password,
         // Backend expects cpfCnpj field, clean formatting
-        cpfCnpj: (registerData.document || '').replace(/\D/g, ''),
+        cpfCnpj: cleanedDocument,
         // Clean phone formatting
         phone: registerData.phone ? registerData.phone.replace(/\D/g, '') : undefined,
       };
@@ -68,7 +76,10 @@ export default function RegisterPage() {
       if (!result.success) { 
         if (result.fieldErrors) {
           Object.entries(result.fieldErrors).forEach(([field, messages]) => {
-            setError(field as keyof RegisterFormData, {
+            const formField =
+              field === 'cpfCnpj' ? 'document' : (field as keyof RegisterFormData);
+
+            setError(formField, {
               type: 'server',
               message: messages[0],
             });
@@ -189,6 +200,13 @@ export default function RegisterPage() {
               Criar nova conta
             </h2>
 
+            <Alert className="mb-5 border-amber-200 bg-amber-50 text-amber-900">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="ml-2 text-sm text-amber-800">
+                {pfBlockedMessage}
+              </AlertDescription>
+            </Alert>
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               {registerError && (
                 <motion.div
@@ -210,8 +228,8 @@ export default function RegisterPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  {renderInput(
                    'document', 
-                   'CPF / CNPJ', 
-                   '000.000.000-00', 
+                   'CNPJ', 
+                   '00.000.000/0000-00', 
                    'text', 
                    register('document'), 
                    formatCpfCnpj,
@@ -219,10 +237,10 @@ export default function RegisterPage() {
                      layout
                      initial={{ opacity: 0, scale: 0.8 }}
                      animate={{ opacity: 1, scale: 1 }}
-                     key={documentType}
+                     key="PJ"
                      className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-md tracking-wider border border-primary/20"
                    >
-                     {documentType}
+                     SOMENTE PJ
                    </motion.div>
                  )}
                  {renderInput('phone', 'Telefone', '(00) 00000-0000', 'tel', register('phone'), formatPhone)}
