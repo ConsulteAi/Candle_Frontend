@@ -7,7 +7,6 @@ import {
   FileWarning,
   Landmark,
 } from 'lucide-react';
-import { Card } from '@/design-system/ComponentsTailwind';
 import type {
   QueryStrategyProps,
   RaioXFinanceiroPlusPfResult,
@@ -431,7 +430,11 @@ export function RaioXFinanceiroPlusPfStrategy({
 
   return (
     <div className="space-y-8">
-      <CommercialAnalysisPfStrategy data={normalizedData} queryId={queryId} />
+      <CommercialAnalysisPfStrategy
+        data={normalizedData}
+        queryId={queryId}
+        scoreVariant="gauge"
+      />
 
       {normalizedData.marketRestrictions && (
         <StrategySectionWrapper
@@ -441,15 +444,6 @@ export function RaioXFinanceiroPlusPfStrategy({
         >
           <MarketRestrictionsSection mr={normalizedData.marketRestrictions} />
         </StrategySectionWrapper>
-      )}
-
-      {normalizedData.marketRestrictionsUnavailable && (
-        <Card className="border border-yellow-100 bg-yellow-50 p-4">
-          <p className="text-sm font-medium text-yellow-800">
-            {normalizedData.marketRestrictionsMessage ||
-              'O enriquecimento de mercado não estava disponível para esta consulta.'}
-          </p>
-        </Card>
       )}
     </div>
   );

@@ -20,6 +20,7 @@ import type { CommercialAnalysisPfResult, QueryStrategyProps } from '@/types/que
 import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
 import { formatDisplayDate } from '@/lib/utils';
 import { InfoBox } from './components/InfoBox';
+import { ScoreGauge } from './components/ScoreGauge';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
@@ -45,7 +46,10 @@ const EMPTY_SUMMARY = {
 export function CommercialAnalysisPfStrategy({
   data,
   queryId,
-}: QueryStrategyProps<CommercialAnalysisPfResult>) {
+  scoreVariant = 'default',
+}: QueryStrategyProps<CommercialAnalysisPfResult> & {
+  scoreVariant?: 'default' | 'gauge';
+}) {
   if (!data) return null;
 
   const summary = data.financialSummary ?? EMPTY_SUMMARY;
@@ -57,82 +61,167 @@ export function CommercialAnalysisPfStrategy({
 
   const scoreValue = data.score?.value;
   const riskText = data.score?.riskText || data.score?.risk;
+  const scoreBand = data.score?.band || data.score?.class;
   const hasExtraDebtFields = debts.some((d) => d.creditor || d.updatedValue);
+  const useScoreGauge = scoreVariant === 'gauge' && scoreValue != null;
+  const numericScoreValue = Number(scoreValue || 0);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
-        <StrategyHeader
-          title={data.person?.name || 'Análise Comercial PF'}
-          protocol={data.protocol}
-          status={data.person?.revenueStatus || data.person?.status}
-          statusVariant={(summary.totalDebts || 0) > 0 || (summary.totalProtests || 0) > 0 ? 'warning' : 'success'}
-          pdfUrl={data.pdf}
-          queryId={queryId}
-          className="mb-6"
-        >
-          <Badge variant="info">PF</Badge>
-        </StrategyHeader>
+      {useScoreGauge ? (
+        <div className="grid md:grid-cols-12 gap-6">
+          <div className="md:col-span-4">
+            <ScoreGauge
+              value={numericScoreValue}
+              band={scoreBand}
+              riskText={riskText}
+            />
+          </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <InfoBox
-            label="Documento"
-            value={formatCpfCnpj(data.person?.document || '-')}
-            icon={<User className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Nascimento"
-            value={formatDisplayDate(data.person?.birthDate)}
-            icon={<Calendar className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Score"
-            value={scoreValue ? String(scoreValue) : '-'}
-            icon={<CheckCircle2 className="w-4 h-4 text-primary" />}
-          />
-          <InfoBox
-            label="Decisão"
-            value={data.decision?.status || '-'}
-            icon={<FileText className="w-4 h-4 text-primary" />}
-          />
+          <div className="md:col-span-8">
+            <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
+              <StrategyHeader
+                title={data.person?.name || 'Análise Comercial PF'}
+                protocol={data.protocol}
+                status={data.person?.revenueStatus || data.person?.status}
+                statusVariant={(summary.totalDebts || 0) > 0 || (summary.totalProtests || 0) > 0 ? 'warning' : 'success'}
+                pdfUrl={data.pdf}
+                queryId={queryId}
+                className="mb-6"
+              >
+                <Badge variant="info">PF</Badge>
+              </StrategyHeader>
+
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                <InfoBox
+                  label="Documento"
+                  value={formatCpfCnpj(data.person?.document || '-')}
+                  icon={<User className="w-4 h-4 text-primary" />}
+                />
+                <InfoBox
+                  label="Nascimento"
+                  value={formatDisplayDate(data.person?.birthDate)}
+                  icon={<Calendar className="w-4 h-4 text-primary" />}
+                />
+                <InfoBox
+                  label="Decisão"
+                  value={data.decision?.status || '-'}
+                  icon={<FileText className="w-4 h-4 text-primary" />}
+                />
+              </div>
+
+              {(data.person?.motherName || riskText) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  {data.person?.motherName && (
+                    <InfoBox
+                      label="Nome da Mãe"
+                      value={data.person.motherName}
+                      icon={<User className="w-4 h-4 text-gray-400" />}
+                    />
+                  )}
+                  {riskText && (
+                    <InfoBox
+                      label="Risco"
+                      value={riskText}
+                      icon={<AlertTriangle className="w-4 h-4 text-gray-400" />}
+                    />
+                  )}
+                </div>
+              )}
+
+              {(data.person?.rg || data.person?.estadoCivil || data.person?.tituloEleitor || data.person?.dataAtualizacao) && (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                  {data.person?.rg && (
+                    <InfoBox label="RG" value={data.person.rg} icon={<FileText className="w-4 h-4 text-gray-400" />} />
+                  )}
+                  {data.person?.estadoCivil && (
+                    <InfoBox label="Estado Civil" value={data.person.estadoCivil} icon={<User className="w-4 h-4 text-gray-400" />} />
+                  )}
+                  {data.person?.tituloEleitor && (
+                    <InfoBox label="Título Eleitor" value={data.person.tituloEleitor} icon={<FileText className="w-4 h-4 text-gray-400" />} />
+                  )}
+                  {data.person?.dataAtualizacao && (
+                    <InfoBox label="Atualização" value={formatDisplayDate(data.person.dataAtualizacao)} icon={<Clock className="w-4 h-4 text-gray-400" />} />
+                  )}
+                </div>
+              )}
+            </Card>
+          </div>
         </div>
+      ) : (
+        <Card className="h-full p-6 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg border-l-4 border-l-primary">
+          <StrategyHeader
+            title={data.person?.name || 'Análise Comercial PF'}
+            protocol={data.protocol}
+            status={data.person?.revenueStatus || data.person?.status}
+            statusVariant={(summary.totalDebts || 0) > 0 || (summary.totalProtests || 0) > 0 ? 'warning' : 'success'}
+            pdfUrl={data.pdf}
+            queryId={queryId}
+            className="mb-6"
+          >
+            <Badge variant="info">PF</Badge>
+          </StrategyHeader>
 
-        {(data.person?.motherName || riskText) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            {data.person?.motherName && (
-              <InfoBox
-                label="Nome da Mãe"
-                value={data.person.motherName}
-                icon={<User className="w-4 h-4 text-gray-400" />}
-              />
-            )}
-            {riskText && (
-              <InfoBox
-                label="Risco"
-                value={riskText}
-                icon={<AlertTriangle className="w-4 h-4 text-gray-400" />}
-              />
-            )}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <InfoBox
+              label="Documento"
+              value={formatCpfCnpj(data.person?.document || '-')}
+              icon={<User className="w-4 h-4 text-primary" />}
+            />
+            <InfoBox
+              label="Nascimento"
+              value={formatDisplayDate(data.person?.birthDate)}
+              icon={<Calendar className="w-4 h-4 text-primary" />}
+            />
+            <InfoBox
+              label="Score"
+              value={scoreValue ? String(scoreValue) : '-'}
+              icon={<CheckCircle2 className="w-4 h-4 text-primary" />}
+            />
+            <InfoBox
+              label="Decisão"
+              value={data.decision?.status || '-'}
+              icon={<FileText className="w-4 h-4 text-primary" />}
+            />
           </div>
-        )}
 
-        {(data.person?.rg || data.person?.estadoCivil || data.person?.tituloEleitor || data.person?.dataAtualizacao) && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-            {data.person?.rg && (
-              <InfoBox label="RG" value={data.person.rg} icon={<FileText className="w-4 h-4 text-gray-400" />} />
-            )}
-            {data.person?.estadoCivil && (
-              <InfoBox label="Estado Civil" value={data.person.estadoCivil} icon={<User className="w-4 h-4 text-gray-400" />} />
-            )}
-            {data.person?.tituloEleitor && (
-              <InfoBox label="Título Eleitor" value={data.person.tituloEleitor} icon={<FileText className="w-4 h-4 text-gray-400" />} />
-            )}
-            {data.person?.dataAtualizacao && (
-              <InfoBox label="Atualização" value={formatDisplayDate(data.person.dataAtualizacao)} icon={<Clock className="w-4 h-4 text-gray-400" />} />
-            )}
-          </div>
-        )}
-      </Card>
+          {(data.person?.motherName || riskText) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {data.person?.motherName && (
+                <InfoBox
+                  label="Nome da Mãe"
+                  value={data.person.motherName}
+                  icon={<User className="w-4 h-4 text-gray-400" />}
+                />
+              )}
+              {riskText && (
+                <InfoBox
+                  label="Risco"
+                  value={riskText}
+                  icon={<AlertTriangle className="w-4 h-4 text-gray-400" />}
+                />
+              )}
+            </div>
+          )}
+
+          {(data.person?.rg || data.person?.estadoCivil || data.person?.tituloEleitor || data.person?.dataAtualizacao) && (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+              {data.person?.rg && (
+                <InfoBox label="RG" value={data.person.rg} icon={<FileText className="w-4 h-4 text-gray-400" />} />
+              )}
+              {data.person?.estadoCivil && (
+                <InfoBox label="Estado Civil" value={data.person.estadoCivil} icon={<User className="w-4 h-4 text-gray-400" />} />
+              )}
+              {data.person?.tituloEleitor && (
+                <InfoBox label="Título Eleitor" value={data.person.tituloEleitor} icon={<FileText className="w-4 h-4 text-gray-400" />} />
+              )}
+              {data.person?.dataAtualizacao && (
+                <InfoBox label="Atualização" value={formatDisplayDate(data.person.dataAtualizacao)} icon={<Clock className="w-4 h-4 text-gray-400" />} />
+              )}
+            </div>
+          )}
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <SummaryCard
