@@ -48,9 +48,11 @@ export function CommercialAnalysisPfStrategy({
   queryId,
   scoreVariant = 'default',
   showRiskDetails = true,
+  showCreditLimitSuggestion = true,
 }: QueryStrategyProps<CommercialAnalysisPfResult> & {
   scoreVariant?: 'default' | 'gauge';
   showRiskDetails?: boolean;
+  showCreditLimitSuggestion?: boolean;
 }) {
   if (!data) return null;
 
@@ -95,59 +97,68 @@ export function CommercialAnalysisPfStrategy({
                 <Badge variant="info">PF</Badge>
               </StrategyHeader>
 
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                <InfoBox
-                  label="Documento"
-                  value={formatCpfCnpj(data.person?.document || '-')}
-                  icon={<User className="w-4 h-4 text-primary" />}
-                />
-                <InfoBox
-                  label="Nascimento"
-                  value={formatDisplayDate(data.person?.birthDate)}
-                  icon={<Calendar className="w-4 h-4 text-primary" />}
-                />
-                <InfoBox
-                  label="Decisão"
-                  value={data.decision?.status || '-'}
-                  icon={<FileText className="w-4 h-4 text-primary" />}
-                />
-              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+                <div className="xl:col-span-2">
+                  <InfoBox
+                    label="Documento"
+                    value={formatCpfCnpj(data.person?.document || '-')}
+                    icon={<User className="w-4 h-4 text-primary" />}
+                  />
+                </div>
+                <div className="xl:col-span-2">
+                  <InfoBox
+                    label="Nascimento"
+                    value={formatDisplayDate(data.person?.birthDate)}
+                    icon={<Calendar className="w-4 h-4 text-primary" />}
+                  />
+                </div>
+                <div className="xl:col-span-2">
+                  <InfoBox
+                    label="Decisão"
+                    value={data.decision?.status || '-'}
+                    icon={<FileText className="w-4 h-4 text-primary" />}
+                  />
+                </div>
 
-              {(data.person?.motherName || visibleRiskText) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  {data.person?.motherName && (
+                {data.person?.motherName && (
+                  <div className="xl:col-span-4">
                     <InfoBox
                       label="Nome da Mãe"
                       value={data.person.motherName}
                       icon={<User className="w-4 h-4 text-gray-400" />}
                     />
-                  )}
-                  {visibleRiskText && (
+                  </div>
+                )}
+                {visibleRiskText && (
+                  <div className="xl:col-span-2">
                     <InfoBox
                       label="Risco"
                       value={visibleRiskText}
                       icon={<AlertTriangle className="w-4 h-4 text-gray-400" />}
                     />
-                  )}
-                </div>
-              )}
-
-              {(data.person?.rg || data.person?.estadoCivil || data.person?.tituloEleitor || data.person?.dataAtualizacao) && (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                  {data.person?.rg && (
+                  </div>
+                )}
+                {data.person?.rg && (
+                  <div className="xl:col-span-2">
                     <InfoBox label="RG" value={data.person.rg} icon={<FileText className="w-4 h-4 text-gray-400" />} />
-                  )}
-                  {data.person?.estadoCivil && (
+                  </div>
+                )}
+                {data.person?.estadoCivil && (
+                  <div className="xl:col-span-2">
                     <InfoBox label="Estado Civil" value={data.person.estadoCivil} icon={<User className="w-4 h-4 text-gray-400" />} />
-                  )}
-                  {data.person?.tituloEleitor && (
+                  </div>
+                )}
+                {data.person?.tituloEleitor && (
+                  <div className="xl:col-span-2">
                     <InfoBox label="Título Eleitor" value={data.person.tituloEleitor} icon={<FileText className="w-4 h-4 text-gray-400" />} />
-                  )}
-                  {data.person?.dataAtualizacao && (
+                  </div>
+                )}
+                {data.person?.dataAtualizacao && (
+                  <div className="xl:col-span-2">
                     <InfoBox label="Atualização" value={formatDisplayDate(data.person.dataAtualizacao)} icon={<Clock className="w-4 h-4 text-gray-400" />} />
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
             </Card>
           </div>
         </div>
@@ -313,7 +324,7 @@ export function CommercialAnalysisPfStrategy({
         </div>
       )}
 
-      {data.creditLimitSuggestion && (
+      {showCreditLimitSuggestion && data.creditLimitSuggestion && (
         <StrategySectionWrapper
           title="Sugestão de Limite"
           icon={<CheckCircle2 className="w-5 h-5 text-primary" />}

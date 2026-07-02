@@ -435,6 +435,7 @@ export function RaioXFinanceiroPlusPfStrategy({
         queryId={queryId}
         scoreVariant="gauge"
         showRiskDetails={false}
+        showCreditLimitSuggestion={false}
       />
 
       {normalizedData.marketRestrictions && (
