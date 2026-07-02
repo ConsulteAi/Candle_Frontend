@@ -4,7 +4,15 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Loader2, AlertCircle, Eye, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
+import {
+  Loader2,
+  AlertCircle,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  Clock3,
+} from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { formatCpfCnpj } from '@/lib/formatters';
@@ -220,6 +228,14 @@ function StatusBadge({ status }: { status: string }) {
     return (
       <Badge className="bg-red-100 text-red-700 hover:bg-red-200 border-none">
         Falhou
+      </Badge>
+    );
+  }
+  if (status === 'PENDING_RECONCILIATION') {
+    return (
+      <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-none">
+        <Clock3 className="mr-1 h-3 w-3" />
+        Reconciliação
       </Badge>
     );
   }

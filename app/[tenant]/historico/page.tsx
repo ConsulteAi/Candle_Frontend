@@ -62,6 +62,38 @@ export default function HistoricoPage() {
   };
 
   const totalSpent = filteredQueries.reduce((sum, q) => sum + q.price, 0);
+  const getStatusMeta = (status: QueryHistoryEntry['status']) => {
+    if (status === 'SUCCESS') {
+      return {
+        label: 'Concluída',
+        className: 'bg-green-50 text-green-700 border-green-200',
+        dotClassName: 'bg-green-500',
+        canView: true,
+        billedPrice: true,
+        viewTitle: 'Ver detalhes',
+      };
+    }
+
+    if (status === 'PENDING_RECONCILIATION') {
+      return {
+        label: 'Em reconciliação',
+        className: 'bg-orange-50 text-orange-700 border-orange-200',
+        dotClassName: 'bg-orange-500',
+        canView: true,
+        billedPrice: true,
+        viewTitle: 'Acompanhar reconciliação',
+      };
+    }
+
+    return {
+      label: status === 'FAILED' ? 'Erro' : status,
+      className: 'bg-red-50 text-red-700 border-red-200',
+      dotClassName: 'bg-red-500',
+      canView: false,
+      billedPrice: false,
+      viewTitle: 'Indisponível para consultas sem resultado final',
+    };
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -209,7 +241,7 @@ export default function HistoricoPage() {
                   {filteredQueries.map((query) => {
                     const mainCategory = getPriorityCategory(query.queryType.category);
                     const categoryConfig = getCategoryConfig(mainCategory);
-                    const isSuccess = query.status === 'SUCCESS';
+                    const statusMeta = getStatusMeta(query.status);
 
                     return (
                       <TableRow key={query.id} className="border-b border-gray-100/50 hover:bg-white/40 transition-colors group">
@@ -242,27 +274,25 @@ export default function HistoricoPage() {
                           <div className="flex items-center gap-2">
                              <div className={`
                                 flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-sm
-                                ${isSuccess 
-                                  ? 'bg-green-50 text-green-700 border-green-200' 
-                                  : 'bg-red-50 text-red-700 border-red-200'}
+                                ${statusMeta.className}
                              `}>
-                                <div className={`w-1.5 h-1.5 rounded-full ${isSuccess ? 'bg-green-500' : 'bg-red-500'}`} />
-                                {isSuccess ? 'Concluída' : 'Erro'}
+                                <div className={`w-1.5 h-1.5 rounded-full ${statusMeta.dotClassName}`} />
+                                {statusMeta.label}
                              </div>
                           </div>
                         </TableCell>
-                        <TableCell className={`text-right font-display font-bold ${isSuccess ? 'text-gray-900' : 'text-gray-400'}`}>
-                          R$ {isSuccess ? query.price.toFixed(2) : '0.00'}
+                        <TableCell className={`text-right font-display font-bold ${statusMeta.billedPrice ? 'text-gray-900' : 'text-gray-400'}`}>
+                          R$ {statusMeta.billedPrice ? query.price.toFixed(2) : '0.00'}
                         </TableCell>
                         <TableCell className="text-center">
                                <div className="flex items-center justify-center">
                                  <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => isSuccess && handleViewQuery(query)}
-                                  disabled={!isSuccess}
+                                  onClick={() => statusMeta.canView && handleViewQuery(query)}
+                                  disabled={!statusMeta.canView}
                                   className="bg-white hover:bg-primary/10 text-primary border border-primary/20 hover:border-primary/30 shadow-sm transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                                  title={isSuccess ? 'Ver Detalhes' : 'Indisponível para consultas com erro'}
+                                  title={statusMeta.viewTitle}
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>

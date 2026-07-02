@@ -1,5 +1,6 @@
 import { UserRole } from "./auth";
 import { BillingType, PaymentStatus } from "./payment";
+import type { QueryExecutionStatus } from "./query";
 
 // --- Dashboard & Stats Types ---
 
@@ -293,7 +294,7 @@ export interface AdminQuery {
   input: string;
   providerId: string;
   providerName: string;
-  status: "SUCCESS" | "FAILED" | "PENDING" | "PROCESSING";
+  status: QueryExecutionStatus;
   price: number;
   durationMs: number;
   createdAt: string;
@@ -336,7 +337,7 @@ export interface AdminQueryListItem {
     name: string;
   };
   input: string;
-  status: 'SUCCESS' | 'FAILED' | 'PENDING' | 'PROCESSING';
+  status: QueryExecutionStatus;
   price: number;
   isCached: boolean;
   requestOrigin: 'AUTHENTICATED_USER' | 'API_TOKEN' | null;

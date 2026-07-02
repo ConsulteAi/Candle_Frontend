@@ -149,6 +149,19 @@ function StatusBadge({ status, errorMessage }: { status: string; errorMessage?: 
       </div>
     );
   }
+  if (status === 'PENDING_RECONCILIATION') {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-orange-700 bg-orange-50 border border-orange-200 rounded-full px-2.5 py-1 w-fit">
+          <AlertCircle className="w-3 h-3 flex-shrink-0" />
+          Em reconciliação
+        </span>
+        <p className="text-[12px] text-slate-500 leading-tight">
+          Provider pode ter processado a consulta; aguardando validação operacional antes de concluir ou estornar.
+        </p>
+      </div>
+    );
+  }
   if (status === 'PENDING') {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 w-fit">
@@ -267,6 +280,7 @@ export function QueriesClientView({ initialData, isMaster = false }: QueriesClie
                   <SelectItem value="ALL">Todos</SelectItem>
                   <SelectItem value="SUCCESS">Sucesso</SelectItem>
                   <SelectItem value="FAILED">Falhou</SelectItem>
+                  <SelectItem value="PENDING_RECONCILIATION">Em reconciliação</SelectItem>
                   <SelectItem value="PENDING">Pendente</SelectItem>
                   <SelectItem value="PROCESSING">Processando</SelectItem>
                 </SelectContent>
@@ -367,7 +381,16 @@ export function QueriesClientView({ initialData, isMaster = false }: QueriesClie
             </thead>
             <tbody className="divide-y divide-slate-100">
               {initialData.data.map((query) => (
-                <tr key={query.id} className={`transition-colors group ${query.status === 'FAILED' ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-slate-50/40'}`}>
+                <tr
+                  key={query.id}
+                  className={`transition-colors group ${
+                    query.status === 'FAILED'
+                      ? 'bg-red-50/30 hover:bg-red-50/50'
+                      : query.status === 'PENDING_RECONCILIATION'
+                        ? 'bg-orange-50/40 hover:bg-orange-50/60'
+                        : 'hover:bg-slate-50/40'
+                  }`}
+                >
                   <td className="px-4 py-3.5 text-xs text-slate-500 tabular-nums whitespace-nowrap">
                     {format(new Date(query.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                     <span className="block text-slate-400">
