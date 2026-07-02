@@ -28,7 +28,11 @@ import {
   TableRow,
 } from '@/components/ui/glass-table';
 
-function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
+export function MarketRestrictionsSection({
+  mr,
+}: {
+  mr: RaioXMarketRestrictions;
+}) {
   const summary = mr.summary ?? {};
   const debts = mr.debts ?? [];
   const scpcDebts = mr.scpcDebts ?? [];
@@ -58,6 +62,7 @@ function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
   const isSerasaCrednet =
     mr.sourceQueryTypeCode === 'SERASA_CREDNET_PEFIN_PROTESTO_SPC_PF' ||
     (!hasDetailedDebtBreakdown && (debts.length > 0 || totalSerasaOccurrences > 0));
+  const isRealtimePremiumPj = mr.sourceQueryTypeCode === 'REALTIME_PREMIUM_SCORE_PJ';
   const hasAny =
     totalDebts > 0 ||
     totalScpcDebts > 0 ||
@@ -77,7 +82,11 @@ function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
         {' '}
         {isSerasaCrednet
           ? 'Nesta composição, a camada complementar foi retornada pelo Serasa Crednet, com pendências, protestos e cheques sem fundo.'
-          : 'Inclui dívidas SCPC, pendências REFIN/PEFIN, protestos em cartório, cheques sem fundo e inscrições em CADIN.'}
+          : hasDetailedDebtBreakdown
+            ? 'Inclui dívidas SCPC, pendências REFIN/PEFIN, protestos em cartório, cheques sem fundo e inscrições em CADIN.'
+            : isRealtimePremiumPj
+              ? 'Nesta composição, a camada complementar foi retornada pelo Realtime Premium PJ, com pendências, protestos e cheques sem fundo.'
+              : 'Inclui pendências financeiras, protestos e cheques sem fundo retornados na camada complementar de mercado.'}
         {' '}
         {!hasAny && (
           <span className="font-semibold text-green-700">
