@@ -504,6 +504,8 @@ export interface RaioXGenericDebt {
   type?: string;
   institutionDocument?: string;
   guarantor?: string;
+  nadaConsta?: boolean;
+  _base?: string;
 }
 
 export interface RaioXMarketRestrictions {
@@ -511,6 +513,10 @@ export interface RaioXMarketRestrictions {
   sourceQueryTypeCode?: string;
   sourceProviderCode?: string;
   person?: Pick<BasePerson, 'name' | 'document' | 'birthDate' | 'motherName'>;
+  company?: Pick<
+    BaseCompany,
+    'cnpj' | 'socialReason' | 'fantasyName' | 'foundationDate' | 'status'
+  >;
   summary?: RaioXMarketRestrictionsSummary;
   serasaSummary?: DividasMultiSerasaSummary;
   debts?: RaioXGenericDebt[];
@@ -520,6 +526,9 @@ export interface RaioXMarketRestrictions {
   badChecks?: DividasMultiBadCheck[];
   cadin?: DividasMultiCadinItem[];
   legalActions?: Array<Record<string, unknown>>;
+  partners?: BasePartner[];
+  addresses?: BaseAddress[];
+  queries?: CommercialAnalysisQuery[];
 }
 
 export interface RaioXCreditoRatingScrResult extends ScrBacenResult {
@@ -535,6 +544,13 @@ export interface RaioXCreditoRatingScrResult extends ScrBacenResult {
 
 export interface RaioXFinanceiroPlusPfResult
   extends CommercialAnalysisPfResult {
+  marketRestrictions?: RaioXMarketRestrictions;
+  marketRestrictionsUnavailable?: boolean;
+  marketRestrictionsMessage?: string;
+}
+
+export interface RaioXFinanceiroPlusPjResult
+  extends CommercialAnalysisPjResult {
   marketRestrictions?: RaioXMarketRestrictions;
   marketRestrictionsUnavailable?: boolean;
   marketRestrictionsMessage?: string;

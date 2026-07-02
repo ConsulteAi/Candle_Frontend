@@ -28,9 +28,13 @@ import {
   TableRow,
 } from '@/components/ui/glass-table';
 
-function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
+export function MarketRestrictionsSection({
+  mr,
+}: {
+  mr: RaioXMarketRestrictions;
+}) {
   const summary = mr.summary ?? {};
-  const debts = mr.debts ?? [];
+  const debts = (mr.debts ?? []).filter((item) => !item.nadaConsta);
   const scpcDebts = mr.scpcDebts ?? [];
   const refinPefinDebts = mr.refinPefinDebts ?? [];
   const protests = mr.protests ?? [];
@@ -46,9 +50,7 @@ function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
   const totalProtests = Number(summary.totalProtests ?? protests.length);
   const totalBadChecks = Number(summary.totalBadChecks ?? badChecks.length);
   const totalCadin = Number(summary.totalCadin ?? cadin.length);
-  const totalSerasaOccurrences = Number(
-    summary.totalSerasaOccurrences ?? debts.length,
-  );
+  const totalSerasaOccurrences = Number(summary.totalSerasaOccurrences ?? 0);
 
   const hasDetailedDebtBreakdown =
     totalScpcDebts > 0 ||
@@ -56,8 +58,8 @@ function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
     scpcDebts.length > 0 ||
     refinPefinDebts.length > 0;
   const isSerasaCrednet =
-    mr.sourceQueryTypeCode === 'SERASA_CREDNET_PEFIN_PROTESTO_SPC_PF' ||
-    (!hasDetailedDebtBreakdown && (debts.length > 0 || totalSerasaOccurrences > 0));
+    mr.sourceQueryTypeCode === 'SERASA_CREDNET_PEFIN_PROTESTO_SPC_PF';
+  const isRealtimePremiumPj = mr.sourceQueryTypeCode === 'REALTIME_PREMIUM_SCORE_PJ';
   const hasAny =
     totalDebts > 0 ||
     totalScpcDebts > 0 ||
@@ -77,7 +79,11 @@ function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
         {' '}
         {isSerasaCrednet
           ? 'Nesta composição, a camada complementar foi retornada pelo Serasa Crednet, com pendências, protestos e cheques sem fundo.'
-          : 'Inclui dívidas SCPC, pendências REFIN/PEFIN, protestos em cartório, cheques sem fundo e inscrições em CADIN.'}
+          : isRealtimePremiumPj
+            ? 'Nesta composição, a camada complementar foi retornada pelo Realtime Premium PJ, com pendências financeiras, protestos e cheques sem fundo.'
+          : hasDetailedDebtBreakdown
+            ? 'Inclui dívidas SCPC, pendências REFIN/PEFIN, protestos em cartório, cheques sem fundo e inscrições em CADIN.'
+            : 'Inclui pendências financeiras, protestos e cheques sem fundo retornados na camada complementar de mercado.'}
         {' '}
         {!hasAny && (
           <span className="font-semibold text-green-700">
@@ -129,7 +135,7 @@ function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
           color={totalBadChecks > 0 ? 'yellow' : 'green'}
           icon={<CheckCircle2 className="w-5 h-5" />}
         />
-        {(isSerasaCrednet || totalSerasaOccurrences > 0) && (
+        {isSerasaCrednet && (
           <SummaryCard
             title="SERASA"
             value={totalSerasaOccurrences}
@@ -151,7 +157,7 @@ function MarketRestrictionsSection({ mr }: { mr: RaioXMarketRestrictions }) {
         )}
       </div>
 
-      {mr.serasaSummary && (
+      {isSerasaCrednet && mr.serasaSummary && (
         <div className="grid grid-cols-1 gap-4 rounded-lg border border-blue-100 bg-blue-50/50 px-4 py-3 md:grid-cols-3">
           <InfoBox
             label="1ª Ocorrência SERASA"
