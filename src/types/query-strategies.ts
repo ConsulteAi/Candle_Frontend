@@ -480,6 +480,7 @@ export interface DividasMultiCnpjProResult extends DividasMultiBaseResult {
 
 // Raio X Credito Rating SCR
 export interface RaioXMarketRestrictionsSummary {
+  totalDebts?: number;
   totalScpcDebts?: number;
   totalRefinPefinDebts?: number;
   totalProtests?: number;
@@ -490,9 +491,29 @@ export interface RaioXMarketRestrictionsSummary {
   hasCommercialRestrictions?: boolean;
 }
 
+export interface RaioXGenericDebt {
+  value?: string | number;
+  contract?: string;
+  origin?: string;
+  date?: string;
+  informant?: string;
+  created_at?: string;
+  creditor?: string;
+  dueDate?: string;
+  inclusionDate?: string;
+  type?: string;
+  institutionDocument?: string;
+  guarantor?: string;
+}
+
 export interface RaioXMarketRestrictions {
+  available?: boolean;
+  sourceQueryTypeCode?: string;
+  sourceProviderCode?: string;
+  person?: Pick<BasePerson, 'name' | 'document' | 'birthDate' | 'motherName'>;
   summary?: RaioXMarketRestrictionsSummary;
   serasaSummary?: DividasMultiSerasaSummary;
+  debts?: RaioXGenericDebt[];
   scpcDebts?: DividasMultiScpcDebt[];
   refinPefinDebts?: DividasMultiRefinPefinDebt[];
   protests?: DividasMultiProtest[];
@@ -510,6 +531,13 @@ export interface RaioXCreditoRatingScrResult extends ScrBacenResult {
   scrBacen?: ScrEhmEnrichment;
   scrBacenUnavailable?: boolean;
   scrBacenMessage?: string;
+}
+
+export interface RaioXFinanceiroPlusPfResult
+  extends CommercialAnalysisPfResult {
+  marketRestrictions?: RaioXMarketRestrictions;
+  marketRestrictionsUnavailable?: boolean;
+  marketRestrictionsMessage?: string;
 }
 
 // SCR EHM (standalone SCR_PF / SCR_PJ via EHM_CONSULTAS)

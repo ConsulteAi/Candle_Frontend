@@ -31,6 +31,7 @@ import { CommercialAnalysisPjStrategy } from './CommercialAnalysisPjStrategy';
 import { ScrEhmStrategy } from './ScrEhmStrategy';
 import { CcfStrategy } from './CcfStrategy';
 import { RaioXFinanceiroStrategy } from './RaioXFinanceiroStrategy';
+import { RaioXFinanceiroPlusPfStrategy } from './RaioXFinanceiroPlusPfStrategy';
 import { RaioXBacenPlusStrategy } from './RaioXBacenPlusStrategy';
 import { RaioXProStrategy } from './RaioXProStrategy';
 import { DadosCpfStrategy } from './DadosCpfStrategy';
@@ -79,6 +80,7 @@ export const STRATEGIES: Record<string, React.ComponentType<QueryStrategyProps>>
   'CCF': CcfStrategy,
   'RAIO_X_FINANCEIRO_RATING_SCR_PF': RaioXFinanceiroStrategy,
   'RAIO_X_FINANCEIRO_RATING_SCR_PJ': RaioXFinanceiroStrategy,
+  'RAIO_X_FINANCEIRO_PLUS_PF': RaioXFinanceiroPlusPfStrategy,
   'RAIO_X_PRO_PF': RaioXProStrategy,
   'RAIO_X_PRO_PJ': RaioXProStrategy,
   'RAIO_X_BACEN_PLUS_PF': RaioXBacenPlusStrategy,
@@ -124,6 +126,7 @@ export * from './CommercialAnalysisPjStrategy';
 export * from './ScrEhmStrategy';
 export * from './CcfStrategy';
 export * from './RaioXFinanceiroStrategy';
+export * from './RaioXFinanceiroPlusPfStrategy';
 export * from './RaioXBacenPlusStrategy';
 export * from './RaioXProStrategy';
 export * from './DadosCpfStrategy';
