@@ -23,6 +23,13 @@ export type QueryExecutionStatus =
   | 'PROCESSING'
   | 'PENDING_RECONCILIATION';
 
+export interface QueryHistoryFilters {
+  status?: QueryExecutionStatus;
+  input?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
 /**
  * Query Type - Tipo de consulta configurado no backend
  */

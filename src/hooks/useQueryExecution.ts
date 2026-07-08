@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   executeQueryAction,
   getQueryHistoryAction,
@@ -9,6 +9,7 @@ import {
 import type {
   ExecuteQueryRequest,
   ExecuteQueryResponse,
+  QueryHistoryFilters,
   QueryHistoryResponse,
   QueryHistoryEntry,
 } from '@/types/query';
@@ -20,7 +21,7 @@ export function useQueryExecution() {
   const [error, setError] = useState<string | null>(null);
   const updateBalance = useAuthStore((state) => state.updateBalance);
 
-  const executeQuery = async (
+  const executeQuery = useCallback(async (
     queryTypeCode: string,
     input: string
   ): Promise<ExecuteQueryResponse | null> => {
@@ -53,15 +54,16 @@ export function useQueryExecution() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [updateBalance]);
 
-  const getHistory = async (
+  const getHistory = useCallback(async (
     page = 1,
-    limit = 20
+    limit = 20,
+    filters: QueryHistoryFilters = {},
   ): Promise<QueryHistoryResponse | null> => {
     setIsLoading(true);
     try {
-      const result = await getQueryHistoryAction(page, limit);
+      const result = await getQueryHistoryAction(page, limit, filters);
 
       if (!result.success || !result.data) {
         toast.error(result.error || 'Erro ao buscar histórico');
@@ -74,9 +76,9 @@ export function useQueryExecution() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const getById = async (id: string): Promise<QueryHistoryEntry | null> => {
+  const getById = useCallback(async (id: string): Promise<QueryHistoryEntry | null> => {
     setIsLoading(true);
     try {
       const result = await getQueryByIdAction(id);
@@ -115,7 +117,7 @@ export function useQueryExecution() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return {
     executeQuery,
