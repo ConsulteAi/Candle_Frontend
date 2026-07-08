@@ -6,6 +6,7 @@ import { QueryExecutionService } from '@/services/query-execution.service';
 import type {
   ExecuteQueryRequest,
   ExecuteQueryResponse,
+  QueryHistoryFilters,
   QueryHistoryResponse,
   QueryHistoryEntry,
   QueryByIdResponse,
@@ -62,10 +63,11 @@ export async function executeQueryAction(
 
 export async function getQueryHistoryAction(
   page = 1,
-  limit = 20
+  limit = 20,
+  filters: QueryHistoryFilters = {},
 ): Promise<ActionState<QueryHistoryResponse>> {
   try {
-    const data = await QueryExecutionService.getQueryHistory(page, limit);
+    const data = await QueryExecutionService.getQueryHistory(page, limit, filters);
     return { success: true, data };
   } catch (error: any) {
     return { success: false, error: 'Erro ao buscar histórico' };

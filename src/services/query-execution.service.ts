@@ -2,6 +2,7 @@ import { serverHttpClient } from '@/lib/api/serverHttpClient';
 import type {
   ExecuteQueryRequest,
   ExecuteQueryResponse,
+  QueryHistoryFilters,
   QueryHistoryResponse,
   QueryByIdResponse,
 } from '@/types/query';
@@ -19,9 +20,13 @@ export class QueryExecutionService {
     return response.data;
   }
 
-  static async getQueryHistory(page = 1, limit = 20): Promise<QueryHistoryResponse> {
+  static async getQueryHistory(
+    page = 1,
+    limit = 20,
+    filters: QueryHistoryFilters = {},
+  ): Promise<QueryHistoryResponse> {
     const response = await serverHttpClient.get<QueryHistoryResponse>('/queries', {
-      params: { page, limit },
+      params: { page, limit, ...filters },
     });
     return response.data;
   }

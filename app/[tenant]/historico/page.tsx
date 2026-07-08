@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, FileText, Eye, Zap } from 'lucide-react';
+import { useEffect, useState, useTransition } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { CalendarDays, Search, FileText, Eye, X } from 'lucide-react';
 import Link from 'next/link';
 import { useQueryExecution } from '@/hooks/useQueryExecution';
-import { Card, Button, Badge } from '@/components/candle';
+import { Card, Button } from '@/components/candle';
 import { Header, Footer } from '@/components/layout';
 import {
   Table,
@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/glass-table";
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -22,20 +23,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { QueryCategory, type QueryHistoryEntry } from '@/types/query';
+import {
+  QueryCategory,
+  type QueryExecutionStatus,
+  type QueryHistoryEntry,
+} from '@/types/query';
 import { getCategoryConfig } from '@/constants/query-categories';
 import { getPriorityCategory } from '@/lib/utils';
 
 export default function HistoricoPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { getHistory, isLoading } = useQueryExecution();
+  const [isPending, startTransition] = useTransition();
   const [queries, setQueries] = useState<QueryHistoryEntry[]>([]);
   const [filteredQueries, setFilteredQueries] = useState<QueryHistoryEntry[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<QueryCategory | 'all'>('all');
+  const currentStatus = searchParams.get('status') || 'ALL';
+  const currentInput = searchParams.get('input') || '';
+  const currentStartDate = searchParams.get('startDate') || '';
+  const currentEndDate = searchParams.get('endDate') || '';
 
-  // Load query history
+  const hasApiFilters =
+    currentStatus !== 'ALL' ||
+    currentInput !== '' ||
+    currentStartDate !== '' ||
+    currentEndDate !== '';
+
   const loadQueries = async () => {
-    const result = await getHistory(1, 50);
+    const filters = {
+      ...(currentStatus !== 'ALL'
+        ? { status: currentStatus as QueryExecutionStatus }
+        : {}),
+      ...(currentInput ? { input: currentInput } : {}),
+      ...(currentStartDate ? { startDate: currentStartDate } : {}),
+      ...(currentEndDate ? { endDate: currentEndDate } : {}),
+    };
+    const result = await getHistory(1, 50, filters);
+
     if (result) {
       setQueries(result.data);
       setFilteredQueries(result.data);
@@ -44,9 +69,35 @@ export default function HistoricoPage() {
 
   useEffect(() => {
     loadQueries();
-  }, []);
+  }, [currentStatus, currentInput, currentStartDate, currentEndDate]);
 
-  // Apply category filter
+  const pushFilters = (overrides: Record<string, string>) => {
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      const merged = {
+        status: currentStatus,
+        input: currentInput,
+        startDate: currentStartDate,
+        endDate: currentEndDate,
+        ...overrides,
+      };
+
+      for (const [key, value] of Object.entries(merged)) {
+        if (!value || value === 'ALL') {
+          params.delete(key);
+        } else {
+          params.set(key, value);
+        }
+      }
+
+      router.push(`/historico?${params.toString()}`);
+    });
+  };
+
+  const clearApiFilters = () => {
+    startTransition(() => router.push('/historico'));
+  };
+
   useEffect(() => {
     if (categoryFilter === 'all') {
       setFilteredQueries(queries);
@@ -100,7 +151,6 @@ export default function HistoricoPage() {
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="space-y-8 pb-20">
-          {/* Header Section with Atmosphere */}
           <div className="relative">
             <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full mix-blend-multiply pointer-events-none" />
             <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -115,7 +165,6 @@ export default function HistoricoPage() {
             </div>
           </div>
 
-          {/* Glass Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="relative overflow-hidden border-0 bg-white/40 backdrop-blur-2xl shadow-xl hover:shadow-2xl transition-all duration-500 group">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -158,45 +207,160 @@ export default function HistoricoPage() {
             </Card>
           </div>
 
-          {/* Main Content Area */}
           <div className="relative">
-             {/* Table Glass Container */}
             <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl overflow-hidden p-1">
-              
-              {/* Table Header Controls */}
-              <div className="p-6 border-b border-gray-200/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <FileText className="w-5 h-5 text-primary" />
+              <div
+                className={`border-b border-gray-200/30 transition-opacity duration-200 ${
+                  isPending ? 'opacity-70 pointer-events-none' : ''
+                }`}
+              >
+                <div className="p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <FileText className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-display font-bold text-gray-800">
+                      Transações Recentes
+                    </h3>
                   </div>
-                  <h3 className="text-xl font-display font-bold text-gray-800">
-                    Transações Recentes
-                  </h3>
+
+                  <div className="w-full lg:w-auto">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-gray-500 uppercase tracking-wider">Categoria:</span>
+                      <div className="w-[220px] max-w-full">
+                        <Select
+                          value={categoryFilter}
+                          onValueChange={(value) => setCategoryFilter(value as QueryCategory | 'all')}
+                        >
+                          <SelectTrigger className="h-10 bg-white/50 border-white/50 focus:bg-white transition-colors shadow-sm text-gray-700 font-medium rounded-xl">
+                            <SelectValue placeholder="Todas Categorias" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white/90 backdrop-blur-xl border-gray-200/50 shadow-2xl rounded-xl">
+                            <SelectItem value="all" className="font-medium">Todas Categorias</SelectItem>
+                            <SelectItem value="CREDIT">Crédito</SelectItem>
+                            <SelectItem value="VEHICLE">Veículos</SelectItem>
+                            <SelectItem value="COMPANY">Empresarial</SelectItem>
+                            <SelectItem value="PERSON">Pessoa Física</SelectItem>
+                            <SelectItem value="PHONE">Telefone</SelectItem>
+                            <SelectItem value="ADDRESS">Endereço</SelectItem>
+                            <SelectItem value="OTHER">Outros</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Premium Filter */}
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-500 uppercase tracking-wider">Filtrar por:</span>
-                  <div className="w-[200px]">
-                    <Select
-                      value={categoryFilter}
-                      onValueChange={(value) => setCategoryFilter(value as QueryCategory | 'all')}
-                    >
-                      <SelectTrigger className="h-10 bg-white/50 border-white/50 focus:bg-white transition-colors shadow-sm text-gray-700 font-medium rounded-xl">
-                        <SelectValue placeholder="Todas Categorias" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white/90 backdrop-blur-xl border-gray-200/50 shadow-2xl rounded-xl">
-                        <SelectItem value="all" className="font-medium">Todas Categorias</SelectItem>
-                        <SelectItem value="CREDIT">Crédito</SelectItem>
-                        <SelectItem value="VEHICLE">Veículos</SelectItem>
-                        <SelectItem value="COMPANY">Empresarial</SelectItem>
-                        <SelectItem value="PERSON">Pessoa Física</SelectItem>
-                        <SelectItem value="PHONE">Telefone</SelectItem>
-                        <SelectItem value="ADDRESS">Endereço</SelectItem>
-                        <SelectItem value="OTHER">Outros</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <div className="px-6 pb-6 space-y-3">
+                  <div className="flex flex-wrap gap-3 items-end">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Status</label>
+                      <Select value={currentStatus} onValueChange={(value) => pushFilters({ status: value })}>
+                        <SelectTrigger className="w-[170px] h-10 bg-white/50 border-white/50 focus:bg-white transition-colors shadow-sm rounded-xl">
+                          <SelectValue placeholder="Todos" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white/90 backdrop-blur-xl border-gray-200/50 shadow-2xl rounded-xl">
+                          <SelectItem value="ALL">Todos</SelectItem>
+                          <SelectItem value="SUCCESS">Sucesso</SelectItem>
+                          <SelectItem value="FAILED">Falhou</SelectItem>
+                          <SelectItem value="PENDING_RECONCILIATION">Em reconciliação</SelectItem>
+                          <SelectItem value="PENDING">Pendente</SelectItem>
+                          <SelectItem value="PROCESSING">Processando</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Documento</label>
+                      <div className="relative">
+                        <Input
+                          type="text"
+                          placeholder="CPF, CNPJ, placa..."
+                          className="h-10 w-[220px] max-w-full bg-white/50 border-white/50 pl-9 rounded-xl"
+                          value={currentInput}
+                          onChange={(e) => pushFilters({ input: e.target.value })}
+                        />
+                        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                        <CalendarDays className="w-3 h-3" /> Período
+                      </label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Input
+                          type="date"
+                          className="h-10 w-[160px] bg-white/50 border-white/50 rounded-xl"
+                          value={currentStartDate}
+                          onChange={(e) => pushFilters({ startDate: e.target.value })}
+                        />
+                        <span className="text-slate-400 text-sm">até</span>
+                        <Input
+                          type="date"
+                          className="h-10 w-[160px] bg-white/50 border-white/50 rounded-xl"
+                          value={currentEndDate}
+                          onChange={(e) => pushFilters({ endDate: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    {hasApiFilters && (
+                      <Button
+                        variant="ghost"
+                        onClick={clearApiFilters}
+                        className="h-10 text-slate-500 hover:text-slate-700 self-end"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Limpar filtros
+                      </Button>
+                    )}
                   </div>
+
+                  {hasApiFilters && (
+                    <div className="flex flex-wrap gap-2">
+                      {currentStatus !== 'ALL' && (
+                        <button
+                          type="button"
+                          onClick={() => pushFilters({ status: 'ALL' })}
+                          className="inline-flex items-center gap-1 text-xs bg-primary/8 text-primary border border-primary/20 px-2 py-1 rounded-full font-medium"
+                        >
+                          {currentStatus}
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                      {currentInput && (
+                        <button
+                          type="button"
+                          onClick={() => pushFilters({ input: '' })}
+                          className="inline-flex items-center gap-1 text-xs bg-primary/8 text-primary border border-primary/20 px-2 py-1 rounded-full font-medium"
+                        >
+                          {currentInput}
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                      {currentStartDate && (
+                        <button
+                          type="button"
+                          onClick={() => pushFilters({ startDate: '' })}
+                          className="inline-flex items-center gap-1 text-xs bg-primary/8 text-primary border border-primary/20 px-2 py-1 rounded-full font-medium"
+                        >
+                          de {currentStartDate}
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                      {currentEndDate && (
+                        <button
+                          type="button"
+                          onClick={() => pushFilters({ endDate: '' })}
+                          className="inline-flex items-center gap-1 text-xs bg-primary/8 text-primary border border-primary/20 px-2 py-1 rounded-full font-medium"
+                        >
+                          até {currentEndDate}
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -9,6 +9,7 @@ import {
 import type {
   ExecuteQueryRequest,
   ExecuteQueryResponse,
+  QueryHistoryFilters,
   QueryHistoryResponse,
   QueryHistoryEntry,
 } from '@/types/query';
@@ -57,11 +58,12 @@ export function useQueryExecution() {
 
   const getHistory = async (
     page = 1,
-    limit = 20
+    limit = 20,
+    filters: QueryHistoryFilters = {},
   ): Promise<QueryHistoryResponse | null> => {
     setIsLoading(true);
     try {
-      const result = await getQueryHistoryAction(page, limit);
+      const result = await getQueryHistoryAction(page, limit, filters);
 
       if (!result.success || !result.data) {
         toast.error(result.error || 'Erro ao buscar histórico');
