@@ -7,7 +7,7 @@ import type {
   QueryByIdResponse,
 } from '@/types/query';
 
-const QUERY_EXECUTION_TIMEOUT_MS = 90000;
+const QUERY_EXECUTION_TIMEOUT_MS = 200000;
 
 export class QueryExecutionService {
   static async executeQuery(data: ExecuteQueryRequest): Promise<ExecuteQueryResponse> {
