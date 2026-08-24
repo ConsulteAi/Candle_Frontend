@@ -13,7 +13,7 @@ interface RechargeModalProps {
   onSuccess?: () => void;
 }
 
-const PRESET_AMOUNTS = [20, 50, 100, 200, 500, 1000];
+const PRESET_AMOUNTS = [50, 100, 200, 300, 500, 1000];
 
 export function RechargeModal({ isOpen, onClose, onSuccess }: RechargeModalProps) {
   const { createRecharge, checkPaymentStatus } = usePayment();
@@ -76,8 +76,8 @@ export function RechargeModal({ isOpen, onClose, onSuccess }: RechargeModalProps
   };
 
   const handleNextToMethod = () => {
-    if (amount < 10) {
-      toast.error('Valor mínimo de recarga é R$ 10,00');
+    if (amount < 50) {
+      toast.error('Valor mínimo de recarga é R$ 50,00');
       return;
     }
     if (amount > 10000) {

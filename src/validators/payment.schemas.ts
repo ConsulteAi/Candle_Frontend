@@ -11,7 +11,7 @@ import { z } from 'zod';
 export const rechargeSchema = z.object({
   amount: z
     .number()
-    .min(10, 'Valor mínimo de recarga é R$ 10,00')
+    .min(50, 'Valor mínimo de recarga é R$ 50,00')
     .max(10000, 'Valor máximo de recarga é R$ 10.000,00'),
   billingType: z.enum(['PIX', 'BOLETO', 'CREDIT_CARD'], {
     errorMap: () => ({ message: 'Método de pagamento inválido' }),
@@ -54,7 +54,7 @@ export type CreditCardFormData = z.infer<typeof creditCardSchema>;
 export const rechargeWithCardSchema = z.object({
   amount: z
     .number()
-    .min(10, 'Valor mínimo de recarga é R$ 10,00')
+    .min(50, 'Valor mínimo de recarga é R$ 50,00')
     .max(10000, 'Valor máximo de recarga é R$ 10.000,00'),
   billingType: z.literal('CREDIT_CARD'),
   creditCard: creditCardSchema,
