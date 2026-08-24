@@ -422,7 +422,11 @@ export interface UpdateQueryTypeDto extends Partial<CreateQueryTypeDto> {}
 
 export interface TenantUiSettings {
   name?: string;
+  /** Derivado WebP da logo, exibido na interface. */
   logoUrl?: string;
+  /** Derivado PNG da logo, consumido pelo PDF (o pdfmake não lê WebP). */
+  logoPngUrl?: string;
+  /** Favicon .ico, derivado automaticamente da logo enviada. */
   faviconUrl?: string;
   contactEmail?: string;
   whatsappSupportPhone?: string;

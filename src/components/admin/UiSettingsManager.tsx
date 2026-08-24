@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, Palette, Image as ImageIcon, Link as LinkIcon, Eye, LayoutTemplate, MousePointer2, CheckCircle2 } from 'lucide-react';
 import { TenantUiSettings } from '@/types/admin';
+import { LogoUploader, type UploadedLogo } from './LogoUploader';
 
 // Helper utilities to parse and convert Tailwind HSL strings <-> Hex values
 const hexToHslString = (hex: string): string => {
@@ -92,6 +93,7 @@ export function UiSettingsManager() {
   const [formData, setFormData] = useState({
     name: '',
     logoUrl: '',
+    logoPngUrl: '',
     faviconUrl: '',
     contactEmail: '',
     whatsappSupportPhone: '',
@@ -112,6 +114,7 @@ export function UiSettingsManager() {
           setFormData({
             name: ui.name || '',
             logoUrl: ui.logoUrl || '',
+            logoPngUrl: ui.logoPngUrl || '',
             faviconUrl: ui.faviconUrl || '',
             contactEmail: ui.contactEmail || '',
             whatsappSupportPhone: formatWhatsappPhone(ui.whatsappSupportPhone),
@@ -141,8 +144,9 @@ export function UiSettingsManager() {
       await api.patch(`/admin/tenants/ui-settings`, {
         uiSettings: {
           name: formData.name,
-          logoUrl: formData.logoUrl,
-          faviconUrl: formData.faviconUrl,
+          logoUrl: formData.logoUrl || null,
+          logoPngUrl: formData.logoPngUrl || null,
+          faviconUrl: formData.faviconUrl || null,
           contactEmail: normalizedContactEmail.length > 0 ? normalizedContactEmail : null,
           whatsappSupportPhone: normalizedWhatsappSupportPhone.length > 0 ? normalizedWhatsappSupportPhone : null,
           colors: {
@@ -185,6 +189,25 @@ export function UiSettingsManager() {
 
   const handleColorChange = (name: string, hexValue: string) => {
     setFormData((prev) => ({ ...prev, [name]: hexToHslString(hexValue) }));
+  };
+
+  // O upload já persistiu as URLs no backend. Sincronizar o estado local evita
+  // que o "Salvar" seguinte reenvie os valores antigos por cima.
+  const handleLogoUploaded = async (logo: UploadedLogo) => {
+    setFormData((prev) => ({ ...prev, ...logo }));
+    // O upload já gravou no banco. Sem purgar o cache do Next, o restante do
+    // app (sidebar, favicon) continuaria exibindo a logo anterior até o Salvar.
+    await revalidateTenantConfig();
+  };
+
+  const handleLogoRemoved = async () => {
+    setFormData((prev) => ({
+      ...prev,
+      logoUrl: '',
+      logoPngUrl: '',
+      faviconUrl: '',
+    }));
+    await revalidateTenantConfig();
   };
 
   if (isLoading) {
@@ -240,22 +263,44 @@ export function UiSettingsManager() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="logoUrl" className="text-sm font-medium">Logotipo Principal (URL)</Label>
-                    <Input
-                      id="logoUrl"
-                      name="logoUrl"
-                      placeholder="Ex: https://meusite.com/logo.png"
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label className="text-sm font-medium">Logotipo Principal</Label>
+                    <LogoUploader
                       value={formData.logoUrl}
-                      onChange={handleChange}
-                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                      onUploaded={handleLogoUploaded}
+                      onRemoved={handleLogoRemoved}
                     />
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      A imagem é convertida para WebP (interface), PNG (relatórios em PDF) e .ico (favicon) automaticamente.
+                    </p>
+
+                    <details className="group pt-1">
+                      <summary className="cursor-pointer text-xs text-slate-500 hover:text-slate-700 select-none">
+                        Usar uma URL externa
+                      </summary>
+                      <div className="pt-2">
+                        <Input
+                          id="logoUrl"
+                          name="logoUrl"
+                          placeholder="Ex: https://meusite.com/logo.png"
+                          value={formData.logoUrl}
+                          onChange={handleChange}
+                          className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                        />
+                        <p className="pt-1 text-xs text-slate-500 leading-relaxed">
+                          Uma URL externa é usada como está, sem conversão. Para aparecer no PDF ela precisa ser PNG ou JPEG.
+                        </p>
+                      </div>
+                    </details>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="faviconUrl" className="flex items-center gap-2 text-sm font-medium">
                       Ícone / Favicon (URL)
                     </Label>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Preenchido automaticamente a partir da logo. Informe uma URL aqui apenas se tiver um ícone quadrado próprio.
+                    </p>
                     <Input
                       id="faviconUrl"
                       name="faviconUrl"

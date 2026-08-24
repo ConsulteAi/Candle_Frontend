@@ -51,6 +51,7 @@ const allowedRoutes: AllowedRoute[] = [
   { pattern: /^\/admin\/tenants$/, methods: ["GET", "POST"] },
   { pattern: /^\/admin\/tenants\/[a-zA-Z0-9-]+$/, methods: ["PATCH", "DELETE"] },
   { pattern: /^\/admin\/tenants\/ui-settings$/, methods: ["PATCH"] },
+  { pattern: /^\/admin\/tenants\/logo$/, methods: ["POST", "DELETE"] },
 
   { pattern: /^\/api-tokens$/, methods: ["POST"] },
   { pattern: /^\/api-tokens\/[a-zA-Z0-9-]+$/, methods: ["PATCH", "DELETE"] },
