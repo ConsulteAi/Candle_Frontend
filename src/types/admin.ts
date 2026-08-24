@@ -446,6 +446,7 @@ export interface Tenant {
   ownerName?: string;
   ownerEmail?: string;
   uiSettings?: TenantUiSettings;
+  pdfShowLogo?: boolean;
   _count?: {
     users: number;
     providers: number;
@@ -471,6 +472,7 @@ export interface UpdateTenantDto {
   isActive?: boolean;
   domain?: string | null;
   ownerId?: string | null;
+  pdfShowLogo?: boolean;
 }
 
 // --- API Tokens ---
