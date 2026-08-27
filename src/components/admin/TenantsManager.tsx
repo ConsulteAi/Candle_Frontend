@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import {
   Plus,
@@ -46,12 +47,15 @@ export function TenantsManager() {
   const [editingItem, setEditingItem] = useState<Tenant | null>(null);
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState<Partial<CreateTenantDto>>({
+  const [formData, setFormData] = useState<
+    Partial<CreateTenantDto> & { pdfShowLogo?: boolean }
+  >({
     slug: '',
     name: '',
     asaasApiKey: '',
     domain: '',
     ownerId: '',
+    pdfShowLogo: false,
   });
 
   const fetchTenants = async () => {
@@ -86,6 +90,7 @@ export function TenantsManager() {
           asaasApiKey: formData.asaasApiKey, // keep original behavior for the input that is still visible
           domain: payloadDomain,
           ownerId: payloadOwnerId,
+          pdfShowLogo: !!formData.pdfShowLogo,
         };
         await httpClient.patch(`/admin/tenants/${editingItem.id}`, updateData);
         toast({ title: 'Sucesso', description: 'Tenant atualizado.' });
@@ -135,6 +140,7 @@ export function TenantsManager() {
         asaasApiKey: item.asaasApiKey,
         domain: '',
         ownerId: item.ownerId || '',
+        pdfShowLogo: !!item.pdfShowLogo,
       });
     } else {
       setFormData({
@@ -143,6 +149,7 @@ export function TenantsManager() {
         asaasApiKey: '',
         domain: '',
         ownerId: '',
+        pdfShowLogo: false,
       });
     }
     setIsModalOpen(true);
@@ -349,6 +356,24 @@ export function TenantsManager() {
                 }
               />
             </div>
+            {editingItem && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right text-xs leading-tight">
+                  Logo no PDF
+                </Label>
+                <div className="col-span-3 flex items-center gap-3">
+                  <Switch
+                    checked={!!formData.pdfShowLogo}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, pdfShowLogo: checked })
+                    }
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    Exibe a logo do tenant no topo do PDF das consultas
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>

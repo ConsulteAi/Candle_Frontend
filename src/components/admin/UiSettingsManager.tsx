@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Loader2, Palette, Image as ImageIcon, Link as LinkIcon, Eye, LayoutTemplate, MousePointer2, CheckCircle2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { TenantUiSettings } from '@/types/admin';
+import { BrandPreview } from './BrandPreview';
+import { LogoUploader, type UploadedLogo } from './LogoUploader';
 
 // Helper utilities to parse and convert Tailwind HSL strings <-> Hex values
 const hexToHslString = (hex: string): string => {
@@ -92,6 +94,7 @@ export function UiSettingsManager() {
   const [formData, setFormData] = useState({
     name: '',
     logoUrl: '',
+    logoPngUrl: '',
     faviconUrl: '',
     contactEmail: '',
     whatsappSupportPhone: '',
@@ -112,6 +115,7 @@ export function UiSettingsManager() {
           setFormData({
             name: ui.name || '',
             logoUrl: ui.logoUrl || '',
+            logoPngUrl: ui.logoPngUrl || '',
             faviconUrl: ui.faviconUrl || '',
             contactEmail: ui.contactEmail || '',
             whatsappSupportPhone: formatWhatsappPhone(ui.whatsappSupportPhone),
@@ -141,8 +145,9 @@ export function UiSettingsManager() {
       await api.patch(`/admin/tenants/ui-settings`, {
         uiSettings: {
           name: formData.name,
-          logoUrl: formData.logoUrl,
-          faviconUrl: formData.faviconUrl,
+          logoUrl: formData.logoUrl || null,
+          logoPngUrl: formData.logoPngUrl || null,
+          faviconUrl: formData.faviconUrl || null,
           contactEmail: normalizedContactEmail.length > 0 ? normalizedContactEmail : null,
           whatsappSupportPhone: normalizedWhatsappSupportPhone.length > 0 ? normalizedWhatsappSupportPhone : null,
           colors: {
@@ -187,6 +192,25 @@ export function UiSettingsManager() {
     setFormData((prev) => ({ ...prev, [name]: hexToHslString(hexValue) }));
   };
 
+  // O upload já persistiu as URLs no backend. Sincronizar o estado local evita
+  // que o "Salvar" seguinte reenvie os valores antigos por cima.
+  const handleLogoUploaded = async (logo: UploadedLogo) => {
+    setFormData((prev) => ({ ...prev, ...logo }));
+    // O upload já gravou no banco. Sem purgar o cache do Next, o restante do
+    // app (sidebar, favicon) continuaria exibindo a logo anterior até o Salvar.
+    await revalidateTenantConfig();
+  };
+
+  const handleLogoRemoved = async () => {
+    setFormData((prev) => ({
+      ...prev,
+      logoUrl: '',
+      logoPngUrl: '',
+      faviconUrl: '',
+    }));
+    await revalidateTenantConfig();
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-20">
@@ -195,276 +219,274 @@ export function UiSettingsManager() {
     );
   }
 
-  // Generate dynamic styles for preview
-  const previewStyle = {
-    '--preview-primary': formData.primaryColor,
-    '--preview-primary-foreground': formData.primaryForegroundColor
-  } as React.CSSProperties;
+  const inputClass =
+    'h-10 border-slate-200 bg-white text-sm transition-colors focus-visible:ring-slate-900';
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="p-6 border-b border-slate-200 bg-slate-50/50 flex items-center gap-3">
-        <div className="bg-primary/10 p-2 rounded-lg text-primary">
-          <Palette className="w-5 h-5" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900 leading-tight">Painel de White-Label</h2>
-          <p className="text-sm text-slate-500">Configure a identidade visual do seu ambiente.</p>
-        </div>
-      </div>
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <header className="border-b border-slate-100 px-6 py-5">
+        <h2 className="font-display text-xl font-semibold tracking-tight text-slate-900">
+          Identidade visual
+        </h2>
+        <p className="mt-0.5 text-sm text-slate-500">
+          A marca que seus clientes veem quando usam o sistema.
+        </p>
+      </header>
 
-      <div className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Left Column: Form Controls */}
-          <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl">
-              
-              {/* Branding Section */}
-              <div className="space-y-5">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                  <ImageIcon className="w-4 h-4 text-slate-400" />
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Imagens e Comunicação</h3>
-                </div>
-                
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="name" className="text-sm font-medium">Nome do Ambiente (Empresa)</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      placeholder="Ex: Minha Plataforma"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                    />
-                  </div>
+      <div className="grid grid-cols-1 gap-10 p-6 lg:grid-cols-5 lg:gap-12">
+        {/* Controles */}
+        <form onSubmit={handleSubmit} className="space-y-10 lg:col-span-3">
+          <section className="space-y-5">
+            <SectionHeading
+              title="Sua marca"
+              hint="Uma imagem só. O sistema gera o resto."
+            />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="logoUrl" className="text-sm font-medium">Logotipo Principal (URL)</Label>
-                    <Input
-                      id="logoUrl"
-                      name="logoUrl"
-                      placeholder="Ex: https://meusite.com/logo.png"
-                      value={formData.logoUrl}
-                      onChange={handleChange}
-                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="faviconUrl" className="flex items-center gap-2 text-sm font-medium">
-                      Ícone / Favicon (URL)
-                    </Label>
-                    <Input
-                      id="faviconUrl"
-                      name="faviconUrl"
-                      placeholder="Ex: https://meusite.com/favicon.ico"
-                      value={formData.faviconUrl}
-                      onChange={handleChange}
-                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                    />
-                  </div>
-
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="contactEmail" className="text-sm font-medium">E-mail de Contato Comercial (opcional)</Label>
-                    <Input
-                      id="contactEmail"
-                      name="contactEmail"
-                      type="email"
-                      placeholder="Ex: suporte@suaempresa.com.br"
-                      value={formData.contactEmail}
-                      onChange={handleChange}
-                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                    />
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Se este campo ficar vazio, o e-mail será removido e as seções de contato não aparecerão para os usuários no site.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="whatsappSupportPhone" className="text-sm font-medium">Telefone de Suporte WhatsApp (opcional)</Label>
-                    <Input
-                      id="whatsappSupportPhone"
-                      name="whatsappSupportPhone"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      placeholder="Ex: +55 (11) 99999-9999"
-                      value={formData.whatsappSupportPhone}
-                      onChange={handleChange}
-                      className="bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                    />
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      A formatacao e aplicada automaticamente. Informe DDI + DDD + numero. Se ficar vazio, o botao flutuante de suporte nao aparece.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Colors Section */}
-              <div className="space-y-5">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-                  <Palette className="w-4 h-4 text-slate-400" />
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Paleta de Cores Institucionais</h3>
-                </div>
-                
-                <p className="text-sm text-slate-500 -mt-2">
-                  Use o seletor visual abaixo para escolher as cores. O sistema fará a conversão automática para variáveis HSL utilizadas na interface.
-                </p>
-
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="space-y-3">
-                    <Label htmlFor="primaryColor" className="text-sm font-medium">Cor Primária (Fundo, Botões)</Label>
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-12 h-12 rounded-lg border border-slate-200 shadow-sm overflow-hidden flex-shrink-0 bg-white">
-                        <input 
-                          type="color"
-                          title="Escolher Cor Primária"
-                          value={hslStringToHex(formData.primaryColor)}
-                          onChange={(e) => handleColorChange('primaryColor', e.target.value)}
-                          className="absolute -inset-2 w-16 h-16 cursor-pointer border-0 p-0"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <Input
-                          id="primaryColor"
-                          name="primaryColor"
-                          value={formData.primaryColor}
-                          onChange={handleChange}
-                          className="bg-slate-50 font-mono text-xs h-10 border-slate-200 focus:bg-white"
-                          placeholder="221.2 83.2% 53.3%"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label htmlFor="primaryForegroundColor" className="text-sm font-medium">Cor Secundária (Textos sobre Primária)</Label>
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-12 h-12 rounded-lg border border-slate-200 shadow-sm overflow-hidden flex-shrink-0 bg-white">
-                        <input 
-                          type="color"
-                          title="Escolher Cor de Texto Primário"
-                          value={hslStringToHex(formData.primaryForegroundColor)}
-                          onChange={(e) => handleColorChange('primaryForegroundColor', e.target.value)}
-                          className="absolute -inset-2 w-16 h-16 cursor-pointer border-0 p-0"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <Input
-                          id="primaryForegroundColor"
-                          name="primaryForegroundColor"
-                          value={formData.primaryForegroundColor}
-                          onChange={handleChange}
-                          className="bg-slate-50 font-mono text-xs h-10 border-slate-200 focus:bg-white"
-                          placeholder="210 40% 98%"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-slate-100 flex justify-end">
-                <Button type="submit" disabled={isSaving} className="min-w-[150px] shadow-sm">
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    'Salvar Identidade Visual'
-                  )}
-                </Button>
-              </div>
-            </form>
-          </div>
-
-          {/* Right Column: Live Preview */}
-          <div className="lg:col-span-1 border-l border-slate-100 lg:pl-8 space-y-5 pt-8 lg:pt-0">
-            <div className="flex items-center gap-2 pb-2 border-b border-transparent">
-              <Eye className="w-4 h-4 text-slate-400" />
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Preview em Tempo Real</h3>
-            </div>
-            
-            <p className="text-sm text-slate-500 mb-4">Veja como os botões e componentes principais reagirão às suas cores.</p>
-            
-            <div 
-              className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm flex flex-col ring-1 ring-black/[0.03]"
-              style={previewStyle}
+            <Field
+              label="Nome do ambiente"
+              htmlFor="name"
+              hint="Aparece no topo do sistema, na aba do navegador e nos relatórios."
             >
-              {/* Fake Topbar */}
-              <div className="h-14 border-b border-slate-100 flex items-center px-4 gap-3 bg-white">
-                {formData.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={formData.logoUrl} alt="Preview Logo" className="h-6 object-contain max-w-[120px]" />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center border border-slate-200">
-                      <LayoutTemplate className="w-4 h-4 text-slate-400" />
-                    </div>
-                    <span className="font-semibold text-slate-700 tracking-tight">{formData.name || 'Sua Empresa'}</span>
-                  </div>
-                )}
-                <div className="flex-1" />
-                <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
-                  <div className="w-3 h-3 rounded-full bg-slate-300" />
-                </div>
-              </div>
-              
-              {/* Fake Body */}
-              <div className="p-5 space-y-5 bg-slate-50/50 flex-1">
-                {/* Fake Breadcrumb/Title */}
-                <div className="space-y-1.5">
-                  <div className="h-3 w-20 bg-slate-200/60 rounded" />
-                  <div className="h-5 w-40 bg-slate-300/60 rounded" />
-                </div>
-                
-                {/* Fake Cards */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="h-24 bg-white border border-slate-200 rounded-lg shadow-sm p-3.5 flex flex-col justify-between hover:shadow-md transition-shadow">
-                    <div className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Faturamento</div>
-                    <div className="text-xl font-bold tracking-tight" style={{ color: `hsl(var(--preview-primary))` }}>R$ 1.2M</div>
-                  </div>
-                  <div className="h-24 bg-white border border-slate-200 rounded-lg shadow-sm p-3.5 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-2">
-                       <CheckCircle2 className="w-3 h-3 opacity-20" style={{ color: `hsl(var(--preview-primary))` }} />
-                    </div>
-                    <div className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">Status</div>
-                    <div className="flex items-center gap-1.5 mt-auto">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: `hsl(var(--preview-primary))` }} />
-                      <span className="text-sm font-semibold text-slate-700">Ativo</span>
-                    </div>
-                  </div>
-                </div>
+              <Input
+                id="name"
+                name="name"
+                placeholder="Ex: 3V Negócios"
+                value={formData.name}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </Field>
 
-                {/* Fake Interactive Component */}
-                <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-4 mt-2">
-                   <p className="text-xs text-slate-500 mb-3 text-center">Interação de botão e cor de contraste</p>
-                   <button 
-                     type="button"
-                     className="w-full text-sm py-2.5 rounded-md font-medium transition-all shadow-sm hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2"
-                     style={{ 
-                       backgroundColor: `hsl(var(--preview-primary))`, 
-                       color: `hsl(var(--preview-primary-foreground))`
-                     }}
-                   >
-                     <MousePointer2 className="w-4 h-4" />
-                     Simular Clique
-                   </button>
-                </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-slate-700">
+                Logotipo
+              </Label>
+              <LogoUploader
+                value={formData.logoUrl}
+                faviconUrl={formData.faviconUrl}
+                onUploaded={handleLogoUploaded}
+                onRemoved={handleLogoRemoved}
+              />
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field
+                label="Cor da marca"
+                htmlFor="primaryColor"
+                hint="Botões e destaques."
+              >
+                <ColorField
+                  id="primaryColor"
+                  name="primaryColor"
+                  title="Escolher a cor da marca"
+                  value={formData.primaryColor}
+                  onPick={(hex) => handleColorChange('primaryColor', hex)}
+                  onChange={handleChange}
+                />
+              </Field>
+
+              <Field
+                label="Cor de contraste"
+                htmlFor="primaryForegroundColor"
+                hint="Texto sobre a cor da marca."
+              >
+                <ColorField
+                  id="primaryForegroundColor"
+                  name="primaryForegroundColor"
+                  title="Escolher a cor de contraste"
+                  value={formData.primaryForegroundColor}
+                  onPick={(hex) =>
+                    handleColorChange('primaryForegroundColor', hex)
+                  }
+                  onChange={handleChange}
+                />
+              </Field>
+            </div>
+
+            <details className="group rounded-xl border border-slate-200 px-4 py-3">
+              <summary className="cursor-pointer select-none text-xs font-medium text-slate-500 transition-colors hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
+                Hospedar as imagens por conta própria
+              </summary>
+              <div className="space-y-4 pt-4">
+                <p className="text-xs leading-relaxed text-slate-500">
+                  Informe endereços aqui só se preferir servir os arquivos do
+                  seu próprio site. Eles são usados como estão, sem conversão —
+                  e para a logo aparecer nos relatórios em PDF, precisa ser PNG
+                  ou JPEG.
+                </p>
+                <Field label="Endereço da logo" htmlFor="logoUrl">
+                  <Input
+                    id="logoUrl"
+                    name="logoUrl"
+                    placeholder="https://seusite.com.br/logo.png"
+                    value={formData.logoUrl}
+                    onChange={handleChange}
+                    className={inputClass}
+                  />
+                </Field>
+                <Field
+                  label="Endereço do ícone da aba"
+                  htmlFor="faviconUrl"
+                  hint="Útil se você tem um ícone quadrado próprio."
+                >
+                  <Input
+                    id="faviconUrl"
+                    name="faviconUrl"
+                    placeholder="https://seusite.com.br/favicon.ico"
+                    value={formData.faviconUrl}
+                    onChange={handleChange}
+                    className={inputClass}
+                  />
+                </Field>
               </div>
-            </div>
-            
-            <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 mt-4">
-              <p className="text-xs text-blue-600 leading-relaxed">
-                As cores primárias são usadas nos botões de ação e modais, certifique-se de que a <b>cor secundária</b> permite boa leitura (branco `210 40% 98%` ou escuro).
-              </p>
-            </div>
+            </details>
+          </section>
+
+          <section className="space-y-5">
+            <SectionHeading
+              title="Contato"
+              hint="Como seus clientes falam com você."
+            />
+
+            <Field
+              label="E-mail comercial"
+              htmlFor="contactEmail"
+              hint="Se ficar vazio, as seções de contato somem do site."
+            >
+              <Input
+                id="contactEmail"
+                name="contactEmail"
+                type="email"
+                placeholder="suporte@suaempresa.com.br"
+                value={formData.contactEmail}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field
+              label="WhatsApp de suporte"
+              htmlFor="whatsappSupportPhone"
+              hint="Se ficar vazio, o botão flutuante de suporte não aparece."
+            >
+              <Input
+                id="whatsappSupportPhone"
+                name="whatsappSupportPhone"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="+55 (11) 99999-9999"
+                value={formData.whatsappSupportPhone}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </Field>
+          </section>
+
+          <div className="flex items-center justify-end gap-4 border-t border-slate-100 pt-6">
+            <p className="text-xs text-slate-400">
+              A logo é salva no envio. O resto, ao salvar.
+            </p>
+            <Button type="submit" disabled={isSaving} className="min-w-[132px]">
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando
+                </>
+              ) : (
+                'Salvar alterações'
+              )}
+            </Button>
           </div>
-          
+        </form>
+
+        {/* Preview */}
+        <div className="lg:col-span-2">
+          <div className="lg:sticky lg:top-6">
+            <p className="mb-3 text-[11px] font-medium uppercase tracking-wider text-slate-400">
+              Como fica
+            </p>
+            <BrandPreview
+              name={formData.name}
+              logoUrl={formData.logoUrl}
+              faviconUrl={formData.faviconUrl}
+              primaryColor={formData.primaryColor}
+              primaryForegroundColor={formData.primaryForegroundColor}
+            />
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SectionHeading({ title, hint }: { title: string; hint: string }) {
+  return (
+    <div className="border-b border-slate-100 pb-3">
+      <h3 className="font-display text-sm font-semibold tracking-tight text-slate-900">
+        {title}
+      </h3>
+      <p className="mt-0.5 text-xs text-slate-500">{hint}</p>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  htmlFor,
+  hint,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={htmlFor} className="text-sm font-medium text-slate-700">
+        {label}
+      </Label>
+      {children}
+      {hint && <p className="text-xs leading-relaxed text-slate-500">{hint}</p>}
+    </div>
+  );
+}
+
+/** Seletor de cor + o valor HSL que o sistema realmente usa. */
+function ColorField({
+  id,
+  name,
+  title,
+  value,
+  onPick,
+  onChange,
+}: {
+  id: string;
+  name: string;
+  title: string;
+  value: string;
+  onPick: (hex: string) => void;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg ring-1 ring-inset ring-slate-900/15">
+        <input
+          type="color"
+          title={title}
+          aria-label={title}
+          value={hslStringToHex(value)}
+          onChange={(event) => onPick(event.target.value)}
+          className="absolute -inset-2 h-16 w-16 cursor-pointer border-0 p-0"
+        />
+      </div>
+      <Input
+        id={id}
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="h-10 border-slate-200 bg-white font-mono text-xs transition-colors focus-visible:ring-slate-900"
+      />
     </div>
   );
 }

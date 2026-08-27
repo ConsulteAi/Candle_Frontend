@@ -422,7 +422,11 @@ export interface UpdateQueryTypeDto extends Partial<CreateQueryTypeDto> {}
 
 export interface TenantUiSettings {
   name?: string;
+  /** Derivado WebP da logo, exibido na interface. */
   logoUrl?: string;
+  /** Derivado PNG da logo, consumido pelo PDF (o pdfmake não lê WebP). */
+  logoPngUrl?: string;
+  /** Favicon .ico, derivado automaticamente da logo enviada. */
   faviconUrl?: string;
   contactEmail?: string;
   whatsappSupportPhone?: string;
@@ -446,6 +450,7 @@ export interface Tenant {
   ownerName?: string;
   ownerEmail?: string;
   uiSettings?: TenantUiSettings;
+  pdfShowLogo?: boolean;
   _count?: {
     users: number;
     providers: number;
@@ -471,6 +476,7 @@ export interface UpdateTenantDto {
   isActive?: boolean;
   domain?: string | null;
   ownerId?: string | null;
+  pdfShowLogo?: boolean;
 }
 
 // --- API Tokens ---

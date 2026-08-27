@@ -63,6 +63,6 @@ export const config = {
      * - public files (public folder)
      * - api routes (if any global APIs need to bypass tenant rewrite)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|avif)$).*)",
   ],
 };

@@ -76,8 +76,8 @@ export default function RechargePage() {
   };
 
   const handlePixPayment = async () => {
-    if (amount < 5) {
-      toast.error('Valor mínimo de recarga é R$ 5,00');
+    if (amount < 50) {
+      toast.error('Valor mínimo de recarga é R$ 50,00');
       return;
     }
     if (amount > 10000) {
@@ -192,7 +192,7 @@ export default function RechargePage() {
                             Outro Valor
                           </label>
                           <p className={`text-xs transition-colors duration-300 ${limitError ? 'text-red-500 font-medium' : 'text-slate-400'}`}>
-                            {limitError ? '• Valor limite de R$ 10.000,00 atingido' : 'Mínimo R$ 5,00 • Máximo R$ 10.000,00'}
+                            {limitError ? '• Valor limite de R$ 10.000,00 atingido' : 'Mínimo R$ 50,00 • Máximo R$ 10.000,00'}
                           </p>
                         </div>
                         <motion.div 
