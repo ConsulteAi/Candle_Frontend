@@ -72,6 +72,16 @@ export function MarketRestrictionsSection({
   const formatDebtDate = (item: RaioXGenericDebt) =>
     formatDisplayDate(item.dueDate || item.date) || '-';
 
+  // O provedor devolve "-" como modalidade ausente; nesse caso a base de origem
+  // (coluna "Base") é o único dado que explica de onde a pendência veio.
+  const formatDebtType = (item: RaioXGenericDebt) => {
+    const normalize = (value?: string) => {
+      const text = String(value ?? '').trim();
+      return !text || text === '-' ? '' : text;
+    };
+    return normalize(item.type) || normalize(item.modality) || '-';
+  };
+
   return (
     <div className="space-y-5 p-4">
       <p className="border-l-2 border-indigo-300 pl-3 text-xs leading-relaxed text-gray-500">
@@ -188,6 +198,7 @@ export function MarketRestrictionsSection({
               <TableRow>
                 <TableHead>Vencimento</TableHead>
                 <TableHead>Credor / Origem</TableHead>
+                <TableHead>Base</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Contrato</TableHead>
                 <TableHead>Inclusão</TableHead>
@@ -201,7 +212,12 @@ export function MarketRestrictionsSection({
                   <TableCell className="font-medium">
                     {item.creditor || item.origin || '-'}
                   </TableCell>
-                  <TableCell>{item.type || item.informant || '-'}</TableCell>
+                  <TableCell className="text-xs text-gray-500">
+                    {[item.sourceLabel, item.informant || item._base]
+                      .filter(Boolean)
+                      .join(' · ') || '-'}
+                  </TableCell>
+                  <TableCell>{formatDebtType(item)}</TableCell>
                   <TableCell>{item.contract || '-'}</TableCell>
                   <TableCell>
                     {formatDisplayDate(item.inclusionDate || item.created_at) || '-'}

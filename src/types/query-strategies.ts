@@ -505,6 +505,11 @@ export interface RaioXGenericDebt {
   institutionDocument?: string;
   guarantor?: string;
   nadaConsta?: boolean;
+  modality?: string;
+  /** Bloco do provedor que originou a pendência (PEND_FINANCEIRAS, PEND_REFIN, ...). */
+  source?: string;
+  /** Rótulo legível do bloco de origem, exibido ao usuário. */
+  sourceLabel?: string;
   _base?: string;
 }
 
