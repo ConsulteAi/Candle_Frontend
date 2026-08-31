@@ -14,7 +14,7 @@
 | `MAX_BRASIL_SCORE_BVS_BASICA_PF` | 441.10 — Realtime MAX SPC + SERASA + BVS | CPF | ❌ Não |
 | `MAX_BRASIL_SCORE_BVS_BASICA_PJ` | 442.11 — Realtime MAX SPC + SERASA + BVS | CNPJ | ❌ Não |
 
-**Nenhum dos 4 produtos retorna Score de crédito.**
+**Score:** os produtos `+PROTESTO` (PF e PJ) **retornam** `score`. Os produtos `_BASICA_` (PF e PJ) **não** retornam Score de crédito.
 
 ---
 
@@ -33,7 +33,6 @@ Todos os 4 produtos seguem o mesmo esqueleto. A única diferença estrutural é:
 ```json
 {
   "protocol": "1022687",
-  "pdf": null,
   "totalDebts": 8,
   "totalProtests": 2,
   "totalBadChecks": 1,
@@ -43,17 +42,30 @@ Todos os 4 produtos seguem o mesmo esqueleto. A única diferença estrutural é:
   "debts": [ ... ],
   "syntheticProtests": [ ... ],  // apenas produtos +PROTESTO
   "protests": [ ... ],
-  "badChecks": [ ... ]
+  "badChecks": [ ... ],
+  "score": { ... },                // apenas produtos +PROTESTO
+  "totalQueries": 4,               // apenas produtos +PROTESTO
+  "queries": [ ... ],              // apenas produtos +PROTESTO
+  "companyParticipations": [ ... ] // apenas +PROTESTO_PF
 }
 ```
+
+> **O campo `pdf` não existe na resposta da API.** O parser ainda o extrai e o valor
+> fica persistido no banco/cache para uso interno (geração de PDF), mas
+> `CreditParser.sanitizeResponse` remove `pdf`, `providerRaw` e `returnedDataFlags`
+> antes do retorno ao cliente. O mesmo sanitize descarta dívidas com `nadaConsta`
+> e remove as chaves internas `_base` / `base` / `nadaConsta` de cada dívida.
 
 | Campo | Tipo | Descrição |
 |---|---|---|
 | `protocol` | `string` | Identificador único da consulta no bureau. Usar como chave de rastreio e exibir no relatório. |
-| `pdf` | `string \| null` | URL ou Base64 de PDF gerado pelo bureau. Geralmente `null` — o PDF do sistema é gerado internamente. |
-| `totalDebts` | `number` | **Contador de dívidas.** Soma de todas as ocorrências em Pefin + Refin + Vencidas. Usar para o badge de quantidade. |
+| `totalDebts` | `number` | **Contador de dívidas.** Soma das ocorrências de Pefin + Refin + Vencidas **mescladas com** `RESTRICOES_FINANCEIRAS.OCORRENCIAS`. Usar para o badge de quantidade. |
 | `totalProtests` | `number` | **Contador de protestos.** Soma de protestos analíticos e sintéticos. Usar para o badge. |
 | `totalBadChecks` | `number` | **Contador de cheques sem fundos** (BACEN). Usar para o badge. |
+| `score` | `objeto \| ausente` | **Apenas nos produtos `+PROTESTO`.** Campos: `value`, `class` (`CLASSIF_ABC` com fallback `CLASSE`), `riskText` (`RISCO` → `TEXTO` → `MENSAGEM`), `informant`. |
+| `totalQueries` | `number \| ausente` | **Apenas nos produtos `+PROTESTO`.** Quantidade de consultas anteriores ao documento. |
+| `queries` | `array \| ausente` | **Apenas nos produtos `+PROTESTO`.** Histórico de consultas ao documento. |
+| `companyParticipations` | `array \| ausente` | **Apenas em `REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PF`.** Participações societárias do CPF. Não existe na variante PJ. |
 
 ### Lógica de Status (RESTRITO / REGULAR)
 
@@ -342,7 +354,9 @@ Cheques sem fundos registrados no BACEN (Banco Central).
 | `syntheticProtests` | ✅ (rico) | ✅ (rico) | ❌ | ❌ |
 | `protests` | ✅ (com `notary`) | ✅ (com `notary`) | ✅ (com `notary`) | ✅ (com `type`) |
 | `badChecks` | ✅ | ✅ | ✅ | ✅ |
-| `score` | ❌ | ❌ | ❌ | ❌ |
+| `score` | ✅ | ✅ | ❌ | ❌ |
+| `totalQueries` / `queries` | ✅ | ✅ | ❌ | ❌ |
+| `companyParticipations` | ✅ | ❌ | ❌ | ❌ |
 | Campo de protesto analítico | `notary` | `notary` | `notary` | **`type`** |
 
 ---
@@ -354,7 +368,6 @@ Cheques sem fundos registrados no BACEN (Banco Central).
 ```json
 {
   "protocol": "1022687",
-  "pdf": null,
   "totalDebts": 3,
   "totalProtests": 1,
   "totalBadChecks": 1,
@@ -434,7 +447,6 @@ Cheques sem fundos registrados no BACEN (Banco Central).
 ```json
 {
   "protocol": "2034891",
-  "pdf": null,
   "totalDebts": 0,
   "totalProtests": 0,
   "totalBadChecks": 0,
@@ -495,4 +507,4 @@ const showRestrictedBadge = totalDebts > 0 || totalProtests > 0 || totalBadCheck
 
 ---
 
-> Dúvidas sobre campos específicos ou variações não cobertas aqui: consultar `docs/query-types-mapping.md` (seções 1.12, 1.13, 1.14, 1.15) ou a camada de estratégias em `src/modules/queries/strategies/`.
+> Dúvidas sobre campos específicos ou variações não cobertas aqui: consultar `Candle_Backend/docs/query-types-mapping.md` (fonte única do contrato de campos) ou a camada de estratégias em `Candle_Backend/src/modules/queries/strategies/`.
