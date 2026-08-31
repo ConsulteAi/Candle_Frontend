@@ -451,6 +451,7 @@ export interface Tenant {
   ownerEmail?: string;
   uiSettings?: TenantUiSettings;
   pdfShowLogo?: boolean;
+  rechargeDisabled?: boolean;
   _count?: {
     users: number;
     providers: number;
@@ -477,6 +478,7 @@ export interface UpdateTenantDto {
   domain?: string | null;
   ownerId?: string | null;
   pdfShowLogo?: boolean;
+  rechargeDisabled?: boolean;
 }
 
 // --- API Tokens ---

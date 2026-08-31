@@ -1,4 +1,5 @@
 import { getTransactionsAction } from '@/actions/admin.actions';
+import { RechargeAvailabilityCard } from '@/components/admin/RechargeAvailabilityCard';
 import { TransactionsClientView } from '@/components/admin/TransactionsClientView';
 import type { TransactionFilters } from '@/types/admin';
 
@@ -31,5 +32,10 @@ export default async function TransactionsPage({
     );
   }
 
-  return <TransactionsClientView initialData={result.data} />;
+  return (
+    <div className="space-y-4">
+      <RechargeAvailabilityCard />
+      <TransactionsClientView initialData={result.data} />
+    </div>
+  );
 }

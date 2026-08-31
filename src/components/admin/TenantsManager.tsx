@@ -34,6 +34,7 @@ import {
   Globe,
 } from 'lucide-react';
 import { httpClient } from '@/lib/api/httpClient';
+import { revalidateTenantConfig } from '../../../app/actions/tenant';
 import type { Tenant, CreateTenantDto, UpdateTenantDto } from '@/types/admin';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
@@ -48,7 +49,10 @@ export function TenantsManager() {
   const { toast } = useToast();
 
   const [formData, setFormData] = useState<
-    Partial<CreateTenantDto> & { pdfShowLogo?: boolean }
+    Partial<CreateTenantDto> & {
+      pdfShowLogo?: boolean;
+      rechargeDisabled?: boolean;
+    }
   >({
     slug: '',
     name: '',
@@ -56,6 +60,7 @@ export function TenantsManager() {
     domain: '',
     ownerId: '',
     pdfShowLogo: false,
+    rechargeDisabled: false,
   });
 
   const fetchTenants = async () => {
@@ -91,8 +96,11 @@ export function TenantsManager() {
           domain: payloadDomain,
           ownerId: payloadOwnerId,
           pdfShowLogo: !!formData.pdfShowLogo,
+          rechargeDisabled: !!formData.rechargeDisabled,
         };
         await httpClient.patch(`/admin/tenants/${editingItem.id}`, updateData);
+        // O status da recarga viaja no config público, cacheado pelo Next.
+        await revalidateTenantConfig();
         toast({ title: 'Sucesso', description: 'Tenant atualizado.' });
       } else {
         const createData = {
@@ -141,6 +149,7 @@ export function TenantsManager() {
         domain: '',
         ownerId: item.ownerId || '',
         pdfShowLogo: !!item.pdfShowLogo,
+        rechargeDisabled: !!item.rechargeDisabled,
       });
     } else {
       setFormData({
@@ -150,6 +159,7 @@ export function TenantsManager() {
         domain: '',
         ownerId: '',
         pdfShowLogo: false,
+        rechargeDisabled: false,
       });
     }
     setIsModalOpen(true);
@@ -370,6 +380,25 @@ export function TenantsManager() {
                   />
                   <span className="text-xs text-muted-foreground">
                     Exibe a logo do tenant no topo do PDF das consultas
+                  </span>
+                </div>
+              </div>
+            )}
+            {editingItem && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right text-xs leading-tight">
+                  Suspender recarga
+                </Label>
+                <div className="col-span-3 flex items-center gap-3">
+                  <Switch
+                    checked={!!formData.rechargeDisabled}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, rechargeDisabled: checked })
+                    }
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    Bloqueia o PIX automático e manda o usuário recarregar pelo
+                    suporte
                   </span>
                 </div>
               </div>
