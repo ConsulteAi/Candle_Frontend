@@ -12,6 +12,8 @@ export interface TenantConfig {
   faviconUrl: string; // e.g., '/favicon.ico'
   contactEmail?: string; // e.g., 'contato@empresa.com.br'
   whatsappSupportPhone?: string; // e.g., '5511999999999'
+  /** Recarga automática via PIX suspensa — o suporte credita manualmente. */
+  rechargeDisabled: boolean;
   colors: TenantColors;
 }
 
@@ -27,6 +29,7 @@ export const DEFAULT_TENANT: TenantConfig = {
   name: "ConsultaAi",
   logoUrl: "/icon.png", // Fallback, will handle Search icon logic in component
   faviconUrl: "/icon.png",
+  rechargeDisabled: false,
   colors: {
     primary: "221.2 83.2% 53.3%",
     primaryForeground: "210 40% 98%",
@@ -59,6 +62,7 @@ function parseTenantData(t: any, fallbackId: string): TenantConfig {
     faviconUrl: uiSettings.faviconUrl || DEFAULT_TENANT.faviconUrl,
     contactEmail: contactEmail || undefined,
     whatsappSupportPhone: whatsappSupportPhone || undefined,
+    rechargeDisabled: t.rechargeDisabled === true,
     colors: {
       primary: colors.primary || DEFAULT_TENANT.colors.primary,
       primaryForeground:

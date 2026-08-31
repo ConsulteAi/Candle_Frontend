@@ -15,12 +15,16 @@ import type { RechargeResponse } from '@/types/payment';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/Header';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTenant } from '@/components/layout/TenantThemeProvider';
+import { RechargeSuspendedNotice } from '@/components/payment/RechargeSuspendedNotice';
 
 const PRESET_AMOUNTS = [50, 100, 200, 300, 500, 1000];
 
 export default function RechargePage() {
   const router = useRouter();
+  const tenant = useTenant();
   const { createRecharge, getPendingPayment } = usePayment();
+  const isRechargeSuspended = tenant.rechargeDisabled;
   
   const [amount, setAmount] = useState<number>(50);
   const [customAmount, setCustomAmount] = useState('');
@@ -76,6 +80,8 @@ export default function RechargePage() {
   };
 
   const handlePixPayment = async () => {
+    if (isRechargeSuspended) return;
+
     if (amount < 50) {
       toast.error('Valor mínimo de recarga é R$ 50,00');
       return;
@@ -102,6 +108,53 @@ export default function RechargePage() {
   };
 
   const isCustomSelected = !!customAmount;
+
+  if (isRechargeSuspended) {
+    return (
+      <div className="min-h-screen bg-slate-50/50 selection:bg-emerald-100 selection:text-emerald-900">
+        <Header />
+
+        <main className="container mx-auto px-4 py-12 md:py-16">
+          <RechargeSuspendedNotice />
+
+          <AnimatePresence>
+            {pendingPayment && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mx-auto mt-4 w-full max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 p-5"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="shrink-0 rounded-full bg-white p-2 text-amber-500 shadow-sm">
+                      <Wallet className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="font-display text-sm font-bold text-amber-900">
+                        Você tem um PIX pendente
+                      </p>
+                      <p className="font-body text-xs text-amber-700/80">
+                        R$ {pendingPayment.amount.toFixed(2)} gerados antes da
+                        suspensão — ainda dá para pagar.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => router.push(`/recarregar/${pendingPayment.id}`)}
+                    size="sm"
+                    className="shrink-0 border border-amber-200 bg-white text-amber-700 hover:bg-amber-100"
+                  >
+                    Continuar pagamento
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50/50 selection:bg-emerald-100 selection:text-emerald-900">
