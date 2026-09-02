@@ -40,14 +40,15 @@ export const DEFAULT_TENANT: TenantConfig = {
 };
 
 /**
- * Timeout curto do fetch de configuração de tenant.
- * O fetch está no caminho crítico da resolução de tenant: o connect timeout
- * padrão do fetch nativo (undici) é de 10s e, num incidente de rede, isso vira
- * ~10s de TTFB antes do fallback. Com o cache in-memory (runtime-cache.ts) esse
- * timeout é pago raramente — só quando não há entrada fresca nem stale — então
- * 1,5s degrada rápido sem sacrificar a chance de uma resposta legítima.
+ * Timeout curto do fetch de configuração de tenant, no caminho crítico da
+ * resolução de tenant (o connect timeout padrão do undici é 10s).
+ * Medição de 02/09/2026 a partir de iad1 (mesma região dos lambdas de produção),
+ * n=165, zero erros: p50 58,3ms, p95 64,1ms, p99 83,5ms, max 151,9ms. Logo,
+ * 600ms = 7,2x o p99 e 3,9x o pior caso — margem para cold start, retransmissão
+ * TCP ou backend 5x mais lento, cortando incidente de rede em 0,6s.
+ * Falso positivo é barato: o cache stale-on-error devolve o último valor bom.
  */
-const TENANT_CONFIG_TIMEOUT_MS = 1500;
+const TENANT_CONFIG_TIMEOUT_MS = 600;
 
 /** Distingue abort por timeout de outros erros de rede. */
 function isAbortTimeoutError(error: unknown): boolean {
