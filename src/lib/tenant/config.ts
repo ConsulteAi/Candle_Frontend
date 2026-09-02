@@ -1,3 +1,6 @@
+import { cachedResolve, type ResolveResult } from "./runtime-cache";
+import { normalizeHost } from "./request-context";
+
 export interface TenantColors {
   primary: string; // e.g., '221.2 83.2% 53.3%'
   primaryForeground: string; // e.g., '210 40% 98%'
@@ -38,8 +41,11 @@ export const DEFAULT_TENANT: TenantConfig = {
 
 /**
  * Timeout curto do fetch de configuração de tenant.
- * Roda em todo request (proxy.ts + app/[tenant]/layout.tsx), então uma falha
- * de conexão precisa degradar rápido em vez de segurar o TTFB.
+ * O fetch está no caminho crítico da resolução de tenant: o connect timeout
+ * padrão do fetch nativo (undici) é de 10s e, num incidente de rede, isso vira
+ * ~10s de TTFB antes do fallback. Com o cache in-memory (runtime-cache.ts) esse
+ * timeout é pago raramente — só quando não há entrada fresca nem stale — então
+ * 1,5s degrada rápido sem sacrificar a chance de uma resposta legítima.
  */
 const TENANT_CONFIG_TIMEOUT_MS = 1500;
 
@@ -86,21 +92,21 @@ function parseTenantData(t: any, fallbackId: string): TenantConfig {
 }
 
 /**
- * Fetch a single tenant configuration from the dynamic backend API
+ * Fetch a single tenant configuration from the dynamic backend API.
+ * Retorna também `isFallback` para que o cache saiba distinguir resposta boa de
+ * degradação (e possa servir stale em vez do fallback genérico).
  */
-async function fetchTenantConfig(fallbackId: string): Promise<TenantConfig> {
+async function fetchTenantConfigResult(
+  fallbackId: string,
+): Promise<ResolveResult<TenantConfig>> {
   try {
     const apiUrl =
       process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:4000";
     // Passamos o fallbackId (host original) no header x-tenant-domain
     // para que o backend Middleware resolva o tenant correto no SSR.
     // Usamos revalidateTag para limpar o cache de dados globalmente APENAS quando o Admin salva as configurações.
-    //
-    // Timeout curto e explícito: o connect timeout padrão do fetch nativo
-    // (undici) é de 10s e roda em TODO request (proxy + layout do tenant).
-    // Quando a conexão com a API falha, isso vira ~10s de TTFB antes do
-    // fallback. Com AbortSignal.timeout degradamos em TENANT_CONFIG_TIMEOUT_MS
-    // e caímos no DEFAULT_TENANT rapidamente.
+    // OBS: `next.tags`/`force-cache` só valem em Server Components/Route Handlers.
+    // No `proxy.ts` quem cacheia é o `cachedResolve` (src/lib/tenant/runtime-cache.ts).
     const res = await fetch(`${apiUrl}/public/tenants/ui-config`, {
       headers: {
         "x-tenant-domain": fallbackId,
@@ -112,21 +118,26 @@ async function fetchTenantConfig(fallbackId: string): Promise<TenantConfig> {
 
     if (!res.ok) {
       console.warn(`Failed to fetch tenant config`);
-      return DEFAULT_TENANT;
+      return { value: DEFAULT_TENANT, isFallback: true };
     }
 
     const data = await res.json();
-    return parseTenantData(data, fallbackId);
+    return { value: parseTenantData(data, fallbackId), isFallback: false };
   } catch (error) {
     if (isAbortTimeoutError(error)) {
       console.warn(
-        `[tenant-config] Timeout (${TENANT_CONFIG_TIMEOUT_MS}ms) ao buscar tenant config para "${fallbackId}". Usando DEFAULT_TENANT.`,
+        `[tenant-config] Timeout (${TENANT_CONFIG_TIMEOUT_MS}ms) ao buscar tenant config para "${fallbackId}". Usando cache stale ou DEFAULT_TENANT.`,
       );
     } else {
       console.error("Failed to fetch tenant from API:", error);
     }
-    return DEFAULT_TENANT;
+    return { value: DEFAULT_TENANT, isFallback: true };
   }
+}
+
+async function fetchTenantConfig(fallbackId: string): Promise<TenantConfig> {
+  const key = normalizeHost(fallbackId);
+  return cachedResolve(key, () => fetchTenantConfigResult(key));
 }
 
 /**

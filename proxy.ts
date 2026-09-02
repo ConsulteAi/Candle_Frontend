@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getTenantByHost } from "./src/lib/tenant/config";
+import {
+  TENANT_CONFIG_HEADER,
+  TENANT_ID_HEADER,
+  encodeTenantConfigHeader,
+  normalizeHost,
+} from "./src/lib/tenant/request-context";
 import { isPublicRoute } from "./src/lib/auth/routes";
+import type { TenantConfig } from "./src/lib/tenant/config";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -20,6 +27,26 @@ const withCsrfCookie = (request: NextRequest, response: NextResponse) => {
 };
 
 /**
+ * Monta os headers de request propagados ao Server Component.
+ * Sempre sobrescreve/remove os valores recebidos do cliente — o header é fonte
+ * interna de verdade, não pode ser spoofado de fora.
+ */
+const buildTenantHeaders = (request: NextRequest, tenant: TenantConfig) => {
+  const headers = new Headers(request.headers);
+  headers.delete(TENANT_ID_HEADER);
+  headers.delete(TENANT_CONFIG_HEADER);
+
+  headers.set(TENANT_ID_HEADER, tenant.id);
+
+  const encoded = encodeTenantConfigHeader(tenant);
+  if (encoded) {
+    headers.set(TENANT_CONFIG_HEADER, encoded);
+  }
+
+  return headers;
+};
+
+/**
  * Middleware para proteção de rotas e Multi-tenant
  */
 export async function proxy(request: NextRequest) {
@@ -27,7 +54,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Tenant Resolution
-  const hostname = request.headers.get("host") || "";
+  const hostname = normalizeHost(request.headers.get("host"));
   const tenant = await getTenantByHost(hostname);
 
   // 2. Authentication Checks
@@ -45,12 +72,23 @@ export async function proxy(request: NextRequest) {
 
   // 3. Rewrite request to the tenant folder
   // Ex: /home -> /[tenant]/home
+  // Propagamos o tenant já resolvido via request header para que o
+  // `app/[tenant]/layout.tsx` NÃO precise resolver de novo (era 1 fetch extra
+  // por request, no caminho crítico).
+  const requestHeaders = buildTenantHeaders(request, tenant);
+
   if (tenant) {
     url.pathname = `/${tenant.id}${pathname}`;
-    return withCsrfCookie(request, NextResponse.rewrite(url));
+    return withCsrfCookie(
+      request,
+      NextResponse.rewrite(url, { request: { headers: requestHeaders } }),
+    );
   }
 
-  return withCsrfCookie(request, NextResponse.next());
+  return withCsrfCookie(
+    request,
+    NextResponse.next({ request: { headers: requestHeaders } }),
+  );
 }
 
 export const config = {
