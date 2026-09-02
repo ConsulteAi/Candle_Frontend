@@ -1,5 +1,29 @@
 # PLAN-white-label-detailed
 
+> ## 📜 DOCUMENTO HISTÓRICO — plano já executado
+>
+> Este é o plano original do white label, **preservado como registro**. Ele já foi
+> implementado e **não deve ser usado como referência do estado atual do código**.
+>
+> **O que foi entregue conforme o plano:**
+> - `app/[tenant]/` como raiz de rotas de tenant (Fase 1)
+> - `proxy.ts` na raiz do projeto (Fase 2)
+> - `src/components/layout/TenantThemeProvider.tsx` (Fase 4)
+> - `src/components/ui/TenantBrand.tsx` e `src/components/ui/TenantLogo.tsx` (Fase 5)
+> - metadados dinâmicos por tenant no layout (Fase 6)
+>
+> **O que divergiu do plano — Fase 3 (fonte de dados):** a configuração de tenant
+> **não** vem de `TENANTS_CONFIG` no `.env`, e o arquivo não é `src/lib/tenant.ts`.
+> A implementação real é **`src/lib/tenant/config.ts`**, que busca a configuração no
+> backend via `GET {API_URL}/public/tenants/ui-config`, com `DEFAULT_TENANT` como
+> fallback. As funções expostas são `getTenantByHost(host)` e `getTenantById(id)` —
+> não existe `getTenantConfig`. A variável `TENANTS_CONFIG` ainda aparece no
+> `.env.example` mas **não é lida por nenhum código** (ver `AGENTS.md`).
+>
+> Para o estado atual, leia `AGENTS.md` e `src/lib/tenant/config.ts`.
+
+---
+
 ## Fase 0: Preparação e Contexto
 - **Objetivo:** Transformar o Candle Frontend (Next.js App Router) em uma plataforma White Label multi-tenant servida por um único deploy na Vercel (Abordagem 1).
 - **Escopo:** Alterações puramente visuais (Nome da Marca, Cores Primárias/Secundárias, Logo e Favicon).
