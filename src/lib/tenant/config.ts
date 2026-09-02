@@ -37,6 +37,20 @@ export const DEFAULT_TENANT: TenantConfig = {
 };
 
 /**
+ * Timeout curto do fetch de configuração de tenant.
+ * Roda em todo request (proxy.ts + app/[tenant]/layout.tsx), então uma falha
+ * de conexão precisa degradar rápido em vez de segurar o TTFB.
+ */
+const TENANT_CONFIG_TIMEOUT_MS = 1500;
+
+/** Distingue abort por timeout de outros erros de rede. */
+function isAbortTimeoutError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const name = (error as { name?: string }).name;
+  return name === "TimeoutError" || name === "AbortError";
+}
+
+/**
  * Helper definition to parse API response to TenantConfig
  */
 function parseTenantData(t: any, fallbackId: string): TenantConfig {
@@ -81,12 +95,19 @@ async function fetchTenantConfig(fallbackId: string): Promise<TenantConfig> {
     // Passamos o fallbackId (host original) no header x-tenant-domain
     // para que o backend Middleware resolva o tenant correto no SSR.
     // Usamos revalidateTag para limpar o cache de dados globalmente APENAS quando o Admin salva as configurações.
+    //
+    // Timeout curto e explícito: o connect timeout padrão do fetch nativo
+    // (undici) é de 10s e roda em TODO request (proxy + layout do tenant).
+    // Quando a conexão com a API falha, isso vira ~10s de TTFB antes do
+    // fallback. Com AbortSignal.timeout degradamos em TENANT_CONFIG_TIMEOUT_MS
+    // e caímos no DEFAULT_TENANT rapidamente.
     const res = await fetch(`${apiUrl}/public/tenants/ui-config`, {
       headers: {
         "x-tenant-domain": fallbackId,
       },
       next: { tags: ["tenant-config"] },
       cache: "force-cache",
+      signal: AbortSignal.timeout(TENANT_CONFIG_TIMEOUT_MS),
     });
 
     if (!res.ok) {
@@ -97,7 +118,13 @@ async function fetchTenantConfig(fallbackId: string): Promise<TenantConfig> {
     const data = await res.json();
     return parseTenantData(data, fallbackId);
   } catch (error) {
-    console.error("Failed to fetch tenant from API:", error);
+    if (isAbortTimeoutError(error)) {
+      console.warn(
+        `[tenant-config] Timeout (${TENANT_CONFIG_TIMEOUT_MS}ms) ao buscar tenant config para "${fallbackId}". Usando DEFAULT_TENANT.`,
+      );
+    } else {
+      console.error("Failed to fetch tenant from API:", error);
+    }
     return DEFAULT_TENANT;
   }
 }
