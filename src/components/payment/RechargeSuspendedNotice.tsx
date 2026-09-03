@@ -1,8 +1,12 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { QrCode, ArrowUpRight, Mail } from 'lucide-react';
 import { useTenant } from '@/components/layout/TenantThemeProvider';
+import { getPublicRechargeSuspendedNoticeAction } from '@/actions/global-config.actions';
+import { DEFAULT_RECHARGE_SUSPENDED_NOTICE } from '@/lib/global-config/recharge-suspended-notice';
+import type { RechargeSuspendedNoticeConfig } from '@/types/admin';
 
 /**
  * Tela exibida em /recarregar quando o tenant está com a recarga automática
@@ -12,6 +16,11 @@ import { useTenant } from '@/components/layout/TenantThemeProvider';
  * A regra real é do backend — aqui a tela apenas mostra o estado e conduz o
  * usuário para o caminho manual, com o botão "Gerar PIX" visivelmente
  * desabilitado no lugar de sempre.
+ *
+ * Título, subtítulo e os passos vêm do global-config (`recharge_suspended_notice`,
+ * MASTER edita em /backoffice/aviso-recarga). `DEFAULT_RECHARGE_SUSPENDED_NOTICE`
+ * é usado como fallback caso a config esteja indisponível — a tela nunca pode
+ * quebrar por causa disso.
  */
 
 const SUPPORT_MESSAGE = 'Olá! Quero recarregar meu saldo.';
@@ -30,21 +39,6 @@ function formatPhone(digits: string): string {
   return `+${country} (${area}) ${head}-${tail}`;
 }
 
-const STEPS = [
-  {
-    title: 'Chame o suporte no WhatsApp',
-    detail: 'Diga o valor que você quer adicionar ao saldo.',
-  },
-  {
-    title: 'Faça o PIX na chave que o suporte enviar',
-    detail: 'A chave é informada na conversa — nunca por aqui.',
-  },
-  {
-    title: 'Envie o comprovante',
-    detail: 'O time confere e o saldo entra no seu cadastro.',
-  },
-];
-
 function WhatsAppGlyph({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" aria-hidden="true" className={className} fill="currentColor">
@@ -56,6 +50,28 @@ function WhatsAppGlyph({ className }: { className?: string }) {
 export function RechargeSuspendedNotice() {
   const tenant = useTenant();
   const reduceMotion = useReducedMotion();
+
+  const [notice, setNotice] = useState<RechargeSuspendedNoticeConfig>(
+    DEFAULT_RECHARGE_SUSPENDED_NOTICE,
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getPublicRechargeSuspendedNoticeAction()
+      .then((result) => {
+        if (!cancelled && result.success && result.data) {
+          setNotice(result.data);
+        }
+      })
+      .catch(() => {
+        // Mantém o fallback hardcoded — a tela não pode quebrar por isso.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const phoneDigits = (tenant.whatsappSupportPhone || '').replace(/\D/g, '');
   const whatsappUrl = phoneDigits
@@ -104,11 +120,10 @@ export function RechargeSuspendedNotice() {
             id="recarga-suspensa-titulo"
             className="max-w-xl font-display text-[2rem] font-black leading-[1.05] tracking-tight text-slate-900 sm:text-[2.75rem]"
           >
-            Sua recarga passa pelo suporte agora.
+            {notice.title}
           </h1>
           <p className="mt-4 max-w-xl font-body text-base leading-relaxed text-slate-500 sm:text-lg">
-            As APIs de pagamento estão instáveis. Enquanto a recarga automática
-            está suspensa, o time credita seu saldo na hora, pelo WhatsApp.
+            {notice.subtitle}
           </p>
         </motion.div>
 
@@ -159,9 +174,9 @@ export function RechargeSuspendedNotice() {
           </div>
 
           <ol className="mt-6 space-y-0">
-            {STEPS.map((step, index) => (
-              <li key={step.title} className="relative flex gap-4 pb-6 last:pb-0">
-                {index < STEPS.length - 1 && (
+            {notice.steps.map((step, index) => (
+              <li key={`${index}-${step.title}`} className="relative flex gap-4 pb-6 last:pb-0">
+                {index < notice.steps.length - 1 && (
                   <span
                     aria-hidden="true"
                     className="absolute left-[13px] top-7 h-[calc(100%-1.75rem)] w-px bg-emerald-200"
