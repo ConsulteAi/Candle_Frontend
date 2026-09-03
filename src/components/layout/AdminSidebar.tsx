@@ -19,6 +19,7 @@ import {
   KeyRound,
   ShieldAlert,
   ScrollText,
+  Megaphone,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ const menuItems = [
   { name: 'Identidade Visual', href: '/backoffice/ui-settings', icon: Palette },
   { name: 'Auditoria', href: '/backoffice/audit', icon: ShieldAlert },
   { name: 'API Tokens', href: '/backoffice/api-tokens', icon: KeyRound, role: UserRole.MASTER },
+  { name: 'Aviso de Recarga', href: '/backoffice/aviso-recarga', icon: Megaphone, role: UserRole.MASTER },
 ];
 
 export function AdminSidebar() {

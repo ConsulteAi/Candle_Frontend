@@ -552,3 +552,24 @@ export interface AuditEventListFilters {
 }
 
 export type AuditEventExportFilters = Omit<AuditEventListFilters, 'page'>;
+
+// --- Global Config: Aviso de Recarga Suspensa ---
+
+export interface RechargeSuspendedNoticeStep {
+  title: string;
+  detail: string;
+}
+
+export interface RechargeSuspendedNoticeConfig {
+  title: string;
+  subtitle: string;
+  steps: RechargeSuspendedNoticeStep[];
+}
+
+export interface GlobalConfigRecord<T = unknown> {
+  id?: string;
+  key: string;
+  value: T;
+  createdAt?: string;
+  updatedAt?: string;
+}
