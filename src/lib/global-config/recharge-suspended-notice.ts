@@ -7,13 +7,6 @@ import type { RechargeSuspendedNoticeConfig } from "@/types/admin";
 export const RECHARGE_SUSPENDED_NOTICE_KEY = "recharge_suspended_notice";
 
 /**
- * Tag do cache de dados do Next usada tanto na leitura pública (banner) quanto
- * na invalidação após o MASTER salvar a config no backoffice — mesmo padrão
- * de `tenant-config` em `src/lib/tenant/config.ts`.
- */
-export const RECHARGE_SUSPENDED_NOTICE_CACHE_TAG = "recharge-suspended-notice-config";
-
-/**
  * Conteúdo original, hardcoded, do aviso — usado como fallback se o
  * global-config estiver indisponível (404, erro de rede, backend fora do ar)
  * e como valor inicial do formulário de edição quando ainda não há config
