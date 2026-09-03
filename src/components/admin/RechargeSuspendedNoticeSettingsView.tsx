@@ -52,6 +52,7 @@ export function RechargeSuspendedNoticeSettingsView({
   initialConfig,
 }: RechargeSuspendedNoticeSettingsViewProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const {
     register,
@@ -80,8 +81,21 @@ export function RechargeSuspendedNoticeSettingsView({
     }
   };
 
-  const handleResetToDefault = () => {
-    reset(toFormDefaults(null));
+  const handleResetToDefault = async () => {
+    setIsResetting(true);
+    try {
+      const result = await updateRechargeSuspendedNoticeAction(DEFAULT_RECHARGE_SUSPENDED_NOTICE);
+      if (result.success) {
+        toast.success('Texto original restaurado com sucesso!');
+        reset(toFormDefaults(null));
+      } else {
+        toast.error(result.error || 'Erro ao restaurar o texto original.');
+      }
+    } catch {
+      toast.error('Erro ao restaurar o texto original.');
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   return (
@@ -197,16 +211,20 @@ export function RechargeSuspendedNoticeSettingsView({
                 type="button"
                 variant="outline"
                 onClick={handleResetToDefault}
-                disabled={isSaving}
+                disabled={isSaving || isResetting}
                 className="gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
               >
-                <RotateCcw className="h-4 w-4" />
+                {isResetting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <RotateCcw className="h-4 w-4" />
+                )}
                 Restaurar texto original
               </Button>
 
               <Button
                 type="submit"
-                disabled={isSaving || !isDirty}
+                disabled={isSaving || isResetting || !isDirty}
                 className="min-w-[160px] bg-primary hover:bg-primary/90 text-white"
               >
                 {isSaving ? (
