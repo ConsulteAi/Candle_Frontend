@@ -103,9 +103,17 @@ export function TenantsManager() {
         await revalidateTenantConfig();
         toast({ title: 'Sucesso', description: 'Tenant atualizado.' });
       } else {
+        // Não espalhar `formData` aqui: o objeto carrega `pdfShowLogo` e
+        // `rechargeDisabled` (usados só no fluxo de edição, controlados pelos
+        // Switches que só aparecem com `editingItem`), e o `CreateTenantDto`
+        // do backend não os declara — com `forbidNonWhitelisted: true` isso
+        // quebra o POST com "property X should not exist".
         const createData = {
-          ...formData,
+          slug: formData.slug,
+          name: formData.name,
           asaasApiKey: formData.asaasApiKey,
+          asaasApiUrl: formData.asaasApiUrl,
+          asaasWebhookSecret: formData.asaasWebhookSecret,
           domain: payloadDomain,
           ownerId: payloadOwnerId || undefined, // undefined for POST
         };
