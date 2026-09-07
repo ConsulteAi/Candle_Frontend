@@ -510,7 +510,6 @@ export interface RaioXGenericDebt {
   source?: string;
   /** Rótulo legível do bloco de origem, exibido ao usuário. */
   sourceLabel?: string;
-  _base?: string;
 }
 
 export interface RaioXMarketRestrictions {

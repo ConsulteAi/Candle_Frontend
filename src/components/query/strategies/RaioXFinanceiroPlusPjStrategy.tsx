@@ -6,7 +6,7 @@ import type {
   RaioXFinanceiroPlusPjResult,
 } from '@/types/query-strategies';
 import { CommercialAnalysisPjStrategy } from './CommercialAnalysisPjStrategy';
-import { MarketRestrictionsSection } from './RaioXFinanceiroPlusPfStrategy';
+import { MarketRestrictionsSection } from './components/MarketRestrictionsSection';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 
 export function RaioXFinanceiroPlusPjStrategy({
