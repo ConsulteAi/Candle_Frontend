@@ -9,6 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useBalance } from '@/hooks/useBalance';
 import { TenantBrand } from '@/components/ui/TenantBrand';
 import { TenantLogo } from '@/components/ui/TenantLogo';
+import { useTenant } from '@/components/layout/TenantThemeProvider';
+import { isThreeVTenant } from '@/lib/tenant/config';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,6 +27,8 @@ export function Header() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const { formattedBalance, fetchBalance } = useBalance();
+  const tenant = useTenant();
+  const isThreeV = isThreeVTenant(tenant);
 
   // Fetch balance on mount if authenticated
   useEffect(() => {
@@ -55,13 +59,21 @@ export function Header() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <TenantLogo className="h-10 w-10 sm:h-12 sm:w-12 transition-transform duration-300 group-hover:scale-105" />
-            <div className="flex flex-col">
-              <TenantBrand className="text-xl sm:text-2xl gradient-text" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-none mt-1 group-hover:text-primary transition-colors">
-                Platform
+            {isThreeV ? (
+              <span className="text-lg sm:text-xl font-display font-bold gradient-text leading-tight">
+                Base de dados Concentre Confirme
               </span>
-            </div>
+            ) : (
+              <>
+                <TenantLogo className="h-10 w-10 sm:h-12 sm:w-12 transition-transform duration-300 group-hover:scale-105" />
+                <div className="flex flex-col">
+                  <TenantBrand className="text-xl sm:text-2xl gradient-text" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 leading-none mt-1 group-hover:text-primary transition-colors">
+                    Platform
+                  </span>
+                </div>
+              </>
+            )}
           </motion.div>
         </Link>
 

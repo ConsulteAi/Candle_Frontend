@@ -219,7 +219,11 @@ export function QueryTypesManager() {
             resellerPrice: formData.resellerPrice,
             cost: formData.cost
           }
-        : { price: formData.price };
+        : {
+            name: formData.name,
+            description: formData.description,
+            price: formData.price
+          };
 
       await httpClient.patch(`/admin/query-types/${editingItem.id}`, payload);
 
@@ -842,23 +846,57 @@ export function QueryTypesManager() {
                 </div>
               ) : (
                 /* Visão simplificada para admin não-master */
-                <div className="flex flex-col gap-4">
-                  <SectionHeader
-                    icon={DollarSign}
-                    title={editingItem?.kind === 'ENRICHMENT' ? 'Preço do enrichment' : 'Preço da consulta'}
-                    description="Atualize apenas o valor comercial exibido no painel."
-                  />
-                  <FieldGroup>
-                    <Field>
-                      <FieldLabel>Preço</FieldLabel>
-                      <FieldContent>
-                        <CurrencyInput
-                          value={formData.price}
-                          onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                        />
-                      </FieldContent>
-                    </Field>
-                  </FieldGroup>
+                <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-4">
+                    <SectionHeader
+                      icon={FileText}
+                      title={editingItem?.kind === 'ENRICHMENT' ? 'Detalhes do enrichment' : 'Detalhes da consulta'}
+                      description="Informações exibidas no painel e para seus clientes."
+                    />
+                    <FieldGroup>
+                      <Field>
+                        <FieldLabel>Nome</FieldLabel>
+                        <FieldContent>
+                          <Input
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="Nome da consulta"
+                          />
+                        </FieldContent>
+                      </Field>
+                      <Field>
+                        <FieldLabel>Descrição</FieldLabel>
+                        <FieldContent>
+                          <Input
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            placeholder="Descrição breve da consulta"
+                          />
+                        </FieldContent>
+                      </Field>
+                    </FieldGroup>
+                  </div>
+
+                  <div className="h-px w-full bg-border" />
+
+                  <div className="flex flex-col gap-4">
+                    <SectionHeader
+                      icon={DollarSign}
+                      title={editingItem?.kind === 'ENRICHMENT' ? 'Preço do enrichment' : 'Preço da consulta'}
+                      description="Atualize apenas o valor comercial exibido no painel."
+                    />
+                    <FieldGroup>
+                      <Field>
+                        <FieldLabel>Preço</FieldLabel>
+                        <FieldContent>
+                          <CurrencyInput
+                            value={formData.price}
+                            onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                          />
+                        </FieldContent>
+                      </Field>
+                    </FieldGroup>
+                  </div>
 
                   {composition && (
                     <>

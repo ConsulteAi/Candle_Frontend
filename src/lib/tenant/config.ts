@@ -154,3 +154,22 @@ export async function getTenantByHost(host: string): Promise<TenantConfig> {
 export async function getTenantById(id: string): Promise<TenantConfig> {
   return fetchTenantConfig(id);
 }
+
+/**
+ * Slug confirmado do tenant white label "3V Negócios" (tenant id
+ * `c534beca-384a-46aa-a138-87a7038612ff`, name `3V NEGÓCIOS`), verificado via
+ * consulta direta ao Postgres de staging.
+ * Pedido do cliente: remover a logo do cabeçalho de pesquisas e trocar
+ * por um texto fixo (ver `isThreeVTenant` abaixo).
+ */
+const THREE_V_TENANT_SLUG = "financeiro-3vnegocios";
+
+export function isThreeVTenant(
+  tenant?: Pick<TenantConfig, "id" | "name"> | null,
+): boolean {
+  if (!tenant) return false;
+  const slug = tenant.id?.toLowerCase().trim() ?? "";
+  if (slug === THREE_V_TENANT_SLUG) return true;
+  const name = tenant.name?.toLowerCase().trim() ?? "";
+  return name.includes("3v");
+}
