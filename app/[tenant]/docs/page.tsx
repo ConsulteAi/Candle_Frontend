@@ -695,6 +695,168 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'raw', type: 'object', description: 'Conteudo pass-through do bloco VEICULAR; a estrutura pode variar por payload.' },
     ],
   },
+  dadosCpfPerson: {
+    name: 'person',
+    description: 'Dados pessoais completos retornados pela consulta.',
+    fields: [
+      { name: 'name', type: 'string', description: 'Nome completo.' },
+      { name: 'document', type: 'string', description: 'CPF consultado.' },
+      { name: 'birthDate', type: 'string | undefined', description: 'Data de nascimento.' },
+      { name: 'gender', type: 'string | undefined', description: 'Genero quando disponivel.' },
+      { name: 'motherName', type: 'string | undefined', description: 'Nome da mae.' },
+      { name: 'fatherName', type: 'string | undefined', description: 'Nome do pai.' },
+      { name: 'maritalStatus', type: 'string | undefined', description: 'Estado civil.' },
+      { name: 'rg', type: 'string | undefined', description: 'Numero do RG.' },
+      { name: 'issuer', type: 'string | undefined', description: 'Orgao emissor do RG.' },
+      { name: 'issuerState', type: 'string | undefined', description: 'UF de emissao do RG.' },
+      { name: 'nationality', type: 'string | undefined', description: 'Nacionalidade.' },
+      { name: 'tituloEleitor', type: 'string | undefined', description: 'Numero do titulo de eleitor.' },
+      { name: 'cbo', type: 'string | undefined', description: 'Codigo brasileiro de ocupacao.' },
+      { name: 'codigoMosaic', type: 'string | undefined', description: 'Codigo de classificacao Mosaic.' },
+      { name: 'codigoMosaicNovo', type: 'string | undefined', description: 'Codigo de classificacao Mosaic (versao nova).' },
+      { name: 'codigoMosaicSecundario', type: 'string | undefined', description: 'Codigo de classificacao Mosaic secundario.' },
+      { name: 'educationLevel', type: 'string | undefined', description: 'Nivel de escolaridade.' },
+    ],
+  },
+  dadosCpfScores: {
+    name: 'scores',
+    description: 'Scores de credito de diferentes modelos, quando disponiveis.',
+    fields: [
+      { name: 'base', type: 'object | undefined', description: 'Score do modelo base: serasaScore, serasaFaixa, boaVistaScore, boaVistaFaixa.' },
+      { name: 'novoSerasaScore', type: 'string | undefined', description: 'Score Serasa do modelo novo.' },
+      { name: 'antigo', type: 'object | undefined', description: 'Score do modelo antigo: serasaScore, serasaFaixa, boaVistaScore, boaVistaFaixa.' },
+    ],
+  },
+  dadosCpfSocialClass: {
+    name: 'socialClass',
+    description: 'Classe social presumida.',
+    fields: [
+      { name: 'classe', type: 'string | undefined', description: 'Classe social.' },
+      { name: 'subClasse', type: 'string | undefined', description: 'Subclasse social.' },
+    ],
+  },
+  dadosCpfRelatives: {
+    name: 'relatives[]',
+    description: 'Parentes localizados para o documento consultado.',
+    fields: [
+      { name: 'name', type: 'string', description: 'Nome do parente.' },
+      { name: 'cpf', type: 'string | undefined', description: 'CPF do parente, quando disponivel.' },
+      { name: 'relationship', type: 'string', description: 'Grau de parentesco.' },
+    ],
+  },
+  dadosCpfCompanyParticipations: {
+    name: 'companyParticipations[]',
+    description: 'Participacoes societarias do documento consultado.',
+    fields: [
+      { name: 'cnpj', type: 'string', description: 'CNPJ da empresa relacionada.' },
+      { name: 'socialReason', type: 'string | undefined', description: 'Razao social da empresa relacionada.' },
+      { name: 'fantasyName', type: 'string | undefined', description: 'Nome fantasia da empresa relacionada.' },
+      { name: 'participation', type: 'string | undefined', description: 'Tipo/descricao da participacao.' },
+    ],
+  },
+  dadosCpfPhones: {
+    name: 'phones[]',
+    description: 'Telefones encontrados para o documento consultado.',
+    fields: [
+      { name: 'fullNumber', type: 'string', description: 'Numero completo com DDD.' },
+      { name: 'classification', type: 'string | undefined', description: 'Classificacao do telefone (ex.: celular, fixo).' },
+    ],
+  },
+  dadosCpfEmails: {
+    name: 'emails[]',
+    description: 'Emails encontrados para o documento consultado.',
+    fields: [
+      { name: 'email', type: 'string', description: 'Endereco de email.' },
+      { name: 'score', type: 'string | undefined', description: 'Pontuacao de confiabilidade do email.' },
+      { name: 'isPersonal', type: 'string | undefined', description: 'Indica se o email e pessoal.' },
+      { name: 'blacklist', type: 'string | undefined', description: 'Indica presenca em blacklist.' },
+      { name: 'domain', type: 'string | undefined', description: 'Dominio do email.' },
+    ],
+  },
+  dadosCpfPis: {
+    name: 'pis[]',
+    description: 'Numeros de PIS vinculados ao documento consultado.',
+    fields: [
+      { name: 'pis', type: 'string', description: 'Numero do PIS.' },
+      { name: 'inclusionDate', type: 'string | undefined', description: 'Data de inclusao do PIS.' },
+    ],
+  },
+  dadosCpfIrpf: {
+    name: 'irpf[]',
+    description: 'Registros de restituicao de IRPF vinculados ao documento consultado.',
+    fields: [
+      { name: 'bank', type: 'string | undefined', description: 'Instituicao bancaria da restituicao.' },
+      { name: 'agency', type: 'string | undefined', description: 'Codigo da agencia.' },
+      { name: 'lot', type: 'string | undefined', description: 'Lote de restituicao.' },
+      { name: 'referenceYear', type: 'string | undefined', description: 'Ano de referencia.' },
+      { name: 'status', type: 'string | undefined', description: 'Situacao na Receita Federal.' },
+    ],
+  },
+  dadosCnpjCompany: {
+    name: 'company',
+    description: 'Dados cadastrais completos da empresa consultada.',
+    fields: [
+      { name: 'cnpj', type: 'string', description: 'CNPJ consultado.' },
+      { name: 'socialReason', type: 'string', description: 'Razao social.' },
+      { name: 'fantasyName', type: 'string | undefined', description: 'Nome fantasia.' },
+      { name: 'foundationDate', type: 'string | undefined', description: 'Data de fundacao/abertura.' },
+      { name: 'status', type: 'string | undefined', description: 'Situacao cadastral.' },
+      { name: 'legalNature', type: 'string | undefined', description: 'Natureza juridica.' },
+      { name: 'cnae', type: 'string | undefined', description: 'CNAE principal.' },
+      { name: 'size', type: 'string | undefined', description: 'Porte da empresa.' },
+      { name: 'revenueSize', type: 'string | undefined', description: 'Porte por faixa de receita.' },
+      { name: 'capital', type: 'string | undefined', description: 'Capital social.' },
+      { name: 'employees', type: 'string | undefined', description: 'Quantidade de funcionarios.' },
+      { name: 'segment', type: 'string | undefined', description: 'Segmento de atuacao.' },
+      { name: 'mosaicBusiness', type: 'string | undefined', description: 'Classificacao Mosaic Business.' },
+      { name: 'risk', type: 'string | undefined', description: 'Classificacao de risco.' },
+      { name: 'isMatrix', type: 'boolean | undefined', description: 'Indica se e matriz (true) ou filial (false).' },
+      { name: 'registrationDate', type: 'string | undefined', description: 'Data da situacao cadastral.' },
+      { name: 'registrationReason', type: 'string | undefined', description: 'Motivo da situacao cadastral.' },
+      { name: 'specialSituation', type: 'string | undefined', description: 'Situacao especial, quando houver.' },
+      { name: 'specialSituationDate', type: 'string | undefined', description: 'Data da situacao especial.' },
+    ],
+  },
+  dadosCnpjPhones: {
+    name: 'phones[]',
+    description: 'Telefones encontrados para o documento consultado.',
+    fields: [
+      { name: 'value', type: 'string', description: 'Telefone encontrado.' },
+    ],
+  },
+  dadosCnpjSimplesNacional: {
+    name: 'simplesNacional',
+    description: 'Situacao no Simples Nacional/SIMEI, quando disponivel.',
+    fields: [
+      { name: 'statusSimples', type: 'string | undefined', description: 'Status de opcao pelo Simples Nacional.' },
+      { name: 'statusSimei', type: 'string | undefined', description: 'Status de opcao pelo SIMEI.' },
+      { name: 'dateSimples', type: 'string | undefined', description: 'Data de opcao pelo Simples Nacional.' },
+      { name: 'dateSimei', type: 'string | undefined', description: 'Data de opcao pelo SIMEI.' },
+    ],
+  },
+  dadosCnpjPartners: {
+    name: 'partners[]',
+    description: 'Quadro societario da empresa consultada.',
+    fields: [
+      { name: 'name', type: 'string', description: 'Nome do socio.' },
+      { name: 'cpf', type: 'string | undefined', description: 'CPF do socio, quando disponivel.' },
+      { name: 'participation', type: 'string | undefined', description: 'Percentual/descricao da participacao.' },
+    ],
+  },
+  dadosAddresses: {
+    name: 'addresses[]',
+    description: 'Lista de enderecos relacionados ao documento.',
+    fields: [
+      { name: 'street', type: 'string', description: 'Logradouro.' },
+      { name: 'district', type: 'string', description: 'Bairro.' },
+      { name: 'city', type: 'string', description: 'Cidade.' },
+      { name: 'state', type: 'string', description: 'Estado (UF).' },
+      { name: 'zip', type: 'string', description: 'CEP.' },
+      { name: 'number', type: 'string | undefined', description: 'Numero.' },
+      { name: 'complement', type: 'string | undefined', description: 'Complemento.' },
+      { name: 'source', type: 'string | undefined', description: 'Fonte do endereco.' },
+    ],
+  },
 };
 
 const commonRoot: FieldDoc[] = [
@@ -798,6 +960,8 @@ const queryTypeDocs: QueryTypeDoc[] = [
   { code: 'RAIO_X_FINANCEIRO_RATING_SCR_PJ', title: 'Raio X Financeiro Rating SCR PJ', input: 'CNPJ', summary: 'Consulta SCR PJ com enriquecimento complementar de mercado e bloco CCF quando disponivel.', rootFields: raioXFinanceiroRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment']) },
   { code: 'RAIO_X_PRO_PF', title: 'Raio X Pro PF', input: 'CPF', summary: 'Consulta SCR PF com tres camadas complementares: mercado, CCF e SCR consolidado.', rootFields: raioXProRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXPerson', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment', 'scrBacenEnrichment']) },
   { code: 'RAIO_X_PRO_PJ', title: 'Raio X Pro PJ', input: 'CNPJ', summary: 'Consulta SCR PJ com tres camadas complementares: mercado, CCF e SCR consolidado.', rootFields: raioXProRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment', 'scrBacenEnrichment']) },
+  { code: 'RAIO_X_FINANCEIRO_PLUS_PF', title: 'Raio X Financeiro Plus PF', input: 'CPF', summary: 'Produto comercial que executa a consulta Serasa Crednet Pefin Protesto SPC PF: score, alertas, pendencias, protestos, cheques sem fundo e participacoes societarias em uma unica chamada.', rootFields: commonRoot, blocks: getBlocks(['person', 'alerts', 'debts', 'protests', 'badChecks', 'companyParticipations']) },
+  { code: 'RAIO_X_FINANCEIRO_PLUS_PJ', title: 'Raio X Financeiro Plus PJ', input: 'CNPJ', summary: 'Produto comercial que executa a consulta Realtime Premium Score PJ: score, quadro societario, pendencias, protestos, cheques sem fundo, telefones e enderecos em uma unica chamada.', rootFields: commonRoot, blocks: getBlocks(['company', 'partners', 'score', 'alerts', 'debts', 'protests', 'badChecks', 'phones', 'addresses']) },
   { code: 'DIVIDAS_MULTI_CPF_PRO', title: 'Dividas Multi CPF Pro', input: 'CPF', summary: 'Consulta agregada (PF) com SCPC, REFIN/PEFIN, protestos, cheques, CADIN, acoes legais e resumo SERASA.', rootFields: [], blocks: getBlocks(['person', 'ehmFinancialSummary', 'scpcDebts', 'refinPefinDebts', 'protests', 'badChecks', 'ehmCadin', 'legalActions', 'serasaSummary', 'rawSections']) },
   { code: 'DIVIDAS_MULTI_CNPJ_PRO', title: 'Dividas Multi CNPJ Pro', input: 'CNPJ', summary: 'Consulta agregada (PJ) com SCPC, REFIN/PEFIN, protestos, cheques, CADIN, acoes legais e resumo SERASA.', rootFields: [], blocks: getBlocks(['company', 'ehmFinancialSummary', 'scpcDebts', 'refinPefinDebts', 'protests', 'badChecks', 'ehmCadin', 'legalActions', 'serasaSummary', 'rawSections']) },
   { code: 'CCF', title: 'CCF', input: 'CPF/CNPJ', summary: 'Consulta EHM de cheques sem fundo com resumo, historico e lista detalhada por banco/agencia.', rootFields: [{ name: 'erro', type: 'boolean', description: 'Indica se a consulta retornou erro.' }], blocks: getBlocks(['ccfSummary', 'ccfHistorico', 'ccfLista']) },
@@ -892,6 +1056,8 @@ const queryTypeDocs: QueryTypeDoc[] = [
   { code: 'SERASA_PF', title: 'Serasa PF', input: 'CPF', summary: 'Consulta Serasa PF com score opcional, dividas analiticas e protestos.', rootFields: [], blocks: getBlocks(['person', 'score', 'ehmFinancialSummary', 'serasaDebts', 'protests']) },
   { code: 'SERASA_PJ', title: 'Serasa PJ', input: 'CNPJ', summary: 'Consulta Serasa PJ com score opcional, dividas analiticas e protestos.', rootFields: [], blocks: getBlocks(['company', 'score', 'ehmFinancialSummary', 'serasaDebts', 'protests']) },
   { code: 'LOCALIZA_CPF_CNPJ', title: 'Localiza CPF CNPJ', input: 'CPF/CNPJ', summary: 'Consulta de enriquecimento cadastral e relacional.', rootFields: [{ name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' }], blocks: getBlocks(['basicInfo', 'contact', 'addresses', 'relations']) },
+  { code: 'DADOS_CPF', title: 'Dados CPF', input: 'CPF', summary: 'Consulta cadastral completa de pessoa fisica: dados pessoais, scores, classe social, parentes, participacoes societarias, enderecos, telefones, emails, PIS e IRPF.', rootFields: [], blocks: getBlocks(['dadosCpfPerson', 'dadosCpfScores', 'dadosCpfSocialClass', 'dadosCpfRelatives', 'dadosCpfCompanyParticipations', 'dadosAddresses', 'dadosCpfPhones', 'dadosCpfEmails', 'dadosCpfPis', 'dadosCpfIrpf']) },
+  { code: 'DADOS_CNPJ', title: 'Dados CNPJ', input: 'CNPJ', summary: 'Consulta cadastral completa de pessoa juridica: dados da empresa, enderecos, telefones, emails, Simples Nacional e quadro societario.', rootFields: [], blocks: getBlocks(['dadosCnpjCompany', 'dadosAddresses', 'dadosCnpjPhones', 'emails', 'dadosCnpjSimplesNacional', 'dadosCnpjPartners']) },
   { code: 'SCR_BACEN_PREMIUM_SCORE', title: 'SCR Bacen Premium Score', input: 'CPF/CNPJ', summary: 'Consulta SCR padrao com score e operacoes.', rootFields: scrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations']) },
   { code: 'SCR_PF', title: 'SCR PF', input: 'CPF', summary: 'Posicao consolidada SCR BACEN para CPF.', rootFields: [], blocks: getBlocks(['ehmScrResumo', 'ehmScrConsolidado', 'ehmScrOperations', 'ehmScrScore']) },
   { code: 'SCR_PJ', title: 'SCR PJ', input: 'CNPJ', summary: 'Posicao consolidada SCR BACEN para CNPJ.', rootFields: [], blocks: getBlocks(['ehmScrResumo', 'ehmScrConsolidado', 'ehmScrOperations', 'ehmScrScore']) },
@@ -925,7 +1091,7 @@ const queryTypeDocs: QueryTypeDoc[] = [
   ], blocks: getBlocks(['company', 'alerts', 'debts', 'protests', 'badChecks', 'boaVistaRating']) },
 ];
 
-const _baseUrl = 'web-production-028ac.up.railway.app';
+const _baseUrl = 'api.consultaai.net.br';
 
 const executeRequestExample = `curl -X POST \"https://${_baseUrl}/queries/execute\" \\
   -H \"Authorization: Bearer SEU_TOKEN\" \\
@@ -1005,6 +1171,7 @@ function getSampleValue(type: string, fieldName: string): unknown {
   if (field.includes('date')) return '01/01/2026';
   if (field.includes('email')) return 'contato@empresa.com';
   if (field === 'document') return '12345678900';
+  if (field === 'phones') return '11987654321';
   if (field === 'cnpj') return '12345678000199';
   if (field === 'protocol') return '1022687';
   if (field === 'hasrestrictions') return false;
@@ -1028,7 +1195,10 @@ function getSampleValue(type: string, fieldName: string): unknown {
 }
 
 function buildBlockExample(block: BlockDoc): unknown {
-  if (block.name === 'emails[]') return ['contato@empresa.com'];
+  // Blocos com um unico campo "value" documentam uma lista de valores primitivos (ex.: emails/telefones como string[]).
+  if (block.fields.length === 1 && block.fields[0].name === 'value') {
+    return [getSampleValue(block.fields[0].type, block.name.replace(/\[\]$/, ''))];
+  }
 
   const item = block.fields.reduce<Record<string, unknown>>((acc, field) => {
     acc[field.name] = getSampleValue(field.type, field.name);
@@ -1151,6 +1321,9 @@ export default function DocsPage() {
                 <div className="rounded-xl bg-gray-900 text-gray-100 p-4 overflow-x-auto">
                   <pre className="text-[11px] md:text-xs leading-relaxed">Authorization: Bearer SEU_TOKEN</pre>
                 </div>
+                <p className="text-xs text-gray-600 mt-3">
+                  O token tem o formato <span className="font-mono">ck_</span> seguido de 64 caracteres, e e exibido apenas uma vez, no momento em que voce cria o token no painel. Depois disso o sistema guarda apenas um hash e nao ha como recupera-lo: se perder o token, gere um novo.
+                </p>
               </Card>
 
               <Card className="p-4 md:p-6">
@@ -1199,7 +1372,8 @@ export default function DocsPage() {
                   <li><span className="font-mono">queryId</span>: identificador unico para consultar depois por <span className="font-mono">GET /queries/:id</span>.</li>
                   <li><span className="font-mono">result</span>: dados completos da consulta (estrutura varia por tipo).</li>
                   <li><span className="font-mono">pdf</span> nao e mais exposto no <span className="font-mono">result</span>; para baixar use <span className="font-mono">GET /queries/:id/pdf</span>.</li>
-                  <li><span className="font-mono">price</span>: valor cobrado na execucao.</li>
+                  <li><span className="font-mono">price</span>: valor efetivamente cobrado nesta chamada, no preco de API do tipo de consulta. Esse preco pode ser diferente do preco exibido no site e varia por tipo de consulta e por contrato; o valor <span className="font-mono">10.9</span> nos exemplos desta pagina e apenas ilustrativo.</li>
+                  <li>Se a consulta falhar, o valor e estornado automaticamente ao seu saldo, sem nenhuma acao da sua parte. A consulta fica registrada com status de falha e continua disponivel pelo <span className="font-mono">queryId</span>.</li>
                 </ul>
               </div>
             </Card>
