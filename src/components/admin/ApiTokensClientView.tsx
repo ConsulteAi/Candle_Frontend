@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { format, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 import {
   KeyRound,
   Plus,
@@ -50,6 +51,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { UserSearchComboBox } from '@/components/admin/UserSearchComboBox';
+import { useAuth } from '@/hooks/useAuth';
+import { UserRole } from '@/types/auth';
 
 import type { ApiToken, CreatedApiToken, CreateApiTokenDto } from '@/types/admin';
 
@@ -77,6 +80,16 @@ function formatDate(date: string | null) {
   return format(new Date(date), "dd/MM/yyyy HH:mm", { locale: ptBR });
 }
 
+function getForbiddenMessage(error: unknown): string | null {
+  if (axios.isAxiosError(error) && error.response?.status === 403) {
+    return (
+      error.response.data?.message ||
+      'Você não tem permissão para gerenciar o token deste usuário.'
+    );
+  }
+  return null;
+}
+
 // --- animation variants ---
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.07 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
@@ -85,6 +98,8 @@ const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 
 export function ApiTokensClientView({ initialTokens }: ApiTokensClientViewProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isAdmin = user?.role === UserRole.ADMIN;
   const [tokens, setTokens] = useState<ApiToken[]>(initialTokens);
 
   // Create dialog
@@ -127,8 +142,13 @@ export function ApiTokensClientView({ initialTokens }: ApiTokensClientViewProps)
       setCreateOpen(false);
       setForm({ userId: '', name: '', expiresAt: '' });
       setRevealToken(created);
-    } catch {
-      toast({ title: 'Erro ao criar token', description: 'Verifique os dados e tente novamente.', variant: 'destructive' });
+    } catch (error) {
+      const forbiddenMessage = getForbiddenMessage(error);
+      toast({
+        title: forbiddenMessage ? 'Não permitido' : 'Erro ao criar token',
+        description: forbiddenMessage || 'Verifique os dados e tente novamente.',
+        variant: 'destructive',
+      });
     } finally {
       setCreating(false);
     }
@@ -145,8 +165,13 @@ export function ApiTokensClientView({ initialTokens }: ApiTokensClientViewProps)
         title: token.isActive ? 'Token desativado' : 'Token ativado',
         description: `"${token.name}" foi ${token.isActive ? 'desativado' : 'ativado'} com sucesso.`,
       });
-    } catch {
-      toast({ title: 'Erro ao atualizar token', variant: 'destructive' });
+    } catch (error) {
+      const forbiddenMessage = getForbiddenMessage(error);
+      toast({
+        title: forbiddenMessage ? 'Não permitido' : 'Erro ao atualizar token',
+        description: forbiddenMessage || undefined,
+        variant: 'destructive',
+      });
     } finally {
       setTogglingId(null);
     }
@@ -160,8 +185,13 @@ export function ApiTokensClientView({ initialTokens }: ApiTokensClientViewProps)
       setTokens((prev) => prev.filter((t) => t.id !== deleteTarget.id));
       toast({ title: 'Token excluído', description: `"${deleteTarget.name}" foi removido permanentemente.` });
       setDeleteTarget(null);
-    } catch {
-      toast({ title: 'Erro ao excluir token', variant: 'destructive' });
+    } catch (error) {
+      const forbiddenMessage = getForbiddenMessage(error);
+      toast({
+        title: forbiddenMessage ? 'Não permitido' : 'Erro ao excluir token',
+        description: forbiddenMessage || undefined,
+        variant: 'destructive',
+      });
     } finally {
       setDeleting(false);
     }
@@ -325,6 +355,7 @@ export function ApiTokensClientView({ initialTokens }: ApiTokensClientViewProps)
               <UserSearchComboBox
                 ownerId={form.userId || null}
                 onSelect={(id) => setForm((f) => ({ ...f, userId: id ?? '' }))}
+                excludeRoles={isAdmin ? [UserRole.MASTER] : undefined}
               />
               <p className="text-xs text-slate-400">Os créditos serão debitados deste usuário.</p>
             </div>

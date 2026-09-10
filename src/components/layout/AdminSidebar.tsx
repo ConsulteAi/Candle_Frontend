@@ -36,7 +36,7 @@ const menuItems = [
   { name: 'Tenants', href: '/backoffice/tenants', icon: Building2, role: UserRole.MASTER },
   { name: 'Identidade Visual', href: '/backoffice/ui-settings', icon: Palette },
   { name: 'Auditoria', href: '/backoffice/audit', icon: ShieldAlert },
-  { name: 'API Tokens', href: '/backoffice/api-tokens', icon: KeyRound, role: UserRole.MASTER },
+  { name: 'API Tokens', href: '/backoffice/api-tokens', icon: KeyRound, roles: [UserRole.MASTER, UserRole.ADMIN] },
   { name: 'Aviso de Recarga', href: '/backoffice/aviso-recarga', icon: Megaphone, role: UserRole.MASTER },
 ];
 
@@ -64,6 +64,7 @@ export function AdminSidebar() {
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           if (item.role && userRole !== item.role) return null;
+          if (item.roles && !item.roles.some((role) => role === userRole)) return null;
           const isActive = pathname === item.href;
           return (
             <Link key={item.href} href={item.href}>
