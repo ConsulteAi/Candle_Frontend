@@ -7,7 +7,7 @@ import { UserRole } from '@/types/auth';
 export async function getApiTokensAction() {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== UserRole.MASTER) {
+    if (!user || (user.role !== UserRole.MASTER && user.role !== UserRole.ADMIN)) {
       return { success: false, data: [] };
     }
 

@@ -20,12 +20,14 @@ import {
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { httpClient } from '@/lib/api/httpClient';
 import type { AdminUser, PaginatedResponse } from '@/types/admin';
+import type { UserRole } from '@/types/auth';
 
 interface UserSearchComboBoxProps {
   ownerId?: string | null;
   onSelect: (ownerId: string | null) => void;
   disabled?: boolean;
   error?: string;
+  excludeRoles?: UserRole[];
 }
 
 export function UserSearchComboBox({
@@ -33,6 +35,7 @@ export function UserSearchComboBox({
   onSelect,
   disabled,
   error,
+  excludeRoles,
 }: UserSearchComboBoxProps) {
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState('');
@@ -56,7 +59,10 @@ export function UserSearchComboBox({
             },
           }
         );
-        setUsers(response.data.data);
+        const fetched = excludeRoles?.length
+          ? response.data.data.filter((u) => !excludeRoles.includes(u.role))
+          : response.data.data;
+        setUsers(fetched);
       } catch (error) {
         console.error('Failed to fetch users', error);
       } finally {
@@ -67,7 +73,7 @@ export function UserSearchComboBox({
     if (open) {
       fetchUsers();
     }
-  }, [debouncedSearch, open]);
+  }, [debouncedSearch, open, excludeRoles]);
 
   // Fetch initial selected user if ownerId exists but not in the list
   React.useEffect(() => {
