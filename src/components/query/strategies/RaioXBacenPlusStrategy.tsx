@@ -20,12 +20,11 @@ import type {
   RaioXBacenPlusResult,
   BoaVistaRatingEnrichment,
   CommercialAnalysisScore,
-  ScrEhmEnrichment,
-  ScrEhmOperacao,
 } from '@/types/query-strategies';
 import { cn, formatDisplayDate } from '@/lib/utils';
 import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
 import { InfoBox } from './components/InfoBox';
+import { ScrBacenSection } from './components/ScrBacenSection';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
@@ -74,9 +73,14 @@ function BoaVistaRatingSection({ bvr }: { bvr: BoaVistaRatingEnrichment }) {
           {score.riskText && (
             <p className="text-xs text-gray-500 leading-snug">{score.riskText}</p>
           )}
-          {score.tipoScore && (
-            <Badge variant="outline" className="text-[10px]">{score.tipoScore}</Badge>
-          )}
+          <div className="flex flex-wrap items-center gap-1">
+            {score.class && (
+              <Badge variant="outline" className="text-[10px]">Rating {score.class}</Badge>
+            )}
+            {score.tipoScore && (
+              <Badge variant="outline" className="text-[10px]">{score.tipoScore}</Badge>
+            )}
+          </div>
         </Card>
 
         <Card className="p-4 border border-emerald-100 bg-emerald-50/50 space-y-2">
@@ -463,6 +467,25 @@ export function RaioXBacenPlusStrategy({
           <p className="text-sm text-yellow-800 font-medium">
             {data.boaVistaRatingMessage ||
               'O Rating Bancário Boa Vista não estava disponível para esta consulta.'}
+          </p>
+        </Card>
+      )}
+
+      {/* ── Posição SCR BACEN (enrichment) ───────────────────────────────── */}
+      {data.scrBacen && (
+        <StrategySectionWrapper
+          title="Posição SCR — Banco Central"
+          icon={<BarChart3 className="w-5 h-5 text-primary" />}
+          isEmpty={false}
+        >
+          <ScrBacenSection scrBacen={data.scrBacen} />
+        </StrategySectionWrapper>
+      )}
+
+      {data.scrBacenUnavailable && (
+        <Card className="p-4 border border-yellow-100 bg-yellow-50">
+          <p className="text-sm text-yellow-800 font-medium">
+            {data.scrBacenMessage || 'A posição SCR do Banco Central não estava disponível para esta consulta.'}
           </p>
         </Card>
       )}
