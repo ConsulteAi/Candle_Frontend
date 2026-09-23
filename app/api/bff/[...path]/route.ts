@@ -23,7 +23,6 @@ const allowedRoutes: AllowedRoute[] = [
   { pattern: /^\/public\/tenants\/ui-config$/, methods: ["GET"] },
 
   { pattern: /^\/admin\/users$/, methods: ["GET"] },
-  { pattern: /^\/admin\/users\/manual-cpf$/, methods: ["POST"] },
   { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+$/, methods: ["GET"] },
   { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+\/queries$/, methods: ["GET"] },
   { pattern: /^\/admin\/users\/[a-zA-Z0-9-]+\/transactions$/, methods: ["GET"] },

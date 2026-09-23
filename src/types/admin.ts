@@ -134,30 +134,6 @@ export interface AdjustBalanceDTO {
   description: string;
 }
 
-// --- Manual CPF User (liberação manual no backoffice) ---
-
-export interface ManualCpfUser {
-  id: string;
-  name: string;
-  email: string;
-  cpfCnpj: string;
-  createdAt: string;
-  passwordResetStatus: 'PENDING' | 'USED';
-}
-
-export interface CreateManualCpfUserPayload {
-  name: string;
-  email: string;
-  cpf: string;
-  phone?: string;
-}
-
-export interface CreateManualCpfUserResponse {
-  user: AdminUser;
-  resetUrl: string;
-  expiresAt: string;
-}
-
 export interface UserQueryPriceBenefit {
   id: string;
   userId: string;
