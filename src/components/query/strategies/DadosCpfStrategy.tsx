@@ -314,7 +314,7 @@ function ScoreBlock({ label, item, novoSerasa }: {
       <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{label}</p>
       {item?.serasaScore && (
         <div className="mb-2">
-          <span className="text-xs text-gray-500">Serasa</span>
+          <span className="text-xs text-gray-500">Base 1</span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-primary">{item.serasaScore}</span>
             {item.serasaFaixa && (
@@ -325,7 +325,7 @@ function ScoreBlock({ label, item, novoSerasa }: {
       )}
       {item?.boaVistaScore && (
         <div>
-          <span className="text-xs text-gray-500">Boa Vista</span>
+          <span className="text-xs text-gray-500">Base 3</span>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold text-blue-600">{item.boaVistaScore}</span>
             {item.boaVistaFaixa && (
@@ -336,7 +336,7 @@ function ScoreBlock({ label, item, novoSerasa }: {
       )}
       {novoSerasa && (
         <div>
-          <span className="text-xs text-gray-500">Serasa</span>
+          <span className="text-xs text-gray-500">Base 1</span>
           <p className="text-2xl font-bold text-primary">{novoSerasa}</p>
         </div>
       )}

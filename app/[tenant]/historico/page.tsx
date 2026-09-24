@@ -462,9 +462,6 @@ export default function HistoricoPage() {
                               <p className="text-sm text-slate-700 leading-tight">
                                 {query.queryType.name}
                               </p>
-                              <p className="text-[10px] text-slate-300 font-mono mt-0.5">
-                                {query.queryType.code}
-                              </p>
                             </TableCell>
                             <TableCell className="px-4 py-3.5">
                               <span className="font-mono text-sm text-slate-700">

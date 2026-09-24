@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type { QueryStrategyProps, MaxBrasilScoreBvsBasicaPjResult } from '@/types/query-strategies';
-import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
+import { formatCurrency, formatCpfCnpj, formatInformant } from '@/lib/formatters';
 import { AlertsGrid } from './components/AlertsGrid';
 import { InfoBox } from './components/InfoBox';
 import { SummaryCard } from './components/SummaryCard';
@@ -45,7 +45,7 @@ export function MaxBrasilScoreBvsBasicaPjStrategy({
           queryId={queryId}
           className="mb-6"
         >
-          <Badge variant="outline">MAX Brasil Score + BVS</Badge>
+          <Badge variant="outline">MAX Brasil Score + Base 3</Badge>
         </StrategyHeader>
 
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -116,7 +116,7 @@ export function MaxBrasilScoreBvsBasicaPjStrategy({
                 <TableCell>{debt.date}</TableCell>
                 <TableCell className="font-medium">{debt.origin}</TableCell>
                 <TableCell>{debt.contract || '-'}</TableCell>
-                <TableCell>{debt.informant || '-'}</TableCell>
+                <TableCell>{formatInformant(debt.informant) || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
             ))}

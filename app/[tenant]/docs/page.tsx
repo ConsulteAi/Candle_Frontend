@@ -392,44 +392,15 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'sourceQueryTypeCode', type: 'string | undefined', description: 'Query type complementar que originou o enriquecimento.' },
       { name: 'sourceProviderCode', type: 'string | undefined', description: 'Provider da consulta complementar.' },
       { name: 'available', type: 'boolean', description: 'Indica se o enriquecimento de mercado foi carregado com sucesso.' },
-      { name: 'summary', type: 'object', description: 'Resumo comercial com totais de SCPC, REFIN/PEFIN, protestos, cheques, CADIN e acoes legais.' },
-      { name: 'serasaSummary', type: 'object | undefined', description: 'Resumo de ocorrencias SERASA quando disponivel.' },
-      { name: 'scpcDebts', type: 'Array<object> | undefined', description: 'Ocorrencias de SCPC (quando houver dados).' },
+      { name: 'summary', type: 'object', description: 'Resumo comercial com totais de Base 3, REFIN/PEFIN, protestos, cheques, CADIN e acoes legais.' },
+      { name: 'serasaSummary', type: 'object | undefined', description: 'Resumo de ocorrencias da Base 1 quando disponivel.' },
+      { name: 'scpcDebts', type: 'Array<object> | undefined', description: 'Ocorrencias da Base 3 (quando houver dados).' },
       { name: 'refinPefinDebts', type: 'Array<object> | undefined', description: 'Ocorrencias de REFIN/PEFIN (quando houver dados).' },
       { name: 'protests', type: 'Array<object> | undefined', description: 'Ocorrencias de protestos comerciais da camada complementar.' },
       { name: 'badChecks', type: 'Array<object> | undefined', description: 'Ocorrencias de cheques sem fundos da camada complementar.' },
       { name: 'cadin', type: 'Array<object> | undefined', description: 'Ocorrencias de CADIN da camada complementar.' },
       { name: 'legalActions', type: 'Array<object> | undefined', description: 'Acoes legais retornadas pela camada complementar.' },
       { name: 'rawSections', type: 'object | undefined', description: 'Recortes minimos de blocos brutos preservados internamente.' },
-    ],
-  },
-  ehmFinancialSummary: {
-    name: 'financialSummary',
-    description: 'Resumo financeiro consolidado das consultas desta familia.',
-    fields: [
-      { name: 'totalDebts', type: 'number', description: 'Campo de compatibilidade tecnica; pode ser derivado de agregacao interna.' },
-      { name: 'totalScpcDebts', type: 'number', description: 'Quantidade de ocorrencias SCPC.' },
-      { name: 'totalRefinPefinDebts', type: 'number', description: 'Quantidade de ocorrencias REFIN/PEFIN.' },
-      { name: 'totalProtests', type: 'number', description: 'Quantidade de protestos.' },
-      { name: 'totalBadChecks', type: 'number', description: 'Quantidade de ocorrencias de cheques sem fundos.' },
-      { name: 'totalCadin', type: 'number', description: 'Quantidade de ocorrencias em CADIN.' },
-      { name: 'totalLegalActions', type: 'number', description: 'Quantidade de acoes legais.' },
-      { name: 'totalSerasaOccurrences', type: 'number', description: 'Quantidade total de ocorrencias SERASA.' },
-      { name: 'hasCommercialRestrictions', type: 'boolean | undefined', description: 'Sinaliza presenca de restricoes comerciais relevantes.' },
-    ],
-  },
-  scpcDebts: {
-    name: 'scpcDebts[]',
-    description: 'Ocorrencias SCPC retornadas pela DIVIDAS_MULTI.',
-    fields: [
-      { name: 'occurrenceDate', type: 'string', description: 'Data da ocorrencia.' },
-      { name: 'debtorType', type: 'string', description: 'Tipo do devedor.' },
-      { name: 'creditorName', type: 'string', description: 'Nome do credor.' },
-      { name: 'value', type: 'string | number', description: 'Valor da ocorrencia.' },
-      { name: 'city', type: 'string', description: 'Cidade da ocorrencia.' },
-      { name: 'state', type: 'string', description: 'UF da ocorrencia.' },
-      { name: 'contract', type: 'string', description: 'Contrato/referencia da ocorrencia.' },
-      { name: 'availabilityDate', type: 'string', description: 'Data de disponibilizacao.' },
     ],
   },
   refinPefinDebts: {
@@ -444,15 +415,6 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'institutionDocument', type: 'string | undefined', description: 'Documento da instituicao, quando fornecido.' },
       { name: 'originDocument', type: 'string | undefined', description: 'Documento de origem, quando fornecido.' },
       { name: 'guarantor', type: 'string | undefined', description: 'Garantidor da operacao, quando fornecido.' },
-    ],
-  },
-  serasaSummary: {
-    name: 'serasaSummary',
-    description: 'Resumo sintetico de ocorrencias SERASA.',
-    fields: [
-      { name: 'firstOccurrenceDate', type: 'string | undefined', description: 'Data da primeira ocorrencia.' },
-      { name: 'lastOccurrenceDate', type: 'string | undefined', description: 'Data da ultima ocorrencia.' },
-      { name: 'totalOccurrences', type: 'number', description: 'Quantidade total de ocorrencias.' },
     ],
   },
   rawSections: {
@@ -559,18 +521,6 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'currency', type: 'string | undefined', description: 'Moeda de referencia.' },
     ],
   },
-  serasaDebts: {
-    name: 'serasaDebts[]',
-    description: 'Ocorrencias de debitos SERASA nas consultas desta familia.',
-    fields: [
-      { name: 'creditor', type: 'string', description: 'Credor da ocorrencia.' },
-      { name: 'dueDate', type: 'string', description: 'Data de vencimento.' },
-      { name: 'type', type: 'string', description: 'Tipo da ocorrencia.' },
-      { name: 'contract', type: 'string', description: 'Contrato/referencia.' },
-      { name: 'value', type: 'string | number', description: 'Valor da ocorrencia.' },
-      { name: 'inclusionDate', type: 'string', description: 'Data de inclusao no SERASA.' },
-    ],
-  },
   preservedRawBlocks: {
     name: 'preservedRawBlocks',
     description: 'Blocos de payload bruto preservados no result parseado para uso interno e PDF.',
@@ -675,19 +625,6 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'score', type: 'object', description: 'Pontuacao e faixa consolidada.' },
     ],
   },
-  boaVistaRating: {
-    name: 'boaVistaRating',
-    description: 'Bloco enriquecido de Rating Boa Vista usado no Raio X Bacen Plus.',
-    fields: [
-      { name: 'score', type: 'object | undefined', description: 'Pontuacao Boa Vista.' },
-      { name: 'decision', type: 'object | undefined', description: 'Decisao de credito recomendada.' },
-      { name: 'creditLimitSuggestion', type: 'object | undefined', description: 'Sugestao de limite/parcela.' },
-      { name: 'financialSummary', type: 'object | undefined', description: 'Resumo financeiro consolidado.' },
-      { name: 'queries', type: 'Array<object> | undefined', description: 'Historico de consultas comerciais.' },
-      { name: 'protests', type: 'Array<object> | undefined', description: 'Protestos retornados pelo enriquecimento.' },
-      { name: 'debts', type: 'Array<object> | undefined', description: 'Pendencias financeiras retornadas pelo enriquecimento.' },
-    ],
-  },
   veicular: {
     name: 'veicular',
     description: 'Bloco bruto veicular preservado pela consulta.',
@@ -723,7 +660,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
     description: 'Scores de credito de diferentes modelos, quando disponiveis.',
     fields: [
       { name: 'base', type: 'object | undefined', description: 'Score do modelo base: serasaScore, serasaFaixa, boaVistaScore, boaVistaFaixa.' },
-      { name: 'novoSerasaScore', type: 'string | undefined', description: 'Score Serasa do modelo novo.' },
+      { name: 'novoSerasaScore', type: 'string | undefined', description: 'Score Base 1 do modelo novo.' },
       { name: 'antigo', type: 'object | undefined', description: 'Score do modelo antigo: serasaScore, serasaFaixa, boaVistaScore, boaVistaFaixa.' },
     ],
   },
@@ -920,11 +857,6 @@ const queryTypeDocs: QueryTypeDoc[] = [
   { code: 'MAX_BRASIL_AVANCADO_PJ', title: 'MAX Brasil Avancado PJ', input: 'CNPJ', summary: 'Consulta completa PJ com score e quadro societario.', rootFields: commonRoot, blocks: getBlocks(['company', 'partners', 'score', 'alerts', 'debts', 'protests', 'badChecks', 'phones', 'addresses']) },
   { code: 'REALTIME_PREMIUM_SCORE_PF', title: 'Realtime Premium Score PF', input: 'CPF', summary: 'Versao realtime PF com campo adicional de probabilidade.', rootFields: commonRoot, blocks: getBlocks(['person', 'score', 'alerts', 'debts', 'protests', 'badChecks', 'phones', 'addresses']) },
   { code: 'REALTIME_PREMIUM_SCORE_PJ', title: 'Realtime Premium Score PJ', input: 'CNPJ', summary: 'Versao realtime PJ com score e socios.', rootFields: commonRoot, blocks: getBlocks(['company', 'partners', 'score', 'alerts', 'debts', 'protests', 'badChecks', 'phones', 'addresses']) },
-  { code: 'BOA_VISTA_ACERTA_CPF', title: 'Boa Vista Acerta CPF', input: 'CPF', summary: 'Consulta PF com score (campo risk) e sem bloco de enderecos.', rootFields: commonRoot, blocks: getBlocks(['person', 'score', 'alerts', 'debts', 'protests', 'badChecks', 'phones']) },
-  { code: 'QUOD_RESTRITIVO_ACOES_PF', title: 'Quod Restritivo Acoes PF', input: 'CPF', summary: 'Consulta PF focada em restricoes e acoes judiciais.', rootFields: [...commonRoot, { name: 'totalLegalActions', type: 'number', description: 'Total de acoes legais encontradas.' }], blocks: getBlocks(['person', 'alerts', 'debts', 'protests', 'badChecks', 'legalActions', 'phones', 'addresses']) },
-  { code: 'QUOD_RESTRITIVO_ACOES_PJ', title: 'Quod Restritivo Acoes PJ', input: 'CNPJ', summary: 'Consulta PJ focada em restricoes, socios e acoes judiciais.', rootFields: [...commonRoot, { name: 'totalLegalActions', type: 'number', description: 'Total de acoes legais encontradas.' }], blocks: getBlocks(['company', 'partners', 'alerts', 'debts', 'protests', 'badChecks', 'legalActions', 'phones', 'addresses']) },
-  { code: 'BVS_BASICA_PF', title: 'BVS Basica PF', input: 'CPF', summary: 'Consulta basica PF; retorna address (objeto unico), nao addresses[].', rootFields: commonRoot, blocks: [...getBlocks(['person', 'alerts', 'debts', 'protests']), { name: 'address', description: 'Endereco unico da consulta.', fields: sharedBlocks.addresses.fields }] },
-  { code: 'BVS_BASICA_PJ', title: 'BVS Basica PJ', input: 'CNPJ', summary: 'Consulta basica PJ com address unico e badChecks.', rootFields: commonRoot, blocks: [...getBlocks(['company', 'alerts', 'debts', 'protests', 'badChecks']), { name: 'address', description: 'Endereco unico da consulta.', fields: sharedBlocks.addresses.fields }] },
   { code: 'PROTESTO_NACIONAL', title: 'Protesto Nacional', input: 'CPF/CNPJ', summary: 'Consulta dedicada exclusivamente a protestos.', rootFields: [
     { name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' },
     { name: 'product', type: 'string', description: 'Nome do produto da consulta.' },
@@ -947,11 +879,6 @@ const queryTypeDocs: QueryTypeDoc[] = [
       ],
     },
   ] },
-  { code: 'SERASA_CREDNET_PEFIN_PROTESTO_SPC_PF', title: 'Serasa Crednet Pefin Protesto SPC PF', input: 'CPF', summary: 'Consulta PF com participacoes empresariais.', rootFields: commonRoot, blocks: getBlocks(['person', 'alerts', 'debts', 'protests', 'badChecks', 'companyParticipations']) },
-  { code: 'REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PF', title: 'Realtime MAX SPC Serasa BVS Protesto PF', input: 'CPF', summary: 'Consulta PF com bloco de syntheticProtests.', rootFields: commonRoot, blocks: getBlocks(['person', 'alerts', 'debts', 'syntheticProtests', 'protests', 'badChecks']) },
-  { code: 'REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PJ', title: 'Realtime MAX SPC Serasa BVS Protesto PJ', input: 'CNPJ', summary: 'Consulta PJ com bloco de syntheticProtests.', rootFields: commonRoot, blocks: getBlocks(['company', 'alerts', 'debts', 'syntheticProtests', 'protests', 'badChecks']) },
-  { code: 'MAX_BRASIL_SCORE_BVS_BASICA_PF', title: 'MAX Brasil Score BVS Basica PF', input: 'CPF', summary: 'Consulta PF sem score, com restricoes basicas completas.', rootFields: commonRoot, blocks: getBlocks(['person', 'alerts', 'debts', 'protests', 'badChecks']) },
-  { code: 'MAX_BRASIL_SCORE_BVS_BASICA_PJ', title: 'MAX Brasil Score BVS Basica PJ', input: 'CNPJ', summary: 'Consulta PJ sem score; campo protests[].type e relevante.', rootFields: commonRoot, blocks: getBlocks(['company', 'alerts', 'debts', 'protests', 'badChecks']) },
   { code: 'RATING_AVANCADO_PF', title: 'Rating Avancado PF', input: 'CPF', summary: 'Consulta BIGTECH PF com score SCR, motor de credito, renda presumida e detalhamento financeiro no mesmo visual premium do Raio X.', rootFields: raioXScrEnhancedRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXPerson', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails']) },
   { code: 'RATING_AVANCADO_PJ', title: 'Rating Avancado PJ', input: 'CNPJ', summary: 'Consulta BIGTECH PJ com score SCR, motor de credito, renda presumida e detalhamento financeiro no mesmo visual premium do Raio X.', rootFields: raioXScrEnhancedRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails']) },
   { code: 'RAIO_X_CREDITO_RATING_SCR_PF', title: 'Raio X Credito Rating SCR PF', input: 'CPF', summary: 'Consulta SCR detalhada PF com enriquecimento complementar de restricoes de mercado via DIVIDAS_MULTI quando disponivel.', rootFields: raioXScrEnhancedRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXPerson', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions']) },
@@ -960,10 +887,8 @@ const queryTypeDocs: QueryTypeDoc[] = [
   { code: 'RAIO_X_FINANCEIRO_RATING_SCR_PJ', title: 'Raio X Financeiro Rating SCR PJ', input: 'CNPJ', summary: 'Consulta SCR PJ com enriquecimento complementar de mercado e bloco CCF quando disponivel.', rootFields: raioXFinanceiroRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment']) },
   { code: 'RAIO_X_PRO_PF', title: 'Raio X Pro PF', input: 'CPF', summary: 'Consulta SCR PF com tres camadas complementares: mercado, CCF e SCR consolidado.', rootFields: raioXProRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXPerson', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment', 'scrBacenEnrichment']) },
   { code: 'RAIO_X_PRO_PJ', title: 'Raio X Pro PJ', input: 'CNPJ', summary: 'Consulta SCR PJ com tres camadas complementares: mercado, CCF e SCR consolidado.', rootFields: raioXProRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations', 'raioXCompany', 'alerts', 'companyParticipations', 'contacts', 'emails', 'phones', 'addresses', 'estimatedIncome', 'financialRestrictions', 'creditEngine', 'additionalDetails', 'marketRestrictions', 'ccfEnrichment', 'scrBacenEnrichment']) },
-  { code: 'RAIO_X_FINANCEIRO_PLUS_PF', title: 'Raio X Financeiro Plus PF', input: 'CPF', summary: 'Produto comercial que executa a consulta Serasa Crednet Pefin Protesto SPC PF: score, alertas, pendencias, protestos, cheques sem fundo e participacoes societarias em uma unica chamada.', rootFields: commonRoot, blocks: getBlocks(['person', 'alerts', 'debts', 'protests', 'badChecks', 'companyParticipations']) },
+  { code: 'RAIO_X_FINANCEIRO_PLUS_PF', title: 'Raio X Financeiro Plus PF', input: 'CPF', summary: 'Produto comercial que executa uma consulta de participacoes empresariais: score, alertas, pendencias, protestos, cheques sem fundo e participacoes societarias em uma unica chamada.', rootFields: commonRoot, blocks: getBlocks(['person', 'alerts', 'debts', 'protests', 'badChecks', 'companyParticipations']) },
   { code: 'RAIO_X_FINANCEIRO_PLUS_PJ', title: 'Raio X Financeiro Plus PJ', input: 'CNPJ', summary: 'Produto comercial que executa a consulta Realtime Premium Score PJ: score, quadro societario, pendencias, protestos, cheques sem fundo, telefones e enderecos em uma unica chamada.', rootFields: commonRoot, blocks: getBlocks(['company', 'partners', 'score', 'alerts', 'debts', 'protests', 'badChecks', 'phones', 'addresses']) },
-  { code: 'DIVIDAS_MULTI_CPF_PRO', title: 'Dividas Multi CPF Pro', input: 'CPF', summary: 'Consulta agregada (PF) com SCPC, REFIN/PEFIN, protestos, cheques, CADIN, acoes legais e resumo SERASA.', rootFields: [], blocks: getBlocks(['person', 'ehmFinancialSummary', 'scpcDebts', 'refinPefinDebts', 'protests', 'badChecks', 'ehmCadin', 'legalActions', 'serasaSummary', 'rawSections']) },
-  { code: 'DIVIDAS_MULTI_CNPJ_PRO', title: 'Dividas Multi CNPJ Pro', input: 'CNPJ', summary: 'Consulta agregada (PJ) com SCPC, REFIN/PEFIN, protestos, cheques, CADIN, acoes legais e resumo SERASA.', rootFields: [], blocks: getBlocks(['company', 'ehmFinancialSummary', 'scpcDebts', 'refinPefinDebts', 'protests', 'badChecks', 'ehmCadin', 'legalActions', 'serasaSummary', 'rawSections']) },
   { code: 'CCF', title: 'CCF', input: 'CPF/CNPJ', summary: 'Consulta EHM de cheques sem fundo com resumo, historico e lista detalhada por banco/agencia.', rootFields: [{ name: 'erro', type: 'boolean', description: 'Indica se a consulta retornou erro.' }], blocks: getBlocks(['ccfSummary', 'ccfHistorico', 'ccfLista']) },
   { code: 'PROTESTO_NACIONAL_PLUS', title: 'Protesto Nacional Plus', input: 'CPF/CNPJ', summary: 'Consulta EHM de protestos nacionais com retorno tolerante a respostas vazias.', rootFields: [
     { name: 'document', type: 'string', description: 'Documento consultado.' },
@@ -1021,74 +946,16 @@ const queryTypeDocs: QueryTypeDoc[] = [
     },
     ...getBlocks(['notaries']),
   ] },
-  { code: 'BOA_VISTA_ACERTA_ESSENCIAL_POSITIVO_PF', title: 'Boa Vista Acerta Essencial Positivo PF', input: 'CPF', summary: 'Consulta PF com score, resumo financeiro, localizacao, acoes legais e blocos complementares.', rootFields: [], blocks: [
-    ...getBlocks(['person', 'score', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'legalActions', 'ehmLocation', 'estimatedIncome', 'dashboardSummary']),
-    {
-      name: 'preservedRawBlocks',
-      description: 'Blocos complementares preservados pela consulta.',
-      fields: sharedBlocks.preservedRawBlocks.fields,
-    },
-  ] },
-  { code: 'BOA_VISTA_DEFINE_RISCO_POSITIVO_PJ', title: 'Boa Vista Define Risco Positivo PJ', input: 'CNPJ', summary: 'Consulta PJ com score, resumo financeiro, localizacao e blocos complementares.', rootFields: [], blocks: [
-    ...getBlocks(['company', 'score', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedRevenue', 'dashboardSummary']),
-    {
-      name: 'preservedRawBlocks',
-      description: 'Blocos complementares preservados pela consulta.',
-      fields: sharedBlocks.preservedRawBlocks.fields,
-    },
-  ] },
-  { code: 'RATING_BANCARIO_BOA_VISTA_PF', title: 'Rating Bancario Boa Vista PF', input: 'CPF', summary: 'Consulta PF com decisao de credito, sugestao de limite e blocos complementares.', rootFields: [], blocks: [
-    ...getBlocks(['person', 'score', 'decision', 'creditLimitSuggestion', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedIncome']),
-    {
-      name: 'preservedRawBlocks',
-      description: 'Blocos complementares preservados pela consulta.',
-      fields: sharedBlocks.preservedRawBlocks.fields,
-    },
-  ] },
-  { code: 'RATING_BANCARIO_BOA_VISTA_PJ', title: 'Rating Bancario Boa Vista PJ', input: 'CNPJ', summary: 'Consulta PJ com decisao de credito, sugestao de limite e blocos complementares.', rootFields: [], blocks: [
-    ...getBlocks(['company', 'score', 'decision', 'creditLimitSuggestion', 'ehmFinancialSummary', 'queries', 'protests', 'debts', 'ehmLocation', 'estimatedRevenue']),
-    {
-      name: 'preservedRawBlocks',
-      description: 'Blocos complementares preservados pela consulta.',
-      fields: sharedBlocks.preservedRawBlocks.fields,
-    },
-  ] },
-  { code: 'SERASA_PF', title: 'Serasa PF', input: 'CPF', summary: 'Consulta Serasa PF com score opcional, dividas analiticas e protestos.', rootFields: [], blocks: getBlocks(['person', 'score', 'ehmFinancialSummary', 'serasaDebts', 'protests']) },
-  { code: 'SERASA_PJ', title: 'Serasa PJ', input: 'CNPJ', summary: 'Consulta Serasa PJ com score opcional, dividas analiticas e protestos.', rootFields: [], blocks: getBlocks(['company', 'score', 'ehmFinancialSummary', 'serasaDebts', 'protests']) },
   { code: 'LOCALIZA_CPF_CNPJ', title: 'Localiza CPF CNPJ', input: 'CPF/CNPJ', summary: 'Consulta de enriquecimento cadastral e relacional.', rootFields: [{ name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' }], blocks: getBlocks(['basicInfo', 'contact', 'addresses', 'relations']) },
   { code: 'DADOS_CPF', title: 'Dados CPF', input: 'CPF', summary: 'Consulta cadastral completa de pessoa fisica: dados pessoais, scores, classe social, parentes, participacoes societarias, enderecos, telefones, emails, PIS e IRPF.', rootFields: [], blocks: getBlocks(['dadosCpfPerson', 'dadosCpfScores', 'dadosCpfSocialClass', 'dadosCpfRelatives', 'dadosCpfCompanyParticipations', 'dadosAddresses', 'dadosCpfPhones', 'dadosCpfEmails', 'dadosCpfPis', 'dadosCpfIrpf']) },
   { code: 'DADOS_CNPJ', title: 'Dados CNPJ', input: 'CNPJ', summary: 'Consulta cadastral completa de pessoa juridica: dados da empresa, enderecos, telefones, emails, Simples Nacional e quadro societario.', rootFields: [], blocks: getBlocks(['dadosCnpjCompany', 'dadosAddresses', 'dadosCnpjPhones', 'emails', 'dadosCnpjSimplesNacional', 'dadosCnpjPartners']) },
   { code: 'SCR_BACEN_PREMIUM_SCORE', title: 'SCR Bacen Premium Score', input: 'CPF/CNPJ', summary: 'Consulta SCR padrao com score e operacoes.', rootFields: scrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations']) },
   { code: 'SCR_PF', title: 'SCR PF', input: 'CPF', summary: 'Posicao consolidada SCR BACEN para CPF.', rootFields: [], blocks: getBlocks(['ehmScrResumo', 'ehmScrConsolidado', 'ehmScrOperations', 'ehmScrScore']) },
   { code: 'SCR_PJ', title: 'SCR PJ', input: 'CNPJ', summary: 'Posicao consolidada SCR BACEN para CNPJ.', rootFields: [], blocks: getBlocks(['ehmScrResumo', 'ehmScrConsolidado', 'ehmScrOperations', 'ehmScrScore']) },
-  { code: 'COMPLETA_PLUS_BVS_ACOES_CPF', title: 'Completa Plus BVS Acoes CPF', input: 'CPF', summary: 'Consulta CPF com score, alertas, dividas, protestos, acoes legais e passagens comerciais.', rootFields: [
-    { name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' },
-    { name: 'totalDebts', type: 'number', description: 'Total de pendencias.' },
-    { name: 'totalQueries', type: 'number', description: 'Total de passagens comerciais.' },
-    { name: 'totalLegalActions', type: 'number', description: 'Total agregado de acoes legais encontradas.' },
-  ], blocks: getBlocks(['person', 'score', 'alerts', 'debts', 'protests', 'legalActions', 'queries', 'veicular']) },
-  { code: 'COMPLETA_PLUS_BVS_ACOES_CNPJ', title: 'Completa Plus BVS Acoes CNPJ', input: 'CNPJ', summary: 'Consulta CNPJ com score, alertas, pendencias, protestos, cheques, acoes legais e passagens.', rootFields: [
-    { name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' },
-    { name: 'totalDebts', type: 'number', description: 'Total de pendencias.' },
-    { name: 'totalProtests', type: 'number', description: 'Total de protestos.' },
-    { name: 'totalQueries', type: 'number', description: 'Total de passagens comerciais.' },
-    { name: 'totalBadChecks', type: 'number', description: 'Total de cheques sem fundos.' },
-    { name: 'totalLegalActions', type: 'number', description: 'Total agregado de acoes legais encontradas.' },
-  ], blocks: getBlocks(['company', 'score', 'alerts', 'debts', 'protests', 'queries', 'badChecks', 'legalActions']) },
   { code: 'CREDIT_PREMIUM', title: 'Credit Premium', input: 'CPF/CNPJ', summary: 'Consulta mais completa: resumo financeiro, CADIN, CCF e historicos.', rootFields: [
     { name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' },
     { name: 'status', type: 'string', description: 'Status geral calculado da consulta.' },
   ], blocks: getBlocks(['person', 'financialSummary', 'debts', 'protests', 'queries', 'ccf', 'cadin']) },
-  { code: 'RAIO_X_BACEN_PLUS_PF', title: 'Raio X Bacen Plus PF', input: 'CPF', summary: 'Consulta ICONSULTEI com enriquecimento de Rating Boa Vista PF quando disponivel.', rootFields: [
-    ...commonRoot,
-    { name: 'boaVistaRatingUnavailable', type: 'boolean | undefined', description: 'Sinaliza indisponibilidade do enriquecimento Boa Vista.' },
-    { name: 'boaVistaRatingMessage', type: 'string | undefined', description: 'Mensagem resumida explicando indisponibilidade do enriquecimento.' },
-  ], blocks: getBlocks(['person', 'alerts', 'debts', 'protests', 'badChecks', 'companyParticipations', 'boaVistaRating']) },
-  { code: 'RAIO_X_BACEN_PLUS_PJ', title: 'Raio X Bacen Plus PJ', input: 'CNPJ', summary: 'Consulta ICONSULTEI com enriquecimento de Rating Boa Vista PJ quando disponivel.', rootFields: [
-    ...commonRoot,
-    { name: 'boaVistaRatingUnavailable', type: 'boolean | undefined', description: 'Sinaliza indisponibilidade do enriquecimento Boa Vista.' },
-    { name: 'boaVistaRatingMessage', type: 'string | undefined', description: 'Mensagem resumida explicando indisponibilidade do enriquecimento.' },
-  ], blocks: getBlocks(['company', 'alerts', 'debts', 'protests', 'badChecks', 'boaVistaRating']) },
 ];
 
 const _baseUrl = 'api.consultaai.net.br';
@@ -1097,7 +964,7 @@ const executeRequestExample = `curl -X POST \"https://${_baseUrl}/queries/execut
   -H \"Authorization: Bearer SEU_TOKEN\" \\
   -H \"Content-Type: application/json\" \\
   -d '{
-    \"queryTypeCode\": \"REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PF\",
+    \"queryTypeCode\": \"RATING_AVANCADO_PF\",
     \"input\": \"12345678900\"
   }'`;
 
@@ -1130,8 +997,8 @@ const queryByIdResponseExample = `{
     \"status\": \"SUCCESS\",
     \"price\": 10.9,
     \"queryType\": {
-      \"code\": \"REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PF\",
-      \"name\": \"Realtime MAX SPC Serasa BVS Protesto PF\",
+      \"code\": \"RATING_AVANCADO_PF\",
+      \"name\": \"Rating Avancado PF\",
       \"category\": [\"PERSON\", \"CREDIT\"]
     },
     \"createdAt\": \"2026-03-29T16:22:44.000Z\",
@@ -1148,7 +1015,7 @@ const queryPdfRequestExample = `curl -X GET \"https://${_baseUrl}/queries/9c2f4d
 
 const queryPdfResponseHeadersExample = `HTTP/1.1 200 OK
 Content-Type: application/pdf
-Content-Disposition: attachment; filename=\"Consulta_REALTIME_MAX_SPC_SERASA_BVS_PROTESTO_PF_NOME_2026-03-29.pdf\"
+Content-Disposition: attachment; filename=\"Consulta_RATING_AVANCADO_PF_NOME_2026-03-29.pdf\"
 Content-Length: 123456`;
 
 function getSampleInput(inputType: string): string {

@@ -22,7 +22,7 @@ import type {
   CommercialAnalysisScore,
 } from '@/types/query-strategies';
 import { cn, formatDisplayDate } from '@/lib/utils';
-import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
+import { formatCurrency, formatCpfCnpj, formatInformant } from '@/lib/formatters';
 import { InfoBox } from './components/InfoBox';
 import { ScrBacenSection } from './components/ScrBacenSection';
 import { StrategyHeader } from './components/StrategyHeader';
@@ -59,7 +59,7 @@ function BoaVistaRatingSection({ bvr }: { bvr: BoaVistaRatingEnrichment }) {
   return (
     <div className="space-y-5 p-4">
       <p className="text-xs text-gray-500 leading-relaxed border-l-2 border-violet-300 pl-3">
-        Rating bancário consolidado da <strong>Boa Vista (SCPC)</strong> — inclui pontuação de risco,
+        Rating bancário consolidado da <strong>Base 3</strong> — inclui pontuação de risco,
         decisão de crédito, limite sugerido e histórico de consultas e pendências.
       </p>
 
@@ -351,7 +351,7 @@ export function RaioXBacenPlusStrategy({
                 <TableCell>{d.date || '-'}</TableCell>
                 <TableCell className="font-medium">{d.origin || '-'}</TableCell>
                 <TableCell>{d.contract || '-'}</TableCell>
-                <TableCell>{d.informant || '-'}</TableCell>
+                <TableCell>{formatInformant(d.informant) || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">
                   {formatCurrency(String(d.value || 0))}
                 </TableCell>
@@ -454,7 +454,7 @@ export function RaioXBacenPlusStrategy({
       {/* ── Rating Boa Vista (enrichment) ────────────────────────────────────── */}
       {data.boaVistaRating && (
         <StrategySectionWrapper
-          title="Rating Bancário — Boa Vista"
+          title="Rating Bancário — Base 3"
           icon={<Star className="w-5 h-5 text-violet-500" />}
           isEmpty={false}
         >
@@ -466,7 +466,7 @@ export function RaioXBacenPlusStrategy({
         <Card className="p-4 border border-yellow-100 bg-yellow-50">
           <p className="text-sm text-yellow-800 font-medium">
             {data.boaVistaRatingMessage ||
-              'O Rating Bancário Boa Vista não estava disponível para esta consulta.'}
+              'O Rating Bancário Base 3 não estava disponível para esta consulta.'}
           </p>
         </Card>
       )}

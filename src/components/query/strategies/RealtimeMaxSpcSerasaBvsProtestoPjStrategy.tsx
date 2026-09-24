@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type { QueryStrategyProps, RealtimeMaxSpcSerasaBvsProtestoPjResult } from '@/types/query-strategies';
-import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
+import { formatCurrency, formatCpfCnpj, formatInformant } from '@/lib/formatters';
 import { AlertsGrid } from './components/AlertsGrid';
 import { InfoBox } from './components/InfoBox';
 import { ScoreGauge } from './components/ScoreGauge';
@@ -135,7 +135,7 @@ export function RealtimeMaxSpcSerasaBvsProtestoPjStrategy({
                 <TableCell>{debt.date}</TableCell>
                 <TableCell className="font-medium">{debt.origin}</TableCell>
                 <TableCell>{debt.contract || '-'}</TableCell>
-                <TableCell>{debt.informant || '-'}</TableCell>
+                <TableCell>{formatInformant(debt.informant) || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
             ))}

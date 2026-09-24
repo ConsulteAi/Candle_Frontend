@@ -90,6 +90,15 @@ export function formatDate(dateString: string): string {
   }
 }
 
+/**
+ * Nomes de bureau em resultados antigos ainda vêm crus do provider (ex.: "SERASA").
+ * Mapeia para o rótulo atual sem tocar o dado salvo.
+ */
+export function formatInformant(informant: string | undefined | null): string {
+  if (!informant) return "";
+  return informant.trim().toUpperCase() === "SERASA" ? "BASE 1" : informant;
+}
+
 export function formatCurrency(value: string): string {
   try {
     // Check if value is in Brazilian format (e.g., "8.143,84")
