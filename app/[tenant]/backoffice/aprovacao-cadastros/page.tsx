@@ -1,7 +1,7 @@
-import { getManualCpfUsersAction } from '@/actions/admin.actions';
-import { ManualCpfUserView } from '@/components/admin/ManualCpfUserView';
+import { getUsersAction } from '@/actions/admin.actions';
+import { PendingApprovalView } from '@/components/admin/PendingApprovalView';
 
-export default async function ManualCpfUserPage({
+export default async function AprovacaoCadastrosPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -10,7 +10,11 @@ export default async function ManualCpfUserPage({
   const page = typeof resolvedParams.page === 'string' ? parseInt(resolvedParams.page) : 1;
   const limit = 10;
 
-  const result = await getManualCpfUsersAction({ page, limit });
+  const result = await getUsersAction({
+    page,
+    limit,
+    status: 'PENDING_VERIFICATION',
+  });
 
   if (!result.success || !result.data) {
     return (
@@ -20,5 +24,5 @@ export default async function ManualCpfUserPage({
     );
   }
 
-  return <ManualCpfUserView initialData={result.data} />;
+  return <PendingApprovalView initialData={result.data} />;
 }

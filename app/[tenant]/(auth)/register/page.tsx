@@ -24,8 +24,6 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [registerError, setRegisterError] = useState<string | null>(null);
-  const pfBlockedMessage =
-    'Cadastro de pessoa física está temporariamente indisponível. No momento, aceitamos apenas empresa com CNPJ.';
 
   const {
     register,
@@ -45,14 +43,6 @@ export default function RegisterPage() {
     // Remove confirmPassword and terms before sending to API
     const { confirmPassword, terms, ...registerData } = data;
     const cleanedDocument = (registerData.document || '').replace(/\D/g, '');
-
-    if (cleanedDocument.length === 11) {
-      setError('document', {
-        type: 'manual',
-        message: pfBlockedMessage,
-      });
-      return;
-    }
 
     setIsLoading(true);
     setRegisterError(null);
@@ -200,13 +190,6 @@ export default function RegisterPage() {
               Criar nova conta
             </h2>
 
-            <Alert className="mb-5 border-amber-200 bg-amber-50 text-amber-900">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
-              <AlertDescription className="ml-2 text-sm text-amber-800">
-                {pfBlockedMessage}
-              </AlertDescription>
-            </Alert>
-
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               {registerError && (
                 <motion.div
@@ -227,21 +210,12 @@ export default function RegisterPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  {renderInput(
-                   'document', 
-                   'CNPJ', 
-                   '00.000.000/0000-00', 
-                   'text', 
-                   register('document'), 
-                   formatCpfCnpj,
-                   <motion.div 
-                     layout
-                     initial={{ opacity: 0, scale: 0.8 }}
-                     animate={{ opacity: 1, scale: 1 }}
-                     key="PJ"
-                     className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-md tracking-wider border border-primary/20"
-                   >
-                     SOMENTE PJ
-                   </motion.div>
+                   'document',
+                   'CPF/CNPJ',
+                   '00.000.000/0000-00',
+                   'text',
+                   register('document'),
+                   formatCpfCnpj
                  )}
                  {renderInput('phone', 'Telefone', '(00) 00000-0000', 'tel', register('phone'), formatPhone)}
               </div>

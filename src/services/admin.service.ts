@@ -7,9 +7,6 @@ import type {
   UserFilters,
   PaginatedResponse,
   AdjustBalanceDTO,
-  ManualCpfUser,
-  CreateManualCpfUserPayload,
-  CreateManualCpfUserResponse,
   QueryType,
   QueryTypeFilters,
   AdminTransaction,
@@ -85,16 +82,6 @@ export const AdminService = {
 
   getUserQueries: async (id: string, params: AdminQueryListQueryDto): Promise<PaginatedResponse<AdminQuery>> => {
     const response = await serverHttpClient.get<PaginatedResponse<AdminQuery>>(`${BASE_URL}/users/${id}/queries`, { params });
-    return response.data;
-  },
-
-  getManualCpfUsers: async (params: { page?: number; limit?: number }): Promise<PaginatedResponse<ManualCpfUser>> => {
-    const response = await serverHttpClient.get<PaginatedResponse<ManualCpfUser>>(`${BASE_URL}/users/manual-cpf`, { params });
-    return response.data;
-  },
-
-  createManualCpfUser: async (data: CreateManualCpfUserPayload): Promise<CreateManualCpfUserResponse> => {
-    const response = await serverHttpClient.post<CreateManualCpfUserResponse>(`${BASE_URL}/users/manual-cpf`, data);
     return response.data;
   },
 
