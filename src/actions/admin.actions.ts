@@ -15,7 +15,6 @@ import type {
   DashboardQueries,
   AdminQueryListItem,
   AdminQueriesFilters,
-  ManualCpfUser,
 } from "@/types/admin";
 import type { ActionState } from "./auth.actions";
 
@@ -55,21 +54,6 @@ export async function getUsersAction(
     const detail = error?.response?.data?.message ?? error?.message ?? "desconhecido";
     console.error(`[admin] getUsers falhou — status=${status} detalhe=${JSON.stringify(detail)}`);
     return { success: false, error: `Erro ao listar usuários (${status ?? "sem status"}: ${typeof detail === "string" ? detail : JSON.stringify(detail)})` };
-  }
-}
-
-export async function getManualCpfUsersAction(params: {
-  page?: number;
-  limit?: number;
-}): Promise<ActionState<PaginatedResponse<ManualCpfUser>>> {
-  try {
-    const data = await AdminService.getManualCpfUsers(params);
-    return { success: true, data };
-  } catch (error: any) {
-    const status = error?.response?.status;
-    const detail = error?.response?.data?.message ?? error?.message ?? "desconhecido";
-    console.error(`[admin] getManualCpfUsers falhou — status=${status} detalhe=${JSON.stringify(detail)}`);
-    return { success: false, error: `Erro ao listar usuários CPF (${status ?? "sem status"}: ${typeof detail === "string" ? detail : JSON.stringify(detail)})` };
   }
 }
 

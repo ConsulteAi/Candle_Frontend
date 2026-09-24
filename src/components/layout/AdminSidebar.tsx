@@ -20,7 +20,7 @@ import {
   ShieldAlert,
   ScrollText,
   Megaphone,
-  UserPlus,
+  UserCheck,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,6 @@ import { UserRole } from '@/types/auth';
 const menuItems = [
   { name: 'Dashboard', href: '/backoffice', icon: LayoutDashboard },
   { name: 'Usuários', href: '/backoffice/users', icon: Users },
-  { name: 'Liberação CPF', href: '/backoffice/cpf-manual', icon: UserPlus },
   { name: 'Transações', href: '/backoffice/transactions', icon: Wallet },
   { name: 'Consultas', href: '/backoffice/queries', icon: ScrollText },
   { name: 'Tipos de Consulta', href: '/backoffice/query-types', icon: Database },
@@ -39,6 +38,7 @@ const menuItems = [
   { name: 'Identidade Visual', href: '/backoffice/ui-settings', icon: Palette },
   { name: 'Auditoria', href: '/backoffice/audit', icon: ShieldAlert },
   { name: 'API Tokens', href: '/backoffice/api-tokens', icon: KeyRound, roles: [UserRole.MASTER, UserRole.ADMIN] },
+  { name: 'Aprovação de Cadastros', href: '/backoffice/aprovacao-cadastros', icon: UserCheck, roles: [UserRole.MASTER, UserRole.ADMIN] },
   { name: 'Aviso de Recarga', href: '/backoffice/aviso-recarga', icon: Megaphone, role: UserRole.MASTER },
 ];
 
