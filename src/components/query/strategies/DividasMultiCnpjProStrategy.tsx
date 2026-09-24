@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type { DividasMultiCnpjProResult, QueryStrategyProps } from '@/types/query-strategies';
-import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
+import { formatCurrency, formatCpfCnpj, formatInformant } from '@/lib/formatters';
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
@@ -90,7 +90,7 @@ export function DividasMultiCnpjProStrategy({
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <SummaryCard
-          title="Ocorrências SCPC"
+          title="Ocorrências Base 3"
           value={summary.totalScpcDebts || 0}
           subtitle={(summary.totalScpcDebts || 0) > 0 ? 'Constam registros' : 'Nada consta'}
           color={(summary.totalScpcDebts || 0) > 0 ? 'red' : 'green'}
@@ -132,7 +132,7 @@ export function DividasMultiCnpjProStrategy({
           icon={<Gavel className="w-5 h-5" />}
         />
         <SummaryCard
-          title="SERASA (Resumo)"
+          title="Base 1 (Resumo)"
           value={summary.totalSerasaOccurrences || 0}
           subtitle={(summary.totalSerasaOccurrences || 0) > 0 ? 'Constam registros' : 'Nada consta'}
           color={(summary.totalSerasaOccurrences || 0) > 0 ? 'blue' : 'green'}
@@ -141,11 +141,11 @@ export function DividasMultiCnpjProStrategy({
       </div>
 
       <StrategySectionWrapper
-        title="OCORRÊNCIAS SCPC"
+        title="OCORRÊNCIAS BASE 3"
         icon={<AlertTriangle className="w-5 h-5 text-red-500" />}
         count={data.scpcDebts?.length || 0}
         isEmpty={!data.scpcDebts || data.scpcDebts.length === 0}
-        emptyMessage="Nenhuma ocorrência SCPC registrada."
+        emptyMessage="Nenhuma ocorrência Base 3 registrada."
       >
         <Table>
           <TableHeader>
@@ -202,7 +202,7 @@ export function DividasMultiCnpjProStrategy({
               <TableRow key={idx}>
                 <TableCell>{item.date || '-'}</TableCell>
                 <TableCell className="font-medium">{item.origin || '-'}</TableCell>
-                <TableCell>{item.informant || '-'}</TableCell>
+                <TableCell>{formatInformant(item.informant) || '-'}</TableCell>
                 <TableCell>{item.contract || '-'}</TableCell>
                 <TableCell>{item.institutionDocument || '-'}</TableCell>
                 <TableCell>{item.originDocument || '-'}</TableCell>
@@ -338,7 +338,7 @@ export function DividasMultiCnpjProStrategy({
 
       {data.serasaSummary && (
         <StrategySectionWrapper
-          title="Resumo SERASA"
+          title="Resumo Base 1"
           icon={<FileWarning className="w-5 h-5 text-blue-500" />}
           isEmpty={false}
         >

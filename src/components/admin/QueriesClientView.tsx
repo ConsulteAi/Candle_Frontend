@@ -419,7 +419,6 @@ export function QueriesClientView({ initialData, isMaster = false }: QueriesClie
                   </td>
                   <td className="px-4 py-3.5">
                     <p className="text-sm text-slate-700 leading-tight">{query.queryType.name}</p>
-                    <p className="text-[10px] text-slate-300 font-mono mt-0.5">{query.queryType.code}</p>
                   </td>
                   <td className="px-4 py-3.5">
                     <span className="font-mono text-sm text-slate-700">{formatCpfCnpj(query.input)}</span>

@@ -6,7 +6,7 @@ import type {
   RaioXMarketRestrictions,
   RaioXMarketRestrictionsSummary,
 } from '@/types/query-strategies';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, formatInformant } from '@/lib/formatters';
 import { formatDisplayDate } from '@/lib/utils';
 import { InfoBox } from './InfoBox';
 import { SummaryCard } from './SummaryCard';
@@ -95,11 +95,11 @@ export function MarketRestrictionsSection({
         Restrições de mercado consultadas via birôs de crédito.
         {' '}
         {isSerasaCrednet
-          ? 'Nesta composição, a camada complementar foi retornada pelo Serasa Crednet, com pendências, protestos e cheques sem fundo.'
+          ? 'Nesta composição, a camada complementar foi retornada pela Base 1 Crednet, com pendências, protestos e cheques sem fundo.'
           : isRealtimePremiumPj
             ? 'Nesta composição, a camada complementar foi retornada pelo Realtime Premium PJ, com pendências financeiras, protestos e cheques sem fundo.'
           : hasDetailedDebtBreakdown
-            ? 'Inclui dívidas SCPC, pendências REFIN/PEFIN, protestos em cartório, cheques sem fundo e inscrições em CADIN.'
+            ? 'Inclui dívidas Base 3, pendências REFIN/PEFIN, protestos em cartório, cheques sem fundo e inscrições em CADIN.'
             : 'Inclui pendências financeiras, protestos e cheques sem fundo retornados na camada complementar de mercado.'}
         {' '}
         {!hasAny && (
@@ -120,7 +120,7 @@ export function MarketRestrictionsSection({
         {hasDetailedDebtBreakdown && (
           <>
             <SummaryCard
-              title="SCPC"
+              title="Base 3"
               value={totalScpcDebts}
               subtitle={totalScpcDebts > 0 ? 'Constam registros' : 'Nada consta'}
               color={totalScpcDebts > 0 ? 'red' : 'green'}
@@ -153,7 +153,7 @@ export function MarketRestrictionsSection({
         />
         {isSerasaCrednet && (
           <SummaryCard
-            title="SERASA"
+            title="Base 1"
             value={totalSerasaOccurrences}
             subtitle={
               totalSerasaOccurrences > 0 ? 'Constam ocorrências' : 'Nada consta'
@@ -176,17 +176,17 @@ export function MarketRestrictionsSection({
       {isSerasaCrednet && mr.serasaSummary && (
         <div className="grid grid-cols-1 gap-4 rounded-lg border border-blue-100 bg-blue-50/50 px-4 py-3 md:grid-cols-3">
           <InfoBox
-            label="1ª Ocorrência SERASA"
+            label="1ª Ocorrência Base 1"
             value={formatDisplayDate(mr.serasaSummary.firstOccurrenceDate) || '-'}
             icon={<Calendar className="w-4 h-4 text-blue-500" />}
           />
           <InfoBox
-            label="Última Ocorrência SERASA"
+            label="Última Ocorrência Base 1"
             value={formatDisplayDate(mr.serasaSummary.lastOccurrenceDate) || '-'}
             icon={<Calendar className="w-4 h-4 text-blue-500" />}
           />
           <InfoBox
-            label="Total SERASA"
+            label="Total Base 1"
             value={String(mr.serasaSummary.totalOccurrences || 0)}
             icon={<FileWarning className="w-4 h-4 text-blue-500" />}
           />
@@ -219,7 +219,7 @@ export function MarketRestrictionsSection({
                     {item.creditor || item.origin || '-'}
                   </TableCell>
                   <TableCell className="text-xs text-gray-500">
-                    {[item.sourceLabel, item.informant]
+                    {[item.sourceLabel, formatInformant(item.informant)]
                       .filter(Boolean)
                       .join(' · ') || '-'}
                   </TableCell>
@@ -242,7 +242,7 @@ export function MarketRestrictionsSection({
         <div className="space-y-2">
           <p className="flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-red-600">
             <AlertTriangle className="h-3.5 w-3.5" />
-            Ocorrências SCPC ({scpcDebts.length})
+            Ocorrências Base 3 ({scpcDebts.length})
           </p>
           <Table>
             <TableHeader>
@@ -302,7 +302,7 @@ export function MarketRestrictionsSection({
                 <TableRow key={idx}>
                   <TableCell>{item.date || '-'}</TableCell>
                   <TableCell className="font-medium">{item.origin || '-'}</TableCell>
-                  <TableCell>{item.informant || '-'}</TableCell>
+                  <TableCell>{formatInformant(item.informant) || '-'}</TableCell>
                   <TableCell>{item.contract || '-'}</TableCell>
                   <TableCell>{item.institutionDocument || '-'}</TableCell>
                   <TableCell>{item.guarantor || '-'}</TableCell>

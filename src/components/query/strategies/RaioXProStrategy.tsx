@@ -20,7 +20,7 @@ import type {
   QueryStrategyProps,
   RaioXProResult,
 } from '@/types/query-strategies';
-import { formatCpfCnpj } from '@/lib/formatters';
+import { formatCpfCnpj, formatInformant } from '@/lib/formatters';
 import { cn, formatDisplayDate } from '@/lib/utils';
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
@@ -96,7 +96,7 @@ function BoaVistaHeroCard({ bvr }: { bvr: NonNullable<RaioXProResult['boaVistaRa
           {/* Score ring */}
           <div className="flex flex-col items-center gap-2 shrink-0">
             <span className="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">
-              Score Boa Vista
+              Score Base 3
             </span>
             <div className="relative">
               <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
@@ -140,7 +140,7 @@ function BoaVistaHeroCard({ bvr }: { bvr: NonNullable<RaioXProResult['boaVistaRa
               }
               <div>
                 <p className="text-[11px] uppercase tracking-widest text-gray-500 font-semibold mb-0.5">
-                  Decisão Boa Vista
+                  Decisão Base 3
                 </p>
                 <p className="text-xl font-bold text-gray-900 leading-tight">
                   {decision.text
@@ -270,14 +270,14 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
       {bvrAvailable && fs && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <SummaryCard
-            title="Dívidas Boa Vista"
+            title="Dívidas Base 3"
             value={fs.totalDebts ?? 0}
             subtitle={(fs.totalDebts ?? 0) > 0 ? 'Constam registros' : 'Nada consta'}
             color={(fs.totalDebts ?? 0) > 0 ? 'red' : 'green'}
             icon={<FileWarning className="w-5 h-5" />}
           />
           <SummaryCard
-            title="Protestos Boa Vista"
+            title="Protestos Base 3"
             value={fs.totalProtests ?? 0}
             subtitle={(fs.totalProtests ?? 0) > 0 ? 'Constam registros' : 'Nada consta'}
             color={(fs.totalProtests ?? 0) > 0 ? 'orange' : 'green'}
@@ -286,7 +286,7 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
           <SummaryCard
             title="Consultas Anteriores"
             value={fs.totalQueries ?? 0}
-            subtitle="Passagens comerciais BV"
+            subtitle="Passagens comerciais Base 3"
             color="blue"
             icon={<BarChart3 className="w-5 h-5" />}
           />
@@ -295,11 +295,11 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
 
       {/* ── Restrições Financeiras Serasa ──────────────────────────────────── */}
       <StrategySectionWrapper
-        title="Restrições Financeiras Serasa"
+        title="Restrições Financeiras Base 1"
         icon={<AlertTriangle className="w-5 h-5 text-red-500" />}
         count={debts.length}
         isEmpty={debts.length === 0}
-        emptyMessage="Nenhuma restrição financeira encontrada na base Serasa."
+        emptyMessage="Nenhuma restrição financeira encontrada na Base 1."
       >
         <Table>
           <TableHeader>
@@ -317,7 +317,7 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
                 <TableCell>{item.date || '-'}</TableCell>
                 <TableCell className="font-medium">{item.origin || '-'}</TableCell>
                 <TableCell>{item.contract || '-'}</TableCell>
-                <TableCell>{item.informant || '-'}</TableCell>
+                <TableCell>{formatInformant(item.informant) || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">
                   {fmtBRL(item.value)}
                 </TableCell>
@@ -329,11 +329,11 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
 
       {/* ── Protestos Serasa ───────────────────────────────────────────────── */}
       <StrategySectionWrapper
-        title="Protestos Serasa"
+        title="Protestos Base 1"
         icon={<Landmark className="w-5 h-5 text-indigo-500" />}
         count={protests.length}
         isEmpty={protests.length === 0}
-        emptyMessage="Nenhum protesto encontrado na base Serasa."
+        emptyMessage="Nenhum protesto encontrado na Base 1."
       >
         <Table>
           <TableHeader>
@@ -397,11 +397,11 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
       {/* ── Dívidas Boa Vista ──────────────────────────────────────────────── */}
       {bvrAvailable && (
         <StrategySectionWrapper
-          title="Pendências Financeiras (Boa Vista)"
+          title="Pendências Financeiras (Base 3)"
           icon={<FileWarning className="w-5 h-5 text-red-400" />}
           count={bvrDebts.length}
           isEmpty={bvrDebts.length === 0}
-          emptyMessage="Nenhuma pendência financeira registrada na base Boa Vista."
+          emptyMessage="Nenhuma pendência financeira registrada na Base 3."
         >
           <Table>
             <TableHeader>
@@ -421,7 +421,7 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
                   <TableCell className="font-medium">{item.creditor || item.origin || '-'}</TableCell>
                   <TableCell>{item.modality || '-'}</TableCell>
                   <TableCell>{item.contract || '-'}</TableCell>
-                  <TableCell>{item.informant || '-'}</TableCell>
+                  <TableCell>{formatInformant(item.informant) || '-'}</TableCell>
                   <TableCell className="text-right font-bold text-red-600">
                     {fmtBRL(item.value)}
                   </TableCell>
@@ -435,11 +435,11 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
       {/* ── Protestos Boa Vista ────────────────────────────────────────────── */}
       {bvrAvailable && (
         <StrategySectionWrapper
-          title="Protestos (Boa Vista)"
+          title="Protestos (Base 3)"
           icon={<Landmark className="w-5 h-5 text-indigo-400" />}
           count={bvrProtests.length}
           isEmpty={bvrProtests.length === 0}
-          emptyMessage="Nenhum protesto registrado na base Boa Vista."
+          emptyMessage="Nenhum protesto registrado na Base 3."
         >
           <Table>
             <TableHeader>
@@ -469,7 +469,7 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
       {/* ── Passagens Comerciais ───────────────────────────────────────────── */}
       {bvrAvailable && bvrQueries.length > 0 && (
         <StrategySectionWrapper
-          title="Passagens Comerciais (Boa Vista)"
+          title="Passagens Comerciais (Base 3)"
           icon={<BarChart3 className="w-5 h-5 text-primary" />}
           count={bvrQueries.length}
           isEmpty={false}

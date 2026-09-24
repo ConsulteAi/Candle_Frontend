@@ -213,7 +213,7 @@ export function CommercialAnalysisPjStrategy({
           icon={<Search className="w-5 h-5" />}
         />
         <SummaryCard
-          title="SCPC"
+          title="Base 3"
           value={summary.totalScpcDebts || 0}
           color={(summary.totalScpcDebts || 0) > 0 ? 'yellow' : 'green'}
           icon={<Landmark className="w-5 h-5" />}
@@ -243,7 +243,7 @@ export function CommercialAnalysisPjStrategy({
 
       {serasaDebts.length > 0 && (
         <StrategySectionWrapper
-          title="Débitos SERASA"
+          title="Débitos Base 1"
           icon={<AlertTriangle className="w-5 h-5 text-red-500" />}
           count={serasaDebts.length}
           isEmpty={false}

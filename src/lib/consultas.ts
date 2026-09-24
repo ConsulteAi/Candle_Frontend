@@ -68,7 +68,7 @@ export const consultasCredito: Consulta[] = [
   {
     id: "6",
     slug: "ser-bvs-score-cnpj",
-    nome: "SER BVS + Score CNPJ",
+    nome: "SER Base 3 + Score CNPJ",
     descricao: "Consulta SER Bureau com score para empresas",
     tipo: "cnpj",
     icone: "LineChart",
@@ -76,7 +76,7 @@ export const consultasCredito: Consulta[] = [
   {
     id: "7",
     slug: "ser-bvs-score-cpf",
-    nome: "SER BVS + Score CPF",
+    nome: "SER Base 3 + Score CPF",
     descricao: "Consulta SER Bureau com score para pessoa física",
     tipo: "cpf",
     icone: "LineChart",
@@ -92,8 +92,8 @@ export const consultasCredito: Consulta[] = [
   {
     id: "9",
     slug: "ser-spc-score-cnpj",
-    nome: "SER + SPC + Score CNPJ",
-    descricao: "Consulta SER com dados SPC e score empresarial",
+    nome: "SER + Base 2 + Score CNPJ",
+    descricao: "Consulta SER com dados Base 2 e score empresarial",
     tipo: "cnpj",
     icone: "ShieldCheck",
   },
