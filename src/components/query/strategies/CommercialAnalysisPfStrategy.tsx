@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type { CommercialAnalysisPfResult, QueryStrategyProps } from '@/types/query-strategies';
-import { formatCurrency, formatCpfCnpj } from '@/lib/formatters';
+import { formatCurrency, formatCpfCnpj, sanitizeProviderText } from '@/lib/formatters';
 import { formatDisplayDate } from '@/lib/utils';
 import { InfoBox } from './components/InfoBox';
 import { ScoreGauge } from './components/ScoreGauge';
@@ -64,7 +64,7 @@ export function CommercialAnalysisPfStrategy({
   const legalActions = data.legalActions ?? [];
 
   const scoreValue = data.score?.value;
-  const riskText = data.score?.riskText || data.score?.risk;
+  const riskText = sanitizeProviderText(data.score?.riskText || data.score?.risk);
   const scoreBand = data.score?.band || data.score?.class;
   const hasExtraDebtFields = debts.some((d) => d.creditor || d.updatedValue);
   const useScoreGauge = scoreVariant === 'gauge' && scoreValue != null;
@@ -360,7 +360,7 @@ export function CommercialAnalysisPfStrategy({
             <TableBody>
               {serasaDebts.map((item, idx) => (
                 <TableRow key={idx}>
-                  <TableCell className="font-medium">{item.creditor || '-'}</TableCell>
+                  <TableCell className="font-medium">{sanitizeProviderText(item.creditor) || '-'}</TableCell>
                   <TableCell>{formatDisplayDate(item.dueDate) || '-'}</TableCell>
                   <TableCell>{item.type || '-'}</TableCell>
                   <TableCell>{item.contract || '-'}</TableCell>
@@ -395,9 +395,9 @@ export function CommercialAnalysisPfStrategy({
               <TableRow key={idx}>
                 <TableCell>{formatDisplayDate(item.date) || '-'}</TableCell>
                 {hasExtraDebtFields && (
-                  <TableCell className="font-medium">{item.creditor || item.origin || '-'}</TableCell>
+                  <TableCell className="font-medium">{sanitizeProviderText(item.creditor || item.origin) || '-'}</TableCell>
                 )}
-                <TableCell>{item.origin || '-'}</TableCell>
+                <TableCell>{sanitizeProviderText(item.origin) || '-'}</TableCell>
                 <TableCell>{item.contract || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">
                   {formatCurrency(String(item.updatedValue || item.value || 0))}
@@ -428,7 +428,7 @@ export function CommercialAnalysisPfStrategy({
             {protests.map((item, idx) => (
               <TableRow key={idx}>
                 <TableCell>{formatDisplayDate(item.date) || '-'}</TableCell>
-                <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(item.origin) || '-'}</TableCell>
                 <TableCell>{item.notary || item.notaryName || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(item.value || 0))}</TableCell>
               </TableRow>
@@ -460,7 +460,7 @@ export function CommercialAnalysisPfStrategy({
                 <TableRow key={idx}>
                   <TableCell>{formatDisplayDate(item.date) || '-'}</TableCell>
                   <TableCell className="font-medium">{item.type || '-'}</TableCell>
-                  <TableCell>{item.origin || '-'}</TableCell>
+                  <TableCell>{sanitizeProviderText(item.origin) || '-'}</TableCell>
                   <TableCell>{item.processo || '-'}</TableCell>
                   <TableCell>{item.autor || '-'}</TableCell>
                   <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(item.value || 0))}</TableCell>

@@ -11,7 +11,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, sanitizeProviderText } from '@/lib/formatters';
 import type { QueryStrategyProps, ProtestoNacionalResult } from '@/types/query-strategies';
 import { SummaryCard } from './components/SummaryCard';
 import { StrategyHeader } from './components/StrategyHeader';
@@ -96,15 +96,15 @@ export function ProtestoNacionalStrategy({ data, queryId }: QueryStrategyProps<P
 
                 {/* Column 3: Creditor Info */}
                 <div className="space-y-4">
-                  <InfoBox 
-                    label="Credor" 
-                    value={protest.creditor} 
-                    icon={<User className="w-4 h-4 text-gray-400" />} 
+                  <InfoBox
+                    label="Credor"
+                    value={sanitizeProviderText(protest.creditor)}
+                    icon={<User className="w-4 h-4 text-gray-400" />}
                   />
-                  <InfoBox 
-                    label="Cedente" 
-                    value={protest.assignor} 
-                    icon={<User className="w-4 h-4 text-gray-400" />} 
+                  <InfoBox
+                    label="Cedente"
+                    value={sanitizeProviderText(protest.assignor)}
+                    icon={<User className="w-4 h-4 text-gray-400" />}
                   />
                 </div>
 

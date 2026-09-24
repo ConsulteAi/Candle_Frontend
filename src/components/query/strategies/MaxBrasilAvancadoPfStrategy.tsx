@@ -10,7 +10,7 @@ import {
   Phone
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, sanitizeProviderText } from '@/lib/formatters';
 import type { QueryStrategyProps, MaxBrasilAvancadoPfResult } from '@/types/query-strategies';
 import { AlertsGrid } from './components/AlertsGrid';
 import { ScoreGauge } from './components/ScoreGauge';
@@ -44,7 +44,7 @@ export function MaxBrasilAvancadoPfStrategy({ data, queryId }: QueryStrategyProp
           <ScoreGauge 
             value={Number(data.score.value)} 
             band={`Classe ${data.score.class}`}
-            riskText={data.score.riskText}
+            riskText={sanitizeProviderText(data.score.riskText)}
           />
         </div>
 
@@ -139,7 +139,7 @@ export function MaxBrasilAvancadoPfStrategy({ data, queryId }: QueryStrategyProp
             {data.debts.map((debt, idx) => (
               <TableRow key={idx}>
                 <TableCell>{debt.date}</TableCell>
-                <TableCell className="font-medium">{debt.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(debt.origin)}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
@@ -169,7 +169,7 @@ export function MaxBrasilAvancadoPfStrategy({ data, queryId }: QueryStrategyProp
             {data.protests?.map((protest, idx) => (
               <TableRow key={idx}>
                 <TableCell>{protest.date}</TableCell>
-                <TableCell className="font-medium">{protest.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(protest.origin)}</TableCell>
                 <TableCell className="text-xs text-gray-500">{protest.type}</TableCell>
                 <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(protest.value))}</TableCell>
               </TableRow>

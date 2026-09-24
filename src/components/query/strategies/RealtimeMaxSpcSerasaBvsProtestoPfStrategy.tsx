@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type { QueryStrategyProps, RealtimeMaxSpcSerasaBvsProtestoPfResult } from '@/types/query-strategies';
-import { formatCurrency, formatInformant } from '@/lib/formatters';
+import { formatCurrency, formatInformant, sanitizeProviderText } from '@/lib/formatters';
 import { AlertsGrid } from './components/AlertsGrid';
 import { InfoBox } from './components/InfoBox';
 import { ScoreGauge } from './components/ScoreGauge';
@@ -45,7 +45,7 @@ export function RealtimeMaxSpcSerasaBvsProtestoPfStrategy({
             <ScoreGauge
               value={Number(data.score?.value)}
               band={data.score?.class ? `Classe ${data.score.class}` : undefined}
-              riskText={data.score?.riskText}
+              riskText={sanitizeProviderText(data.score?.riskText)}
               label="SCORE"
             />
           </div>
@@ -147,7 +147,7 @@ export function RealtimeMaxSpcSerasaBvsProtestoPfStrategy({
             {data.debts.map((debt, idx) => (
               <TableRow key={idx}>
                 <TableCell>{debt.date}</TableCell>
-                <TableCell className="font-medium">{debt.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(debt.origin)}</TableCell>
                 <TableCell>{debt.contract || '-'}</TableCell>
                 <TableCell>{formatInformant(debt.informant) || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
@@ -209,7 +209,7 @@ export function RealtimeMaxSpcSerasaBvsProtestoPfStrategy({
             {data.protests?.map((protest, idx) => (
               <TableRow key={idx}>
                 <TableCell>{protest.date}</TableCell>
-                <TableCell className="font-medium">{protest.notary || protest.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(protest.notary || protest.origin) || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(protest.value))}</TableCell>
               </TableRow>
             ))}

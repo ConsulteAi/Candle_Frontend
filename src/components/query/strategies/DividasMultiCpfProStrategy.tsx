@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type { DividasMultiCpfProResult, QueryStrategyProps } from '@/types/query-strategies';
-import { formatCurrency, formatInformant } from '@/lib/formatters';
+import { formatCurrency, formatInformant, sanitizeProviderText } from '@/lib/formatters';
 import { formatDisplayDate } from '@/lib/utils';
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
@@ -56,7 +56,7 @@ export function DividasMultiCpfProStrategy({
             <ScoreGauge
               value={Number(data.score!.value)}
               band={data.score!.class}
-              riskText={data.score!.riskText}
+              riskText={sanitizeProviderText(data.score!.riskText)}
             />
           </div>
         )}
@@ -175,7 +175,7 @@ export function DividasMultiCpfProStrategy({
               <TableRow key={idx}>
                 <TableCell>{item.occurrenceDate || '-'}</TableCell>
                 <TableCell>{item.debtorType || '-'}</TableCell>
-                <TableCell className="font-medium">{item.creditorName || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(item.creditorName) || '-'}</TableCell>
                 <TableCell>{`${item.city || '-'} / ${item.state || '-'}`}</TableCell>
                 <TableCell>{item.contract || '-'}</TableCell>
                 <TableCell>{item.availabilityDate || '-'}</TableCell>
@@ -212,7 +212,7 @@ export function DividasMultiCpfProStrategy({
             {data.refinPefinDebts.map((item, idx) => (
               <TableRow key={idx}>
                 <TableCell>{item.date || '-'}</TableCell>
-                <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(item.origin) || '-'}</TableCell>
                 <TableCell>{formatInformant(item.informant) || '-'}</TableCell>
                 <TableCell>{item.contract || '-'}</TableCell>
                 <TableCell>{item.institutionDocument || '-'}</TableCell>
@@ -248,7 +248,7 @@ export function DividasMultiCpfProStrategy({
             {data.protests.map((item, idx) => (
               <TableRow key={idx}>
                 <TableCell>{item.date || '-'}</TableCell>
-                <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(item.origin) || '-'}</TableCell>
                 <TableCell>{item.notary || '-'}</TableCell>
                 <TableCell>{`${item.city || '-'} / ${item.state || '-'}`}</TableCell>
                 <TableCell className="text-right font-bold text-indigo-600">

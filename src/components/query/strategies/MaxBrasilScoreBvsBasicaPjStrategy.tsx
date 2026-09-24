@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type { QueryStrategyProps, MaxBrasilScoreBvsBasicaPjResult } from '@/types/query-strategies';
-import { formatCurrency, formatCpfCnpj, formatInformant } from '@/lib/formatters';
+import { formatCurrency, formatCpfCnpj, formatInformant, sanitizeProviderText } from '@/lib/formatters';
 import { AlertsGrid } from './components/AlertsGrid';
 import { InfoBox } from './components/InfoBox';
 import { SummaryCard } from './components/SummaryCard';
@@ -114,7 +114,7 @@ export function MaxBrasilScoreBvsBasicaPjStrategy({
             {data.debts.map((debt, idx) => (
               <TableRow key={idx}>
                 <TableCell>{debt.date}</TableCell>
-                <TableCell className="font-medium">{debt.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(debt.origin)}</TableCell>
                 <TableCell>{debt.contract || '-'}</TableCell>
                 <TableCell>{formatInformant(debt.informant) || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
@@ -144,7 +144,7 @@ export function MaxBrasilScoreBvsBasicaPjStrategy({
             {data.protests?.map((protest, idx) => (
               <TableRow key={idx}>
                 <TableCell>{protest.date}</TableCell>
-                <TableCell className="font-medium">{protest.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(protest.origin) || '-'}</TableCell>
                 <TableCell>{protest.type || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(protest.value))}</TableCell>
               </TableRow>

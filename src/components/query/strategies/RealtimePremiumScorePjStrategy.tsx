@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import { formatDisplayDate } from '@/lib/utils';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, sanitizeProviderText } from '@/lib/formatters';
 import type { QueryStrategyProps, RealtimePremiumScorePjResult } from '@/types/query-strategies';
 import { AlertsGrid } from './components/AlertsGrid';
 import { ScoreGauge } from './components/ScoreGauge';
@@ -43,7 +43,7 @@ export function RealtimePremiumScorePjStrategy({ data, queryId }: QueryStrategyP
           <ScoreGauge 
             value={Number(data.score.value)} 
             band={`Classe ${data.score.class}`}
-            riskText={data.score.riskText}
+            riskText={sanitizeProviderText(data.score.riskText)}
             label="SCORE"
           />
         </div>
@@ -164,7 +164,7 @@ export function RealtimePremiumScorePjStrategy({ data, queryId }: QueryStrategyP
             {data.debts.map((debt, idx) => (
               <TableRow key={idx}>
                 <TableCell>{debt.date}</TableCell>
-                <TableCell className="font-medium">{debt.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(debt.origin)}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
@@ -193,7 +193,7 @@ export function RealtimePremiumScorePjStrategy({ data, queryId }: QueryStrategyP
             {data.protests?.map((protest, idx) => (
               <TableRow key={idx}>
                 <TableCell>{protest.date}</TableCell>
-                <TableCell className="font-medium">{protest.notary || protest.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(protest.notary || protest.origin)}</TableCell>
                 <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(protest.value))}</TableCell>
               </TableRow>
             ))}
