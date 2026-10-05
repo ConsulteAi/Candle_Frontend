@@ -20,7 +20,7 @@ import type {
   QueryStrategyProps,
   RaioXProResult,
 } from '@/types/query-strategies';
-import { formatCpfCnpj, formatInformant } from '@/lib/formatters';
+import { formatCpfCnpj, formatInformant, sanitizeProviderText } from '@/lib/formatters';
 import { cn, formatDisplayDate } from '@/lib/utils';
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
@@ -168,12 +168,15 @@ function BoaVistaHeroCard({ bvr }: { bvr: NonNullable<RaioXProResult['boaVistaRa
               )}
             </div>
 
-            {score.riskText && (
-              <p className="text-[10px] text-gray-400 italic leading-relaxed border-l-2 pl-3"
-                style={{ borderColor: variant.color }}>
-                {score.riskText.length > 220 ? score.riskText.slice(0, 220) + '…' : score.riskText}
-              </p>
-            )}
+            {score.riskText && (() => {
+              const sanitizedRiskText = sanitizeProviderText(score.riskText);
+              return (
+                <p className="text-[10px] text-gray-400 italic leading-relaxed border-l-2 pl-3"
+                  style={{ borderColor: variant.color }}>
+                  {sanitizedRiskText.length > 220 ? sanitizedRiskText.slice(0, 220) + '…' : sanitizedRiskText}
+                </p>
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -315,7 +318,7 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
             {debts.map((item, idx) => (
               <TableRow key={idx}>
                 <TableCell>{item.date || '-'}</TableCell>
-                <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(item.origin) || '-'}</TableCell>
                 <TableCell>{item.contract || '-'}</TableCell>
                 <TableCell>{formatInformant(item.informant) || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">
@@ -349,7 +352,7 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
             {protests.map((item, idx) => (
               <TableRow key={idx}>
                 <TableCell>{item.date || '-'}</TableCell>
-                <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(item.origin) || '-'}</TableCell>
                 <TableCell>{item.notary || '-'}</TableCell>
                 <TableCell>{item.type || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-indigo-600">
@@ -418,7 +421,7 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
               {bvrDebts.map((item, idx) => (
                 <TableRow key={idx}>
                   <TableCell>{item.date || item.inclusionDate || '-'}</TableCell>
-                  <TableCell className="font-medium">{item.creditor || item.origin || '-'}</TableCell>
+                  <TableCell className="font-medium">{sanitizeProviderText(item.creditor || item.origin) || '-'}</TableCell>
                   <TableCell>{item.modality || '-'}</TableCell>
                   <TableCell>{item.contract || '-'}</TableCell>
                   <TableCell>{formatInformant(item.informant) || '-'}</TableCell>
@@ -454,7 +457,7 @@ export function RaioXProStrategy({ data, queryId }: QueryStrategyProps<RaioXProR
               {bvrProtests.map((item, idx) => (
                 <TableRow key={idx}>
                   <TableCell>{item.date || '-'}</TableCell>
-                  <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                  <TableCell className="font-medium">{sanitizeProviderText(item.origin) || '-'}</TableCell>
                   <TableCell>{item.notary || item.notaryName || '-'}</TableCell>
                   <TableCell className="text-right font-bold text-indigo-600">
                     {fmtBRL(item.value)}

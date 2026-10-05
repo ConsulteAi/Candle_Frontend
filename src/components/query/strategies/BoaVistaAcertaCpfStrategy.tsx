@@ -24,7 +24,7 @@ import { StrategyHeader } from './components/StrategyHeader';
 import { StrategyContacts } from './components/StrategyContacts';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, sanitizeProviderText } from '@/lib/formatters';
 import type { QueryStrategyProps, BoaVistaAcertaCpfResult } from '@/types/query-strategies';
 
 export function BoaVistaAcertaCpfStrategy({ data, queryId }: QueryStrategyProps<BoaVistaAcertaCpfResult>) {
@@ -41,7 +41,7 @@ export function BoaVistaAcertaCpfStrategy({ data, queryId }: QueryStrategyProps<
                <ScoreGauge 
                  value={Number(data.score.value)} 
                  band={`Classe ${data.score.class}`}
-                 riskText={data.score.risk}
+                 riskText={sanitizeProviderText(data.score.risk)}
                  label="SCORE"
                  simpleMode
                />
@@ -135,7 +135,7 @@ export function BoaVistaAcertaCpfStrategy({ data, queryId }: QueryStrategyProps<
             {data.debts.map((debt, idx) => (
               <TableRow key={idx}>
                 <TableCell>{debt.date}</TableCell>
-                <TableCell className="font-medium">{debt.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(debt.origin)}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
@@ -164,7 +164,7 @@ export function BoaVistaAcertaCpfStrategy({ data, queryId }: QueryStrategyProps<
             {data.protests?.map((protest, idx) => (
               <TableRow key={idx}>
                 <TableCell>{protest.date}</TableCell>
-                <TableCell className="font-medium">{protest.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(protest.origin)}</TableCell>
                 <TableCell>{protest.type}</TableCell>
                 <TableCell className="text-right font-bold text-orange-600">{formatCurrency(String(protest.value))}</TableCell>
               </TableRow>

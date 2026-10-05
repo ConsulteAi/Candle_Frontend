@@ -6,7 +6,7 @@ import type {
   RaioXMarketRestrictions,
   RaioXMarketRestrictionsSummary,
 } from '@/types/query-strategies';
-import { formatCurrency, formatInformant } from '@/lib/formatters';
+import { formatCurrency, formatInformant, sanitizeProviderText } from '@/lib/formatters';
 import { formatDisplayDate } from '@/lib/utils';
 import { InfoBox } from './InfoBox';
 import { SummaryCard } from './SummaryCard';
@@ -216,7 +216,7 @@ export function MarketRestrictionsSection({
                 <TableRow key={idx}>
                   <TableCell>{formatDebtDate(item)}</TableCell>
                   <TableCell className="font-medium">
-                    {item.creditor || item.origin || '-'}
+                    {sanitizeProviderText(item.creditor || item.origin) || '-'}
                   </TableCell>
                   <TableCell className="text-xs text-gray-500">
                     {[item.sourceLabel, formatInformant(item.informant)]
@@ -260,7 +260,7 @@ export function MarketRestrictionsSection({
                 <TableRow key={idx}>
                   <TableCell>{item.occurrenceDate || '-'}</TableCell>
                   <TableCell className="font-medium">
-                    {item.creditorName || '-'}
+                    {sanitizeProviderText(item.creditorName) || '-'}
                   </TableCell>
                   <TableCell>
                     {item.city && item.state
@@ -301,7 +301,7 @@ export function MarketRestrictionsSection({
               {refinPefinDebts.map((item, idx) => (
                 <TableRow key={idx}>
                   <TableCell>{item.date || '-'}</TableCell>
-                  <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                  <TableCell className="font-medium">{sanitizeProviderText(item.origin) || '-'}</TableCell>
                   <TableCell>{formatInformant(item.informant) || '-'}</TableCell>
                   <TableCell>{item.contract || '-'}</TableCell>
                   <TableCell>{item.institutionDocument || '-'}</TableCell>
@@ -336,7 +336,7 @@ export function MarketRestrictionsSection({
               {protests.map((item, idx) => (
                 <TableRow key={idx}>
                   <TableCell>{formatDisplayDate(item.date) || '-'}</TableCell>
-                  <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                  <TableCell className="font-medium">{sanitizeProviderText(item.origin) || '-'}</TableCell>
                   <TableCell>{item.notary || '-'}</TableCell>
                   <TableCell>
                     {item.city && item.state

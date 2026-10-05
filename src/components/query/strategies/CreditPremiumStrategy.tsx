@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils';
 import { StrategyHeader } from './components/StrategyHeader';
 import { StrategySectionWrapper } from './components/StrategySectionWrapper';
 import { formatDisplayDate } from '@/lib/utils';
-import { formatCpf, formatCpfCnpj, formatCurrency } from '@/lib/formatters';
+import { formatCpf, formatCpfCnpj, formatCurrency, sanitizeProviderText } from '@/lib/formatters';
 
 export function CreditPremiumStrategy({ data, queryId }: QueryStrategyProps<PremiumCreditReportResponse>) {
   if (!data) return null;
@@ -179,7 +179,7 @@ export function CreditPremiumStrategy({ data, queryId }: QueryStrategyProps<Prem
             {data.debts.map((debt, idx) => (
               <TableRow key={idx}>
                 <TableCell>{debt.date}</TableCell>
-                <TableCell className="font-medium">{debt.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(debt.origin)}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
@@ -261,7 +261,7 @@ export function CreditPremiumStrategy({ data, queryId }: QueryStrategyProps<Prem
             {data.ccf?.map((entry, idx) => (
               <TableRow key={idx}>
                 <TableCell>{entry.date}</TableCell>
-                <TableCell className="font-medium">{entry.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(entry.origin)}</TableCell>
                 <TableCell className="text-right font-bold text-yellow-600">{entry.quantity}</TableCell>
               </TableRow>
             ))}

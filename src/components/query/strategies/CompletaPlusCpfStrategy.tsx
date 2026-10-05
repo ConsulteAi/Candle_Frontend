@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
 import { formatDisplayDate } from '@/lib/utils';
-import { formatCurrency } from '@/lib/formatters';
+import { formatCurrency, sanitizeProviderText } from '@/lib/formatters';
 import type { QueryStrategyProps, CompletaPlusCpfResult } from '@/types/query-strategies';
 import {
   Table,
@@ -55,7 +55,7 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
             <ScoreGauge
               value={scoreValue}
               band={data.score?.class ? `Classe ${data.score.class}` : undefined}
-              riskText={data.score?.riskText}
+              riskText={sanitizeProviderText(data.score?.riskText)}
               label="SCORE"
             />
           </div>
@@ -164,7 +164,7 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
             {data.debts.map((debt, idx) => (
               <TableRow key={idx}>
                 <TableCell>{debt.date}</TableCell>
-                <TableCell className="font-medium">{debt.origin}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(debt.origin)}</TableCell>
                 <TableCell>{debt.contract}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">{formatCurrency(String(debt.value))}</TableCell>
               </TableRow>
@@ -218,7 +218,7 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
               <TableRow key={idx}>
                 <TableCell>{protest.date}</TableCell>
                 <TableCell className="font-medium">{protest.notary || '-'}</TableCell>
-                <TableCell>{protest.origin || '-'}</TableCell>
+                <TableCell>{sanitizeProviderText(protest.origin) || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-orange-600">
                   {formatCurrency(String(protest.value))}
                 </TableCell>
@@ -251,7 +251,7 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
               <TableRow key={idx}>
                 <TableCell>{action.date}</TableCell>
                 <TableCell className="font-medium">{action.type}</TableCell>
-                <TableCell>{action.origin}</TableCell>
+                <TableCell>{sanitizeProviderText(action.origin)}</TableCell>
                 <TableCell>{action.details}</TableCell>
                 <TableCell className="text-right font-bold text-purple-600">{formatCurrency(String(action.value))}</TableCell>
               </TableRow>

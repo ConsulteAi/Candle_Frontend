@@ -22,7 +22,7 @@ import type {
   CommercialAnalysisScore,
 } from '@/types/query-strategies';
 import { cn, formatDisplayDate } from '@/lib/utils';
-import { formatCurrency, formatCpfCnpj, formatInformant } from '@/lib/formatters';
+import { formatCurrency, formatCpfCnpj, formatInformant, sanitizeProviderText } from '@/lib/formatters';
 import { InfoBox } from './components/InfoBox';
 import { ScrBacenSection } from './components/ScrBacenSection';
 import { StrategyHeader } from './components/StrategyHeader';
@@ -71,7 +71,7 @@ function BoaVistaRatingSection({ bvr }: { bvr: BoaVistaRatingEnrichment }) {
           </p>
           <ScoreValue score={score} />
           {score.riskText && (
-            <p className="text-xs text-gray-500 leading-snug">{score.riskText}</p>
+            <p className="text-xs text-gray-500 leading-snug">{sanitizeProviderText(score.riskText)}</p>
           )}
           <div className="flex flex-wrap items-center gap-1">
             {score.class && (
@@ -164,7 +164,7 @@ function BoaVistaRatingSection({ bvr }: { bvr: BoaVistaRatingEnrichment }) {
               {debts.map((d, i) => (
                 <TableRow key={i}>
                   <TableCell>{d.date || d.inclusionDate || '-'}</TableCell>
-                  <TableCell className="font-medium">{d.creditor || d.origin || '-'}</TableCell>
+                  <TableCell className="font-medium">{sanitizeProviderText(d.creditor || d.origin) || '-'}</TableCell>
                   <TableCell>{d.modality || '-'}</TableCell>
                   <TableCell>{d.contract || '-'}</TableCell>
                   <TableCell className="text-right font-bold text-red-600">
@@ -197,7 +197,7 @@ function BoaVistaRatingSection({ bvr }: { bvr: BoaVistaRatingEnrichment }) {
               {protests.map((p, i) => (
                 <TableRow key={i}>
                   <TableCell>{p.date || '-'}</TableCell>
-                  <TableCell className="font-medium">{p.origin || '-'}</TableCell>
+                  <TableCell className="font-medium">{sanitizeProviderText(p.origin) || '-'}</TableCell>
                   <TableCell>{p.notary || p.notaryName || '-'}</TableCell>
                   <TableCell className="text-right font-bold text-yellow-700">
                     {formatCurrency(String(p.value || 0))}
@@ -349,7 +349,7 @@ export function RaioXBacenPlusStrategy({
             {debts.map((d, i) => (
               <TableRow key={i}>
                 <TableCell>{d.date || '-'}</TableCell>
-                <TableCell className="font-medium">{d.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(d.origin) || '-'}</TableCell>
                 <TableCell>{d.contract || '-'}</TableCell>
                 <TableCell>{formatInformant(d.informant) || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-red-600">
@@ -382,7 +382,7 @@ export function RaioXBacenPlusStrategy({
             {protests.map((p, i) => (
               <TableRow key={i}>
                 <TableCell>{p.date || '-'}</TableCell>
-                <TableCell className="font-medium">{p.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(p.origin) || '-'}</TableCell>
                 <TableCell>{p.notary || '-'}</TableCell>
                 <TableCell className="text-right font-bold text-yellow-700">
                   {formatCurrency(String(p.value || 0))}

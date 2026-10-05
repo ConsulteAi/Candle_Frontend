@@ -91,12 +91,55 @@ export function formatDate(dateString: string): string {
 }
 
 /**
- * Nomes de bureau em resultados antigos ainda vêm crus do provider (ex.: "SERASA").
- * Mapeia para o rótulo atual sem tocar o dado salvo.
+ * Nosso texto já mapeia bureau → Base N (Serasa/Experian → 1, SPC → 2,
+ * SCPC/BVS → 3, Quod → 4). O que ainda vaza é o dado CRU do provider
+ * (origem/praça de dívida, riskText, nome de credor) carregando o nome real
+ * do bureau. Mascaramos só na hora de exibir — o dado salvo nunca é tocado.
+ *
+ * Frases mais longas primeiro na alternação: '\bSERASA EXPERIAN\b' precisa
+ * casar antes de 'SERASA' isolado virar "Base 1" e sobrar um "Experian" cru.
+ *
+ * "Boa Vista" (cidade, ex.: Boa Vista/RR, São João da Boa Vista) nunca entra
+ * aqui de propósito — só o bureau 'BVS' é mascarado.
+ */
+const BUREAU_ALIAS_TO_BASE: Record<string, number> = {
+  "SERASA EXPERIAN": 1,
+  SERASA: 1,
+  EXPERIAN: 1,
+  "SPC BRASIL": 2,
+  SPC: 2,
+  SCPC: 3,
+  BVS: 3,
+  QUOD: 4,
+};
+
+const BUREAU_ALIAS_REGEX = new RegExp(
+  `\\b(${Object.keys(BUREAU_ALIAS_TO_BASE)
+    .sort((a, b) => b.length - a.length)
+    .join("|")})\\b`,
+  "gi"
+);
+
+/**
+ * Mascara nome de bureau em qualquer texto vindo do provider (origem/praça
+ * de dívida, riskText, nome de credor, etc). Preserva o estilo de caixa:
+ * entrada em caixa alta vira "BASE N", senão "Base N".
+ */
+export function sanitizeProviderText(text: string | undefined | null): string {
+  if (!text) return "";
+  return text.replace(BUREAU_ALIAS_REGEX, (match) => {
+    const base = BUREAU_ALIAS_TO_BASE[match.toUpperCase()];
+    const isUppercase = match === match.toUpperCase();
+    return isUppercase ? `BASE ${base}` : `Base ${base}`;
+  });
+}
+
+/**
+ * Resultados antigos ainda gravam 'SERASA' cru em score.informant — mapeia
+ * para o rótulo atual sem tocar o dado salvo.
  */
 export function formatInformant(informant: string | undefined | null): string {
-  if (!informant) return "";
-  return informant.trim().toUpperCase() === "SERASA" ? "BASE 1" : informant;
+  return sanitizeProviderText(informant);
 }
 
 export function formatCurrency(value: string): string {

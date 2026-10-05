@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '@/design-system/ComponentsTailwind';
 import type { DividasMultiCnpjProResult, QueryStrategyProps } from '@/types/query-strategies';
-import { formatCurrency, formatCpfCnpj, formatInformant } from '@/lib/formatters';
+import { formatCurrency, formatCpfCnpj, formatInformant, sanitizeProviderText } from '@/lib/formatters';
 import { InfoBox } from './components/InfoBox';
 import { StrategyHeader } from './components/StrategyHeader';
 import { SummaryCard } from './components/SummaryCard';
@@ -53,7 +53,7 @@ export function DividasMultiCnpjProStrategy({
             <ScoreGauge
               value={Number(data.score!.value)}
               band={data.score!.class}
-              riskText={data.score!.riskText}
+              riskText={sanitizeProviderText(data.score!.riskText)}
             />
           </div>
         )}
@@ -164,7 +164,7 @@ export function DividasMultiCnpjProStrategy({
               <TableRow key={idx}>
                 <TableCell>{item.occurrenceDate || '-'}</TableCell>
                 <TableCell>{item.debtorType || '-'}</TableCell>
-                <TableCell className="font-medium">{item.creditorName || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(item.creditorName) || '-'}</TableCell>
                 <TableCell>{`${item.city || '-'} / ${item.state || '-'}`}</TableCell>
                 <TableCell>{item.contract || '-'}</TableCell>
                 <TableCell>{item.availabilityDate || '-'}</TableCell>
@@ -201,7 +201,7 @@ export function DividasMultiCnpjProStrategy({
             {data.refinPefinDebts.map((item, idx) => (
               <TableRow key={idx}>
                 <TableCell>{item.date || '-'}</TableCell>
-                <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(item.origin) || '-'}</TableCell>
                 <TableCell>{formatInformant(item.informant) || '-'}</TableCell>
                 <TableCell>{item.contract || '-'}</TableCell>
                 <TableCell>{item.institutionDocument || '-'}</TableCell>
@@ -237,7 +237,7 @@ export function DividasMultiCnpjProStrategy({
             {data.protests.map((item, idx) => (
               <TableRow key={idx}>
                 <TableCell>{item.date || '-'}</TableCell>
-                <TableCell className="font-medium">{item.origin || '-'}</TableCell>
+                <TableCell className="font-medium">{sanitizeProviderText(item.origin) || '-'}</TableCell>
                 <TableCell>{item.notary || '-'}</TableCell>
                 <TableCell>{`${item.city || '-'} / ${item.state || '-'}`}</TableCell>
                 <TableCell className="text-right font-bold text-indigo-600">
