@@ -84,6 +84,11 @@ export async function updateRechargeSuspendedNoticeAction(
       return { success: false, error: 'Acesso negado.' };
     }
 
+    // O backend guarda JSON livre — a action é a última barreira antes de salvar.
+    if (!isValidRechargeSuspendedNoticeConfig(value) || value.steps.length !== 3) {
+      return { success: false, error: 'Preencha o título e o detalhe dos 3 passos.' };
+    }
+
     await GlobalConfigService.updateByKey(RECHARGE_SUSPENDED_NOTICE_KEY, value);
 
     return { success: true };

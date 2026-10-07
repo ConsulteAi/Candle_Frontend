@@ -32,6 +32,10 @@ export const DEFAULT_RECHARGE_SUSPENDED_NOTICE: RechargeSuspendedNoticeConfig = 
   ],
 };
 
+function isFilledString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
 /** Type guard defensivo — o value do global-config é JSON livre no backend. */
 export function isValidRechargeSuspendedNoticeConfig(
   value: unknown,
@@ -50,8 +54,8 @@ export function isValidRechargeSuspendedNoticeConfig(
       (step) =>
         step &&
         typeof step === "object" &&
-        typeof (step as Record<string, unknown>).title === "string" &&
-        typeof (step as Record<string, unknown>).detail === "string",
+        isFilledString((step as Record<string, unknown>).title) &&
+        isFilledString((step as Record<string, unknown>).detail),
     )
   );
 }
