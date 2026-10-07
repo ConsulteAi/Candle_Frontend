@@ -32,6 +32,7 @@ import {
   Activity,
   Crown,
   Globe,
+  Power,
 } from 'lucide-react';
 import { httpClient } from '@/lib/api/httpClient';
 import { revalidateTenantConfig } from '../../../app/actions/tenant';
@@ -154,6 +155,24 @@ export function TenantsManager() {
       toast({
         title: 'Erro',
         description: 'Erro ao desativar tenant.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleReactivate = async (id: string) => {
+    if (!confirm('Deseja reativar este tenant? O domínio volta a responder imediatamente.')) return;
+    try {
+      await httpClient.patch(`/admin/tenants/${id}`, { isActive: true });
+      // Enquanto inativo o config público caiu no fallback; sem purgar, o
+      // domínio seguiria com o tema default até o cache do Next expirar.
+      await revalidateTenantConfig();
+      fetchTenants();
+      toast({ title: 'Sucesso', description: 'Tenant reativado.' });
+    } catch {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao reativar tenant.',
         variant: 'destructive',
       });
     }
@@ -304,14 +323,27 @@ export function TenantsManager() {
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeactivate(t.id)}
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {t.isActive ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Desativar tenant"
+                          onClick={() => handleDeactivate(t.id)}
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Reativar tenant"
+                          onClick={() => handleReactivate(t.id)}
+                          className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                        >
+                          <Power className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
