@@ -18,8 +18,8 @@ import { DEFAULT_RECHARGE_SUSPENDED_NOTICE } from '@/lib/global-config/recharge-
 import type { RechargeSuspendedNoticeConfig } from '@/types/admin';
 
 const stepSchema = z.object({
-  title: z.string().trim().min(1, 'Obrigatório').max(120, 'Máximo de 120 caracteres'),
-  detail: z.string().trim().min(1, 'Obrigatório').max(300, 'Máximo de 300 caracteres'),
+  title: z.string().trim().min(1, 'Informe o título do passo').max(120, 'Máximo de 120 caracteres'),
+  detail: z.string().trim().min(1, 'Informe o detalhe do passo').max(300, 'Máximo de 300 caracteres'),
 });
 
 const noticeSchema = z.object({
@@ -130,7 +130,7 @@ export function RechargeSuspendedNoticeSettingsView({
           <CardContent className="space-y-8">
             <div className="space-y-2">
               <Label htmlFor="title" className="text-sm font-semibold text-slate-700">
-                Título
+                Título <span className="text-red-500">*</span>
               </Label>
               <Input id="title" {...register('title')} className="border-slate-200" />
               {errors.title && (
@@ -140,7 +140,7 @@ export function RechargeSuspendedNoticeSettingsView({
 
             <div className="space-y-2">
               <Label htmlFor="subtitle" className="text-sm font-semibold text-slate-700">
-                Subtítulo
+                Subtítulo <span className="text-red-500">*</span>
               </Label>
               <Textarea
                 id="subtitle"
@@ -174,7 +174,7 @@ export function RechargeSuspendedNoticeSettingsView({
                       htmlFor={`steps.${index}.title`}
                       className="text-xs font-medium text-slate-600"
                     >
-                      Título do passo
+                      Título do passo <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id={`steps.${index}.title`}
@@ -191,7 +191,7 @@ export function RechargeSuspendedNoticeSettingsView({
                       htmlFor={`steps.${index}.detail`}
                       className="text-xs font-medium text-slate-600"
                     >
-                      Detalhe do passo
+                      Detalhe do passo <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id={`steps.${index}.detail`}
