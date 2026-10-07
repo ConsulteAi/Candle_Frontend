@@ -449,6 +449,7 @@ export interface Tenant {
   ownerId?: string | null;
   ownerName?: string;
   ownerEmail?: string;
+  domain?: string | null;
   uiSettings?: TenantUiSettings;
   pdfShowLogo?: boolean;
   rechargeDisabled?: boolean;

@@ -40,12 +40,18 @@ import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { UserSearchComboBox } from './UserSearchComboBox';
 
+// Mesma regra do `TENANT_DOMAIN_REGEX` do backend: o tenant é resolvido pelo
+// hostname em minúsculas e sem `www.`, então qualquer outro formato nunca casa.
+const TENANT_DOMAIN_REGEX =
+  /^(?!www\.)(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+
 export function TenantsManager() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Tenant | null>(null);
+  const [domainError, setDomainError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState<
@@ -85,7 +91,13 @@ export function TenantsManager() {
 
   const handleSave = async () => {
     try {
-      const payloadDomain = formData.domain?.trim() || undefined;
+      const payloadDomain = formData.domain?.trim().toLowerCase() || undefined;
+      if (!editingItem && payloadDomain && !TENANT_DOMAIN_REGEX.test(payloadDomain)) {
+        setDomainError(
+          'Informe apenas o endereço, sem http://, www., porta ou barra (ex.: minhaempresa.com.br).',
+        );
+        return;
+      }
       const isDefaultTenant = editingItem?.slug === 'default' || formData.slug === 'default';
       const payloadOwnerId = isDefaultTenant ? null : (formData.ownerId?.trim() || null);
 
@@ -154,7 +166,7 @@ export function TenantsManager() {
         slug: item.slug,
         name: item.name,
         asaasApiKey: item.asaasApiKey,
-        domain: '',
+        domain: item.domain || '',
         ownerId: item.ownerId || '',
         pdfShowLogo: !!item.pdfShowLogo,
         rechargeDisabled: !!item.rechargeDisabled,
@@ -170,6 +182,7 @@ export function TenantsManager() {
         rechargeDisabled: false,
       });
     }
+    setDomainError(null);
     setIsModalOpen(true);
   };
 
@@ -340,19 +353,33 @@ export function TenantsManager() {
                 }
               />
             </div>
-            {!editingItem && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label className="text-right">Domínio</Label>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label
+                htmlFor="tenant-domain"
+                className="flex h-10 items-center justify-end text-right"
+              >
+                Domínio
+              </Label>
+              <div className="col-span-3 space-y-1">
                 <Input
-                  className="col-span-3"
-                  placeholder="acme.consulta.ai"
+                  id="tenant-domain"
+                  placeholder="minhaempresa.com.br"
                   value={formData.domain}
-                  onChange={(e) =>
-                    setFormData({ ...formData, domain: e.target.value })
-                  }
+                  aria-invalid={!!domainError}
+                  aria-describedby={domainError ? 'tenant-domain-error' : undefined}
+                  className={cn(domainError && 'border-destructive')}
+                  onChange={(e) => {
+                    setFormData({ ...formData, domain: e.target.value });
+                    setDomainError(null);
+                  }}
                 />
+                {domainError && (
+                  <p id="tenant-domain-error" className="text-xs text-destructive">
+                    {domainError}
+                  </p>
+                )}
               </div>
-            )}
+            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right text-xs leading-tight">Dono</Label>
               <div className="col-span-3">
