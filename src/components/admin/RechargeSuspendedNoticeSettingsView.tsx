@@ -18,8 +18,8 @@ import { DEFAULT_RECHARGE_SUSPENDED_NOTICE } from '@/lib/global-config/recharge-
 import type { RechargeSuspendedNoticeConfig } from '@/types/admin';
 
 const stepSchema = z.object({
-  title: z.string().trim().min(1, 'Informe o título do passo').max(120, 'Máximo de 120 caracteres'),
-  detail: z.string().trim().min(1, 'Informe o detalhe do passo').max(300, 'Máximo de 300 caracteres'),
+  title: z.string().trim().max(120, 'Máximo de 120 caracteres'),
+  detail: z.string().trim().max(300, 'Máximo de 300 caracteres'),
 });
 
 const noticeSchema = z.object({
@@ -36,10 +36,10 @@ interface RechargeSuspendedNoticeSettingsViewProps {
 
 function toFormDefaults(config: RechargeSuspendedNoticeConfig | null): NoticeFormData {
   const source = config ?? DEFAULT_RECHARGE_SUSPENDED_NOTICE;
-  // O schema exige exatamente 3 passos — completa/trunca defensivamente caso
-  // a config salva no banco tenha um número diferente.
+  // O formulário sempre mostra 3 slots; passos são opcionais e o save descarta
+  // os vazios, então um slot sem passo salvo volta em branco.
   const steps = [0, 1, 2].map(
-    (i) => source.steps[i] ?? DEFAULT_RECHARGE_SUSPENDED_NOTICE.steps[i],
+    (i) => source.steps[i] ?? { title: '', detail: '' },
   ) as [NoticeFormData['steps'][0], NoticeFormData['steps'][1], NoticeFormData['steps'][2]];
 
   return { title: source.title, subtitle: source.subtitle, steps };
@@ -124,7 +124,7 @@ export function RechargeSuspendedNoticeSettingsView({
               <MessageSquareText className="w-5 h-5 text-primary" />
               Conteúdo do banner
             </CardTitle>
-            <CardDescription>Título, subtítulo e os 3 passos do fluxo manual.</CardDescription>
+            <CardDescription>Título, subtítulo e até 3 passos opcionais do fluxo manual.</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-8">
@@ -174,7 +174,7 @@ export function RechargeSuspendedNoticeSettingsView({
                       htmlFor={`steps.${index}.title`}
                       className="text-xs font-medium text-slate-600"
                     >
-                      Título do passo <span className="text-red-500">*</span>
+                      Título do passo
                     </Label>
                     <Input
                       id={`steps.${index}.title`}
@@ -191,7 +191,7 @@ export function RechargeSuspendedNoticeSettingsView({
                       htmlFor={`steps.${index}.detail`}
                       className="text-xs font-medium text-slate-600"
                     >
-                      Detalhe do passo <span className="text-red-500">*</span>
+                      Detalhe do passo
                     </Label>
                     <Input
                       id={`steps.${index}.detail`}
