@@ -5,7 +5,10 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { QrCode, ArrowUpRight, Mail } from 'lucide-react';
 import { useTenant } from '@/components/layout/TenantThemeProvider';
 import { getPublicRechargeSuspendedNoticeAction } from '@/actions/global-config.actions';
-import { DEFAULT_RECHARGE_SUSPENDED_NOTICE } from '@/lib/global-config/recharge-suspended-notice';
+import {
+  DEFAULT_RECHARGE_SUSPENDED_NOTICE,
+  filledSteps,
+} from '@/lib/global-config/recharge-suspended-notice';
 import type { RechargeSuspendedNoticeConfig } from '@/types/admin';
 
 /**
@@ -72,6 +75,8 @@ export function RechargeSuspendedNotice() {
       cancelled = true;
     };
   }, []);
+
+  const steps = filledSteps(notice.steps);
 
   const phoneDigits = (tenant.whatsappSupportPhone || '').replace(/\D/g, '');
   const whatsappUrl = phoneDigits
@@ -173,29 +178,35 @@ export function RechargeSuspendedNotice() {
             </p>
           </div>
 
-          <ol className="mt-6 space-y-0">
-            {notice.steps.map((step, index) => (
-              <li key={`${index}-${step.title}`} className="relative flex gap-4 pb-6 last:pb-0">
-                {index < notice.steps.length - 1 && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute left-[13px] top-7 h-[calc(100%-1.75rem)] w-px bg-emerald-200"
-                  />
-                )}
-                <span className="relative z-10 mt-0.5 flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-white font-display text-[11px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-300">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <div className="min-w-0">
-                  <p className="font-display text-[15px] font-bold leading-snug text-slate-900">
-                    {step.title}
-                  </p>
-                  <p className="mt-0.5 font-body text-sm leading-relaxed text-slate-500">
-                    {step.detail}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          {steps.length > 0 && (
+            <ol className="mt-6 space-y-0">
+              {steps.map((step, index) => (
+                <li key={`${index}-${step.title}`} className="relative flex gap-4 pb-6 last:pb-0">
+                  {index < steps.length - 1 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-[13px] top-7 h-[calc(100%-1.75rem)] w-px bg-emerald-200"
+                    />
+                  )}
+                  <span className="relative z-10 mt-0.5 flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-white font-display text-[11px] font-black tabular-nums text-emerald-700 ring-1 ring-emerald-300">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <div className="min-w-0">
+                    {step.title.trim() && (
+                      <p className="font-display text-[15px] font-bold leading-snug text-slate-900">
+                        {step.title}
+                      </p>
+                    )}
+                    {step.detail.trim() && (
+                      <p className="mt-0.5 font-body text-sm leading-relaxed text-slate-500">
+                        {step.detail}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
             {whatsappUrl ? (

@@ -7,6 +7,7 @@ import { env } from '@/lib/env';
 import type { RechargeSuspendedNoticeConfig } from '@/types/admin';
 import {
   RECHARGE_SUSPENDED_NOTICE_KEY,
+  filledSteps,
   isValidRechargeSuspendedNoticeConfig,
 } from '@/lib/global-config/recharge-suspended-notice';
 
@@ -85,11 +86,14 @@ export async function updateRechargeSuspendedNoticeAction(
     }
 
     // O backend guarda JSON livre — a action é a última barreira antes de salvar.
-    if (!isValidRechargeSuspendedNoticeConfig(value) || value.steps.length !== 3) {
-      return { success: false, error: 'Preencha o título e o detalhe dos 3 passos.' };
+    if (!isValidRechargeSuspendedNoticeConfig(value) || value.steps.length > 3) {
+      return { success: false, error: 'Preencha o título e o subtítulo do aviso.' };
     }
 
-    await GlobalConfigService.updateByKey(RECHARGE_SUSPENDED_NOTICE_KEY, value);
+    await GlobalConfigService.updateByKey(RECHARGE_SUSPENDED_NOTICE_KEY, {
+      ...value,
+      steps: filledSteps(value.steps),
+    });
 
     return { success: true };
   } catch (error: any) {

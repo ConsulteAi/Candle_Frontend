@@ -49,13 +49,19 @@ export function isValidRechargeSuspendedNoticeConfig(
     typeof v.subtitle === "string" &&
     v.subtitle.trim().length > 0 &&
     Array.isArray(v.steps) &&
-    v.steps.length > 0 &&
     v.steps.every(
       (step) =>
         step &&
         typeof step === "object" &&
-        isFilledString((step as Record<string, unknown>).title) &&
-        isFilledString((step as Record<string, unknown>).detail),
+        typeof (step as Record<string, unknown>).title === "string" &&
+        typeof (step as Record<string, unknown>).detail === "string",
     )
   );
+}
+
+/** Passos são opcionais — descarta os que vieram sem título e sem detalhe. */
+export function filledSteps(
+  steps: RechargeSuspendedNoticeConfig["steps"],
+): RechargeSuspendedNoticeConfig["steps"] {
+  return steps.filter((step) => isFilledString(step.title) || isFilledString(step.detail));
 }
