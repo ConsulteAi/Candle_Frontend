@@ -184,14 +184,6 @@ export function RaioXCreditoRatingScrStrategy({
         </StrategySectionWrapper>
       )}
 
-      {data.marketRestrictionsUnavailable && (
-        <Card className="p-4 border border-yellow-100 bg-yellow-50">
-          <p className="text-sm text-yellow-800 font-medium">
-            {data.marketRestrictionsMessage || 'O enriquecimento de mercado não estava disponível para esta consulta.'}
-          </p>
-        </Card>
-      )}
-
       {/* ── Posição SCR BACEN (enrichment) ───────────────────────────────── */}
       {data.scrBacen && (
         <StrategySectionWrapper
