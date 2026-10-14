@@ -366,15 +366,6 @@ export function RaioXFinanceiroStrategy({
         </StrategySectionWrapper>
       )}
 
-      {data.marketRestrictionsUnavailable && (
-        <Card className="p-4 border border-yellow-100 bg-yellow-50">
-          <p className="text-sm text-yellow-800 font-medium">
-            {data.marketRestrictionsMessage ||
-              'O enriquecimento de restrições de mercado não estava disponível para esta consulta.'}
-          </p>
-        </Card>
-      )}
-
       {/* ── CCF — Cheques Sem Fundo ──────────────────────────────────────────── */}
       {hasCcf && (
         <StrategySectionWrapper
@@ -388,15 +379,6 @@ export function RaioXFinanceiroStrategy({
         >
           <CcfSection ccf={data.ccf!} />
         </StrategySectionWrapper>
-      )}
-
-      {data.ccfUnavailable && (
-        <Card className="p-4 border border-yellow-100 bg-yellow-50">
-          <p className="text-sm text-yellow-800 font-medium">
-            {data.ccfMessage ||
-              'A consulta CCF (Cheques Sem Fundo) não estava disponível para esta consulta.'}
-          </p>
-        </Card>
       )}
     </div>
   );
