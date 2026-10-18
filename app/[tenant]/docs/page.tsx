@@ -67,7 +67,7 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'status', type: 'string | undefined', description: 'Situacao cadastral.' },
       { name: 'email', type: 'string | undefined', description: 'Email institucional quando disponivel.' },
       { name: 'phone', type: 'string | undefined', description: 'Telefone institucional quando disponivel.' },
-      { name: 'address', type: 'object | undefined', description: 'Endereco completo (presente apenas em COMPLETA_PLUS_BVS_ACOES_CNPJ).' },
+      { name: 'address', type: 'object | undefined', description: 'Endereco completo (presente em COMPLETA_PLUS_BVS_ACOES_CNPJ e COMPLETA_PLUS_SCORE para CNPJ).' },
     ],
   },
   score: {
@@ -947,6 +947,11 @@ const queryTypeDocs: QueryTypeDoc[] = [
     ...getBlocks(['notaries']),
   ] },
   { code: 'LOCALIZA_CPF_CNPJ', title: 'Localiza CPF CNPJ', input: 'CPF/CNPJ', summary: 'Consulta de enriquecimento cadastral e relacional.', rootFields: [{ name: 'protocol', type: 'string', description: 'Protocolo unico da consulta.' }], blocks: getBlocks(['basicInfo', 'contact', 'addresses', 'relations']) },
+  { code: 'COMPLETA_PLUS_SCORE', title: 'Completa Plus + Score PF/PJ', input: 'CPF/CNPJ', summary: 'Consulta completa para pessoa fisica ou juridica no mesmo codigo: dados cadastrais, score, alertas, pendencias, protestos, cheques sem fundos, historico de consultas e acoes judiciais. O retorno traz person para CPF ou company para CNPJ.', rootFields: [
+    ...commonRoot,
+    { name: 'totalQueries', type: 'number', description: 'Total de consultas comerciais recentes ao documento.' },
+    { name: 'totalLegalActions', type: 'number', description: 'Total de acoes judiciais.' },
+  ], blocks: getBlocks(['person', 'company', 'score', 'alerts', 'debts', 'protests', 'badChecks', 'queries', 'legalActions']) },
   { code: 'DADOS_CPF', title: 'Dados CPF', input: 'CPF', summary: 'Consulta cadastral completa de pessoa fisica: dados pessoais, scores, classe social, parentes, participacoes societarias, enderecos, telefones, emails, PIS e IRPF.', rootFields: [], blocks: getBlocks(['dadosCpfPerson', 'dadosCpfScores', 'dadosCpfSocialClass', 'dadosCpfRelatives', 'dadosCpfCompanyParticipations', 'dadosAddresses', 'dadosCpfPhones', 'dadosCpfEmails', 'dadosCpfPis', 'dadosCpfIrpf']) },
   { code: 'DADOS_CNPJ', title: 'Dados CNPJ', input: 'CNPJ', summary: 'Consulta cadastral completa de pessoa juridica: dados da empresa, enderecos, telefones, emails, Simples Nacional e quadro societario.', rootFields: [], blocks: getBlocks(['dadosCnpjCompany', 'dadosAddresses', 'dadosCnpjPhones', 'emails', 'dadosCnpjSimplesNacional', 'dadosCnpjPartners']) },
   { code: 'SCR_BACEN_PREMIUM_SCORE', title: 'SCR Bacen Premium Score', input: 'CPF/CNPJ', summary: 'Consulta SCR padrao com score e operacoes.', rootFields: scrRoot, blocks: getBlocks(['scrScore', 'creditSummary', 'operations']) },

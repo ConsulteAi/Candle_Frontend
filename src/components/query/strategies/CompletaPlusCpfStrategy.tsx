@@ -6,7 +6,8 @@ import {
   Calendar, 
   Mail,
   AlertTriangle,
-  Gavel
+  Gavel,
+  CheckCircle2
 } from 'lucide-react';
 import { Card } from '@/design-system/ComponentsTailwind';
 import { formatDisplayDate } from '@/lib/utils';
@@ -227,6 +228,36 @@ export function CompletaPlusCpfStrategy({ data, queryId }: QueryStrategyProps<Co
           </TableBody>
         </Table>
       </StrategySectionWrapper>
+
+      {/* Bad checks: só aparece quando o resultado traz cheques sem fundo */}
+      {data.badChecks && data.badChecks.length > 0 && (
+        <StrategySectionWrapper
+           title={`Cheques sem Fundo (${data.badChecks.length})`}
+           icon={<CheckCircle2 className="w-5 h-5 text-yellow-500" />}
+           count={data.badChecks.length}
+           isEmpty={false}
+           emptyMessage="Nenhuma ocorrência de cheque sem fundo encontrada."
+        >
+          <Table>
+            <TableHeader>
+              <TableRow>
+                 <TableHead>Banco</TableHead>
+                 <TableHead>Quantidade</TableHead>
+                 <TableHead>Última Ocorrência</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.badChecks.map((check, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="font-medium">{check.bankNumber}</TableCell>
+                  <TableCell>{check.quantity}</TableCell>
+                  <TableCell>{check.lastOccurrence}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </StrategySectionWrapper>
+      )}
 
       {/* Legal Actions */}
       <StrategySectionWrapper
