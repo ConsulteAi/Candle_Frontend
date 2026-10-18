@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, Calendar, CheckCircle2, FileWarning, Landmark } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle2, FileWarning, Gavel, Landmark } from 'lucide-react';
 import type {
   RaioXGenericDebt,
   RaioXMarketRestrictions,
@@ -35,6 +35,26 @@ export function countFinancialDebts(
   return Math.max(Number(summary?.totalDebts || 0), listedDebts);
 }
 
+type LegalActionRow = {
+  type?: string;
+  date?: string;
+  origin?: string;
+  details?: string;
+  value?: string;
+};
+
+const LEGAL_ACTION_TYPE_LABELS: Record<string, string> = {
+  'ACAO CIVEL': 'Ação cível',
+  'ACAO TRABALHISTA': 'Ação trabalhista',
+  'ACAO JUDICIAL': 'Ação judicial',
+  'FALENCIA/RECUPERACAO': 'Falência / recuperação',
+};
+
+const formatLegalActionType = (type?: string) => {
+  const text = String(type ?? '').trim();
+  return LEGAL_ACTION_TYPE_LABELS[text.toUpperCase()] ?? text;
+};
+
 export function MarketRestrictionsSection({
   mr,
 }: {
@@ -67,6 +87,12 @@ export function MarketRestrictionsSection({
   const isSerasaCrednet =
     mr.sourceQueryTypeCode === 'SERASA_CREDNET_PEFIN_PROTESTO_SPC_PF';
   const isRealtimePremiumPj = mr.sourceQueryTypeCode === 'REALTIME_PREMIUM_SCORE_PJ';
+  // Só o Completa Plus + Score devolve ações judiciais estruturadas; os demais
+  // provedores (ex.: EHM) trazem objetos brutos que não cabem nesta tabela.
+  const isCompletaPlusScore = mr.sourceQueryTypeCode === 'COMPLETA_PLUS_SCORE';
+  const legalActionRows = isCompletaPlusScore
+    ? (legalActions as LegalActionRow[])
+    : [];
   const hasAny =
     totalDebts > 0 ||
     totalScpcDebts > 0 ||
@@ -388,6 +414,43 @@ export function MarketRestrictionsSection({
                   </TableCell>
                   <TableCell className="text-right font-bold text-yellow-700">
                     {item.quantity || 0}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
+      {legalActionRows.length > 0 && (
+        <div className="space-y-2">
+          <p className="flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-indigo-600">
+            <Gavel className="h-3.5 w-3.5" />
+            Ações Judiciais ({legalActionRows.length})
+          </p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Data</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Origem</TableHead>
+                <TableHead>Detalhes</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {legalActionRows.map((item, idx) => (
+                <TableRow key={idx}>
+                  <TableCell>{formatDisplayDate(item.date) || '-'}</TableCell>
+                  <TableCell className="font-medium">
+                    {formatLegalActionType(item.type) || '-'}
+                  </TableCell>
+                  <TableCell>{sanitizeProviderText(item.origin) || '-'}</TableCell>
+                  <TableCell className="whitespace-normal break-words">
+                    {item.details || '-'}
+                  </TableCell>
+                  <TableCell className="text-right font-bold text-indigo-600">
+                    {formatCurrency(String(item.value || 0))}
                   </TableCell>
                 </TableRow>
               ))}
