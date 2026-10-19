@@ -225,6 +225,20 @@ export interface CompletaPlusCnpjResult extends Omit<BaseStandardResult, 'addres
   legalActions?: BaseLegalAction[];
 }
 
+// Completa Plus + Score PF/PJ (um código só: o resultado traz `person` ou `company`)
+export interface CompletaPlusScoreResult
+  extends Omit<CompletaPlusCpfResult, 'person' | 'veicular' | 'queries'> {
+  queries: CompletaPlusCnpjResult['queries'];
+  person?: CompletaPlusCpfResult['person'];
+  company?: CompletaPlusCnpjResult['company'];
+  financialSummary?: {
+    totalDebts: number;
+    totalProtests: number;
+    totalBadChecks: number;
+    totalLegalActions: number;
+  };
+}
+
 // Boa Vista
 export interface BoaVistaAcertaCpfResult extends BaseStandardResult {
   person: BasePerson;
