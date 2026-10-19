@@ -227,7 +227,7 @@ export interface CompletaPlusCnpjResult extends Omit<BaseStandardResult, 'addres
 
 // Completa Plus + Score PF/PJ (um código só: o resultado traz `person` ou `company`)
 export interface CompletaPlusScoreResult
-  extends Omit<CompletaPlusCpfResult, 'person' | 'veicular' | 'addresses' | 'queries'> {
+  extends Omit<CompletaPlusCpfResult, 'person' | 'veicular' | 'queries'> {
   queries: CompletaPlusCnpjResult['queries'];
   person?: CompletaPlusCpfResult['person'];
   company?: CompletaPlusCnpjResult['company'];
