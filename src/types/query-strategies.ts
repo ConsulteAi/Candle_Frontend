@@ -697,6 +697,42 @@ export interface CadinResult {
   cadin?: CadinEntry[];
 }
 
+// CADIN Realtime
+export interface CadinRealtimeSummary {
+  document?: string;
+  name?: string;
+  tradeName?: string;
+  personType?: string;
+  city?: string;
+  state?: string;
+  cnae?: string;
+  cnaeDescription?: string;
+  hasDebt?: boolean;
+  status?: string;
+  totalDebts?: number;
+  totalValue?: string;
+  totalFgts?: string;
+}
+
+export interface CadinRealtimeDebt {
+  registrationNumber?: string;
+  value?: string;
+  extractionDate?: string;
+}
+
+export interface CadinRealtimeNature {
+  nature?: string;
+  total?: string;
+  debts?: CadinRealtimeDebt[];
+}
+
+export interface CadinRealtimeResult {
+  protocol: string;
+  pdf?: string;
+  summary?: CadinRealtimeSummary;
+  natures?: CadinRealtimeNature[];
+}
+
 // Protesto Detalhado SP
 export interface ProtestoDetalhadoSpTitle {
   document?: string;
