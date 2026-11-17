@@ -26,6 +26,7 @@ import { DividasMultiCnpjProStrategy } from './DividasMultiCnpjProStrategy';
 import { RaioXCreditoRatingScrStrategy } from './RaioXCreditoRatingScrStrategy';
 import { ProtestoNacionalPlusStrategy } from './ProtestoNacionalPlusStrategy';
 import { CadinStrategy } from './CadinStrategy';
+import { CadinRealtimeStrategy } from './CadinRealtimeStrategy';
 import { ProtestoDetalhadoSpStrategy } from './ProtestoDetalhadoSpStrategy';
 import { CommercialAnalysisPfStrategy } from './CommercialAnalysisPfStrategy';
 import { CommercialAnalysisPjStrategy } from './CommercialAnalysisPjStrategy';
@@ -74,6 +75,7 @@ export const STRATEGIES: Record<string, React.ComponentType<QueryStrategyProps>>
   'RAIO_X_CREDITO_RATING_SCR_PJ': RaioXCreditoRatingScrStrategy,
   'PROTESTO_NACIONAL_PLUS': ProtestoNacionalPlusStrategy,
   'CADIN': CadinStrategy,
+  'CADIN_REALTIME': CadinRealtimeStrategy,
   'PROTESTO_DETALHADO_SP': ProtestoDetalhadoSpStrategy,
   'BOA_VISTA_ACERTA_ESSENCIAL_POSITIVO_PF': CommercialAnalysisPfStrategy,
   'BOA_VISTA_DEFINE_RISCO_POSITIVO_PJ': CommercialAnalysisPjStrategy,
@@ -128,6 +130,7 @@ export * from './DividasMultiCnpjProStrategy';
 export * from './RaioXCreditoRatingScrStrategy';
 export * from './ProtestoNacionalPlusStrategy';
 export * from './CadinStrategy';
+export * from './CadinRealtimeStrategy';
 export * from './ProtestoDetalhadoSpStrategy';
 export * from './CommercialAnalysisPfStrategy';
 export * from './CommercialAnalysisPjStrategy';

@@ -473,6 +473,34 @@ const sharedBlocks: Record<string, BlockDoc> = {
       { name: 'state', type: 'string', description: 'UF do registro.' },
     ],
   },
+  cadinRealtimeSummary: {
+    name: 'summary',
+    description: 'Resumo da situacao do documento no CADIN em tempo real.',
+    fields: [
+      { name: 'document', type: 'string', description: 'Documento consultado (CPF ou CNPJ).' },
+      { name: 'name', type: 'string', description: 'Nome/Razao social.' },
+      { name: 'tradeName', type: 'string', description: 'Nome fantasia.' },
+      { name: 'personType', type: 'string', description: "Tipo de pessoa: 'PF', 'PJ' ou vazio quando nao identificado." },
+      { name: 'city', type: 'string', description: 'Cidade.' },
+      { name: 'state', type: 'string', description: 'UF.' },
+      { name: 'cnae', type: 'string', description: 'Codigo CNAE da atividade principal.' },
+      { name: 'cnaeDescription', type: 'string', description: 'Descricao do CNAE.' },
+      { name: 'hasDebt', type: 'boolean', description: 'Indica se ha pendencia registrada.' },
+      { name: 'status', type: 'string', description: 'Situacao informada pela fonte.' },
+      { name: 'totalDebts', type: 'number', description: 'Quantidade total de pendencias.' },
+      { name: 'totalValue', type: 'string', description: 'Valor total das pendencias.' },
+      { name: 'totalFgts', type: 'string', description: 'Valor total de pendencias de FGTS.' },
+    ],
+  },
+  cadinRealtimeNatures: {
+    name: 'natures[]',
+    description: 'Pendencias agrupadas por natureza. O campo nature traz o codigo numerico da natureza como informado pela fonte, sem descricao textual.',
+    fields: [
+      { name: 'nature', type: 'string', description: 'Codigo numerico da natureza, como informado pela fonte (sem descricao).' },
+      { name: 'total', type: 'string', description: 'Valor total da natureza.' },
+      { name: 'debts', type: 'Array<{ registrationNumber, value, extractionDate }>', description: 'Pendencias da natureza: numero de inscricao, valor e data de extracao da informacao.' },
+    ],
+  },
   ehmLocation: {
     name: 'location',
     description: 'Bloco de localizacao da consulta.',
@@ -918,6 +946,7 @@ const queryTypeDocs: QueryTypeDoc[] = [
     },
   ] },
   { code: 'CADIN', title: 'CADIN', input: 'CPF/CNPJ', summary: 'Consulta de CADIN com resumo consolidado e lista de ocorrencias.', rootFields: [], blocks: getBlocks(['cadinSummary', 'ehmCadin']) },
+  { code: 'CADIN_REALTIME', title: 'CADIN Realtime', input: 'CPF/CNPJ', summary: 'Consulta de CADIN em tempo real com resumo do documento e pendencias agrupadas por natureza. Se a fonte retornar erro ou uma resposta nao reconhecida, a consulta falha e o valor e estornado automaticamente.', rootFields: [], blocks: getBlocks(['cadinRealtimeSummary', 'cadinRealtimeNatures']) },
   { code: 'PROTESTO_DETALHADO_SP', title: 'Protesto Detalhado SP', input: 'CPF/CNPJ', summary: 'Consulta detalhada IEPTB/SP com visao por titulo e por cartorio.', rootFields: [
     { name: 'document', type: 'string', description: 'Documento consultado.' },
     { name: 'consultedAt', type: 'string', description: 'Data/hora da consulta.' },
